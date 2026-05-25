@@ -76,6 +76,36 @@
     </section>
   </div>
 
+  <!-- RUNTIME MONITOR -->
+  <section class="runtime-monitor-panel" aria-label="Runtime access monitor">
+    <div class="runtime-monitor-header">
+      <div>
+        <span class="runtime-kicker">Runtime monitor</span>
+        <h2>Access path canvas</h2>
+        <p>Mock-driven live view for request paths, attack detection, blocking, and revocation demos.</p>
+      </div>
+      <div class="runtime-actions" id="runtimeScenarioButtons" aria-label="Runtime monitor scenarios"></div>
+    </div>
+    <div class="runtime-monitor-grid">
+      <div class="runtime-canvas-shell">
+        <svg id="runtimeMonitorCanvas" class="runtime-canvas" viewBox="0 0 1000 560" role="img" aria-label="Animated CAAC runtime access path"></svg>
+      </div>
+      <aside class="runtime-side">
+        <div class="runtime-status-card">
+          <span class="runtime-status-label">Current scenario</span>
+          <strong id="runtimeScenarioTitle">Loading monitor</strong>
+          <small id="runtimeScenarioSummary">Preparing mock timeline...</small>
+        </div>
+        <div class="runtime-meter">
+          <span>Playback</span>
+          <div><i id="runtimeProgressBar"></i></div>
+          <b id="runtimeProgressText">0/0</b>
+        </div>
+        <div class="runtime-log" id="runtimeMonitorLog" aria-live="polite"></div>
+      </aside>
+    </div>
+  </section>
+
   <!-- ANALYTICS DASHBOARD -->
   <div class="card">
     <div class="card-hdr">

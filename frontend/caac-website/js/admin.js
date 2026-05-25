@@ -969,6 +969,10 @@ function handleAdminLiveEvent(event) {
   const type = payload.type || '';
   const data = payload.data || {};
 
+  if (window.CaacRuntimeMonitor && typeof window.CaacRuntimeMonitor.ingestLiveEvent === 'function') {
+    window.CaacRuntimeMonitor.ingestLiveEvent(type, data);
+  }
+
   if (type === 'FILE_UPLOADED' || type === 'FILE_APPROVED' || type === 'FILE_REJECTED' || type === 'FILE_DELETED') {
     loadFiles();
     loadStats();
@@ -999,6 +1003,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   const ok = await checkAdmin();
   if (!ok) return;
   await Promise.all([loadUsers(), loadFiles(), loadConversations(), loadAudit(), loadStats(), loadAnalytics(), loadAnomalies()]);
+  if (window.CaacRuntimeMonitor && typeof window.CaacRuntimeMonitor.init === 'function') {
+    window.CaacRuntimeMonitor.init();
+  }
   installAdminLiveEvents();
   caacVisibleInterval(loadUsers, 10000);
   caacVisibleInterval(loadFiles, 15000);

@@ -1550,6 +1550,7 @@ html[data-theme="light"] .btn-primary {
   box-shadow: var(--soft-shadow);
   position: relative;
   overflow: hidden;
+  max-width: 100%;
   backdrop-filter: blur(14px);
 }
 
@@ -1590,6 +1591,7 @@ html[data-theme="light"] .btn-primary {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+  min-width: 0;
 }
 
 .runtime-scenario-btn {
@@ -1601,6 +1603,7 @@ html[data-theme="light"] .btn-primary {
   font-family: var(--mono);
   font-size: 10px;
   cursor: pointer;
+  white-space: normal;
 }
 
 .runtime-scenario-btn.active,
@@ -1614,10 +1617,12 @@ html[data-theme="light"] .btn-primary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
   gap: 14px;
+  min-width: 0;
 }
 
 .runtime-canvas-shell {
   min-height: 360px;
+  min-width: 0;
   border: 1px solid rgba(94, 164, 248, 0.18);
   border-radius: 8px;
   background:
@@ -1630,6 +1635,7 @@ html[data-theme="light"] .btn-primary {
 
 .runtime-canvas {
   width: 100%;
+  max-width: 100%;
   height: 360px;
   display: block;
 }
@@ -1684,6 +1690,7 @@ html[data-theme="light"] .btn-primary {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 
 .runtime-status-card,
@@ -1749,22 +1756,94 @@ html[data-theme="light"] .btn-primary {
 .runtime-log-entry.block,
 .runtime-log-entry.revoke { color: var(--red); }
 
+html[data-theme="light"] .runtime-monitor-panel {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent),
+    color-mix(in srgb, var(--bg2) 94%, transparent);
+}
+
+html[data-theme="light"] .runtime-canvas-shell {
+  border-color: color-mix(in srgb, var(--accent) 20%, var(--border));
+  background:
+    linear-gradient(color-mix(in srgb, var(--accent) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent) 1px, transparent 1px),
+    color-mix(in srgb, var(--bg2) 96%, var(--bg));
+}
+
+html[data-theme="light"] .runtime-node rect {
+  fill: color-mix(in srgb, var(--bg2) 96%, white);
+  stroke: color-mix(in srgb, var(--accent) 20%, var(--border-hi));
+}
+
+html[data-theme="light"] .runtime-node text {
+  fill: var(--text);
+}
+
+html[data-theme="light"] .runtime-status-card,
+html[data-theme="light"] .runtime-meter,
+html[data-theme="light"] .runtime-log {
+  background: color-mix(in srgb, var(--bg2) 94%, transparent);
+  border-color: color-mix(in srgb, var(--border-hi) 64%, transparent);
+}
+
+html[data-theme="light"] .runtime-status-card small,
+html[data-theme="light"] .runtime-meter span,
+html[data-theme="light"] .runtime-meter b,
+html[data-theme="light"] .runtime-log {
+  color: var(--text2);
+}
+
+html[data-theme="light"] .runtime-meter div {
+  background: color-mix(in srgb, var(--border-hi) 34%, transparent);
+}
+
+html[data-theme="light"] .runtime-log-entry {
+  border-bottom-color: color-mix(in srgb, var(--border-hi) 42%, transparent);
+}
+
 @keyframes runtimeDash {
   to { stroke-dashoffset: -20; }
 }
 
 @media (max-width: 900px) {
-  .runtime-monitor-header,
+  .runtime-monitor-panel {
+    padding: 14px;
+  }
+
   .runtime-monitor-grid {
     grid-template-columns: 1fr;
+    width: 100%;
   }
 
   .runtime-monitor-header {
     flex-direction: column;
+    width: 100%;
+  }
+
+  .runtime-canvas-shell {
+    min-height: 300px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .runtime-canvas {
+    height: 300px;
+    width: 100%;
+    min-width: 760px;
+    max-width: none;
   }
 
   .runtime-actions {
     justify-content: flex-start;
+    width: 100%;
+  }
+
+  .runtime-scenario-btn {
+    flex: 1 1 140px;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 }
 

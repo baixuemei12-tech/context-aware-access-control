@@ -440,10 +440,10 @@ header {
 .trust-input:focus { border-color: var(--accent); }
 
 /* ===== STATS ROW ===== */
-.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; }
+.stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; min-width: 0; }
 .stat-label { font-size: 11px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .5px; }
-.stat-value { font-size: 24px; font-weight: 600; margin-top: 4px; }
+.stat-value { font-size: 24px; font-weight: 600; margin-top: 4px; overflow-wrap: anywhere; }
 
 /* ===== MISC ===== */
 .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
@@ -992,6 +992,8 @@ html[data-theme="light"] .btn-primary {
   html { font-size: 14px; }
   .app { padding: 10px 12px 30px; }
   .app-narrow, .app-profile { max-width: 100%; }
+
+  .stats-row { grid-template-columns: 1fr; }
 
   /* Header: compact row */
   header {
@@ -2403,6 +2405,22 @@ button, a, .panel-link, .menu-btn, .theme-toggle, .demo-toggle,
   .scenario-node.n4 { right: 8px; bottom: 18px; }
   .scenario-node.n5 { left: 8px; bottom: 18px; }
   .scenario-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .runtime-monitor-panel,
+  .runtime-monitor-header > * {
+    min-width: 0;
+  }
+
+  .runtime-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+
+  .runtime-scenario-btn {
+    width: 100%;
+    max-width: 100%;
+  }
 
   /* Scrollable file list stays usable at one-handed scroll. */
   .file-list-scroll { max-height: 220px; }

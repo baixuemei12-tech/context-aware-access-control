@@ -1045,8 +1045,8 @@ html[data-theme="light"] .btn-primary {
   .btn-primary, .btn-secondary { padding: 10px 14px; font-size: 12px; border-radius: 6px; }
   .btn-sm { font-size: 10px; padding: 3px 8px; }
 
-  /* Stats: horizontal on phone */
-  .stats-row { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  /* Stats: stack on phone so the admin summary does not widen the page. */
+  .stats-row { grid-template-columns: 1fr; gap: 8px; }
   .stat-card { padding: 8px 10px; text-align: center; }
   .stat-label { font-size: 8px; letter-spacing: 0.3px; }
   .stat-value { font-size: 16px; margin-top: 2px; }

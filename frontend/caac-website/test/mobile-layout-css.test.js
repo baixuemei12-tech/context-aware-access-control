@@ -11,6 +11,17 @@ function ruleBody(selector, source = css) {
   return match[1];
 }
 
+function ruleBodies(selector, source = css) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return [...source.matchAll(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`, 'gm'))].map((match) => match[1]);
+}
+
+function declarationValue(body, property) {
+  const escaped = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = new RegExp(`${escaped}\\s*:\\s*([^;]+);?`).exec(body);
+  return match?.[1]?.trim() ?? null;
+}
+
 function mediaBody(query) {
   const bodies = [];
   let start = css.indexOf(`@media ${query}`);
@@ -45,7 +56,11 @@ test('admin mobile grids and monitor controls cannot force page overflow at 390p
   assert.match(ruleBody('.stat-value'), /overflow-wrap:\s*anywhere/);
 
   const phone = mediaBody('(max-width: 520px)');
-  assert.match(ruleBody('.stats-row', phone), /grid-template-columns:\s*1fr/);
+  const phoneStatsColumns = ruleBodies('.stats-row', phone)
+    .map((body) => declarationValue(body, 'grid-template-columns'))
+    .filter(Boolean);
+  assert.notEqual(phoneStatsColumns.length, 0, 'Missing phone stats-row column rule');
+  assert.equal(phoneStatsColumns.at(-1), '1fr');
   assert.match(ruleBody('.runtime-actions', phone), /grid-template-columns:\s*1fr/);
   assert.match(ruleBody('.runtime-scenario-btn', phone), /max-width:\s*100%/);
 });

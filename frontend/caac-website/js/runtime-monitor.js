@@ -114,6 +114,20 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  function escapeText(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function sanitizeClassToken(value) {
+    const token = String(value == null ? '' : value);
+    return /^[a-z0-9_-]+$/i.test(token) ? token : '';
+  }
+
   function getScenarios() {
     return SCENARIOS.map(clone);
   }
@@ -170,7 +184,7 @@
       const from = NODES.find(node => node.id === pair[0]);
       const to = NODES.find(node => node.id === pair[1]);
       const active = frame.activeEdgeIds.includes(id);
-      const tone = active ? edgeTone(id, scenario, frame) : '';
+      const tone = active ? sanitizeClassToken(edgeTone(id, scenario, frame)) : '';
       return '<line class="runtime-edge ' + (active ? 'active' : '') + ' ' + tone + '" x1="' +
         (from.x * 10) + '" y1="' + (from.y * 5.6) + '" x2="' + (to.x * 10) + '" y2="' +
         (to.y * 5.6) + '"></line>';
@@ -178,11 +192,11 @@
 
     const nodeMarkup = NODES.map(node => {
       const active = frame.activeNodeIds.includes(node.id);
-      const tone = active ? nodeTone(node.id, scenario, frame) : node.kind;
+      const tone = sanitizeClassToken(active ? nodeTone(node.id, scenario, frame) : node.kind);
       return '<g class="runtime-node ' + (active ? 'active' : '') + ' ' + tone +
         '" transform="translate(' + (node.x * 10) + ',' + (node.y * 5.6) + ')">' +
         '<rect x="-58" y="-20" width="116" height="40"></rect>' +
-        '<text>' + node.label + '</text>' +
+        '<text>' + escapeText(node.label) + '</text>' +
         '</g>';
     }).join('');
 
@@ -196,7 +210,7 @@
     root.innerHTML = getScenarios().map(scenario =>
       '<button type="button" class="runtime-scenario-btn ' +
       (scenario.id === activeScenarioId ? 'active' : '') +
-      '" data-runtime-scenario="' + scenario.id + '">' + scenario.title + '</button>'
+      '" data-runtime-scenario="' + escapeText(scenario.id) + '">' + escapeText(scenario.title) + '</button>'
     ).join('');
     root.querySelectorAll('[data-runtime-scenario]').forEach(button => {
       button.addEventListener('click', () => monitor.play(button.dataset.runtimeScenario));
@@ -210,8 +224,8 @@
     monitor.progressText.textContent = frame.completedStepCount + '/' + frame.totalStepCount;
     monitor.progressBar.style.width = Math.round((frame.completedStepCount / frame.totalStepCount) * 100) + '%';
     monitor.log.innerHTML = scenario.steps.slice(0, frame.completedStepCount).map((step, index) =>
-      '<div class="runtime-log-entry ' + step.tone + '">T+' +
-      String(index + 1).padStart(2, '0') + ' ' + step.label + '</div>'
+      '<div class="runtime-log-entry ' + sanitizeClassToken(step.tone) + '">T+' +
+      String(index + 1).padStart(2, '0') + ' ' + escapeText(step.label) + '</div>'
     ).join('');
     monitor.log.scrollTop = monitor.log.scrollHeight;
   }
@@ -242,12 +256,15 @@
     if (playbackTimer) clearTimeout(playbackTimer);
 
     let stepIndex = 0;
+    const playbackDelay = delayMs == null ? 1150 : delayMs;
     const tick = () => {
       const frame = buildPlaybackFrame(scenario, stepIndex);
       renderFrame(monitor, scenario, frame);
       stepIndex += 1;
       if (stepIndex < scenario.steps.length) {
-        playbackTimer = setTimeout(tick, delayMs || 1150);
+        playbackTimer = setTimeout(tick, playbackDelay);
+      } else {
+        playbackTimer = null;
       }
     };
     tick();
@@ -256,7 +273,6 @@
   function init() {
     const monitor = createMonitor();
     if (!monitor) return;
-    renderButtons(monitor.buttons, api);
     playScenario(activeScenarioId, 1150);
   }
 

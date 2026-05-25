@@ -149,9 +149,131 @@
     };
   }
 
-  window.CaacRuntimeMonitor = {
+  let playbackTimer = null;
+  let activeScenarioId = 'normal-permit';
+
+  function edgeTone(edgeId, scenario, frame) {
+    const step = scenario.steps.find(item => item.edge === edgeId && frame.activeEdgeIds.includes(edgeId));
+    return step ? step.tone : '';
+  }
+
+  function nodeTone(nodeId, scenario, frame) {
+    const steps = scenario.steps.slice().reverse();
+    const step = steps.find(item => (item.nodes || []).includes(nodeId) && frame.activeNodeIds.includes(nodeId));
+    if (nodeId === 'attacker') return 'threat';
+    return step ? step.tone : '';
+  }
+
+  function renderCanvas(canvas, scenario, frame) {
+    const edgeMarkup = Object.keys(EDGES).map(id => {
+      const pair = EDGES[id];
+      const from = NODES.find(node => node.id === pair[0]);
+      const to = NODES.find(node => node.id === pair[1]);
+      const active = frame.activeEdgeIds.includes(id);
+      const tone = active ? edgeTone(id, scenario, frame) : '';
+      return '<line class="runtime-edge ' + (active ? 'active' : '') + ' ' + tone + '" x1="' +
+        (from.x * 10) + '" y1="' + (from.y * 5.6) + '" x2="' + (to.x * 10) + '" y2="' +
+        (to.y * 5.6) + '"></line>';
+    }).join('');
+
+    const nodeMarkup = NODES.map(node => {
+      const active = frame.activeNodeIds.includes(node.id);
+      const tone = active ? nodeTone(node.id, scenario, frame) : node.kind;
+      return '<g class="runtime-node ' + (active ? 'active' : '') + ' ' + tone +
+        '" transform="translate(' + (node.x * 10) + ',' + (node.y * 5.6) + ')">' +
+        '<rect x="-58" y="-20" width="116" height="40"></rect>' +
+        '<text>' + node.label + '</text>' +
+        '</g>';
+    }).join('');
+
+    canvas.innerHTML = '<defs>' +
+      '<filter id="runtimeGlow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/>' +
+      '<feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+      '</defs>' + edgeMarkup + nodeMarkup;
+  }
+
+  function renderButtons(root, monitor) {
+    root.innerHTML = getScenarios().map(scenario =>
+      '<button type="button" class="runtime-scenario-btn ' +
+      (scenario.id === activeScenarioId ? 'active' : '') +
+      '" data-runtime-scenario="' + scenario.id + '">' + scenario.title + '</button>'
+    ).join('');
+    root.querySelectorAll('[data-runtime-scenario]').forEach(button => {
+      button.addEventListener('click', () => monitor.play(button.dataset.runtimeScenario));
+    });
+  }
+
+  function renderFrame(monitor, scenario, frame) {
+    renderCanvas(monitor.canvas, scenario, frame);
+    monitor.title.textContent = scenario.title + ' - ' + scenario.outcome;
+    monitor.summary.textContent = scenario.summary;
+    monitor.progressText.textContent = frame.completedStepCount + '/' + frame.totalStepCount;
+    monitor.progressBar.style.width = Math.round((frame.completedStepCount / frame.totalStepCount) * 100) + '%';
+    monitor.log.innerHTML = scenario.steps.slice(0, frame.completedStepCount).map((step, index) =>
+      '<div class="runtime-log-entry ' + step.tone + '">T+' +
+      String(index + 1).padStart(2, '0') + ' ' + step.label + '</div>'
+    ).join('');
+    monitor.log.scrollTop = monitor.log.scrollHeight;
+  }
+
+  function createMonitor() {
+    const monitor = {
+      canvas: document.getElementById('runtimeMonitorCanvas'),
+      buttons: document.getElementById('runtimeScenarioButtons'),
+      title: document.getElementById('runtimeScenarioTitle'),
+      summary: document.getElementById('runtimeScenarioSummary'),
+      progressBar: document.getElementById('runtimeProgressBar'),
+      progressText: document.getElementById('runtimeProgressText'),
+      log: document.getElementById('runtimeMonitorLog')
+    };
+    if (!monitor.canvas || !monitor.buttons || !monitor.title || !monitor.summary ||
+        !monitor.progressBar || !monitor.progressText || !monitor.log) {
+      return null;
+    }
+    return monitor;
+  }
+
+  function playScenario(id, delayMs) {
+    const monitor = createMonitor();
+    if (!monitor) return;
+    const scenario = getScenario(id);
+    activeScenarioId = scenario.id;
+    renderButtons(monitor.buttons, api);
+    if (playbackTimer) clearTimeout(playbackTimer);
+
+    let stepIndex = 0;
+    const tick = () => {
+      const frame = buildPlaybackFrame(scenario, stepIndex);
+      renderFrame(monitor, scenario, frame);
+      stepIndex += 1;
+      if (stepIndex < scenario.steps.length) {
+        playbackTimer = setTimeout(tick, delayMs || 1150);
+      }
+    };
+    tick();
+  }
+
+  function init() {
+    const monitor = createMonitor();
+    if (!monitor) return;
+    renderButtons(monitor.buttons, api);
+    playScenario(activeScenarioId, 1150);
+  }
+
+  function ingestLiveEvent(type) {
+    if (type === 'FILE_UPLOADED') playScenario('normal-permit', 900);
+    if (type === 'USER_STATUS_CHANGED') playScenario('role-denied', 900);
+    if (type && type.indexOf('ANOMALY') >= 0) playScenario('attack-blocked', 900);
+  }
+
+  const api = {
     getScenarios,
     getScenario,
-    buildPlaybackFrame
+    buildPlaybackFrame,
+    init,
+    play: playScenario,
+    ingestLiveEvent
   };
+
+  window.CaacRuntimeMonitor = api;
 }());

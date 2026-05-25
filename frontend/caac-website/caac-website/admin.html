@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAAC — Admin Panel</title>
+<link rel="stylesheet" href="css/common.css">
+</head>
+<body class="space-page admin-space">
+<canvas class="caac-space-bg" data-caac-stars data-density="36" data-link="120" data-speed="0.12" data-packets="4" aria-hidden="true"></canvas>
+
+<div class="app app-narrow">
+  <header>
+    <div class="logo">
+      <div class="logo-mark admin-mark">A</div>
+      <div>
+        <h1>Admin Panel</h1>
+        <p>CAAC User &amp; File Management</p>
+      </div>
+    </div>
+    <div class="hdr-links">
+      <a href="index.html">Dashboard</a>
+      <a href="scenarios.html">Scenarios</a>
+    </div>
+  </header>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total users</div>
+      <div class="stat-value" id="statUsers">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Online now</div>
+      <div class="stat-value" style="color:var(--green)" id="statOnline">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Registered files</div>
+      <div class="stat-value" id="statFiles">—</div>
+    </div>
+  </div>
+
+  <div class="ops-hero">
+    <section class="ops-panel">
+      <h2>Security operations</h2>
+      <p>One-glance posture from users, registry, anomalies, active sessions, and recent decisions.</p>
+      <div class="ops-grid">
+        <div class="ops-card"><div class="ops-label">Pending users</div><div class="ops-value" id="opsPendingUsers">—</div><div class="ops-hint">approval queue</div></div>
+        <div class="ops-card"><div class="ops-label">Pending files</div><div class="ops-value" id="opsPendingFiles">—</div><div class="ops-hint">approval queue</div></div>
+        <div class="ops-card"><div class="ops-label">High sensitivity</div><div class="ops-value" id="opsHighSensitivity">—</div><div class="ops-hint">S3-S5 objects</div></div>
+        <div class="ops-card"><div class="ops-label">Low trust</div><div class="ops-value" id="opsLowTrust">—</div><div class="ops-hint">T_sub &lt; 0.5</div></div>
+        <div class="ops-card"><div class="ops-label">Deny / revoke</div><div class="ops-value" id="opsDenied">—</div><div class="ops-hint">recent audit</div></div>
+        <div class="ops-card"><div class="ops-label">Anomalies</div><div class="ops-value" id="opsAnomalies">—</div><div class="ops-hint">unreviewed</div></div>
+      </div>
+      <div class="ops-filter-row" aria-label="Admin quick filters">
+        <button type="button" class="ops-filter active" data-admin-filter="all" onclick="applyAdminQuickFilter('all')">All</button>
+        <button type="button" class="ops-filter" data-admin-filter="pending-users" onclick="applyAdminQuickFilter('pending-users')">Pending users</button>
+        <button type="button" class="ops-filter" data-admin-filter="pending-files" onclick="applyAdminQuickFilter('pending-files')">Pending files</button>
+        <button type="button" class="ops-filter" data-admin-filter="high-sensitivity" onclick="applyAdminQuickFilter('high-sensitivity')">High sensitivity</button>
+        <button type="button" class="ops-filter" data-admin-filter="low-trust" onclick="applyAdminQuickFilter('low-trust')">Low trust</button>
+        <button type="button" class="ops-filter" data-admin-filter="deny-revoke" onclick="applyAdminQuickFilter('deny-revoke')">Deny / revoke</button>
+        <button type="button" class="ops-filter" data-admin-filter="anomalies" onclick="applyAdminQuickFilter('anomalies')">Anomalies</button>
+      </div>
+    </section>
+    <section class="ops-timeline-panel">
+      <h2>Live control path</h2>
+      <p>Visual state for this admin console.</p>
+      <div class="ops-timeline" id="opsTimeline">
+        <div class="ops-event"><i style="color:var(--green)"></i><span>Gateway health</span><small>checking</small></div>
+        <div class="ops-event"><i style="color:var(--amber)"></i><span>Oracle bridge</span><small>standby</small></div>
+        <div class="ops-event"><i style="color:var(--accent)"></i><span>Registry</span><small>loading</small></div>
+        <div class="ops-event"><i style="color:var(--red)"></i><span>Anomaly detector</span><small>loading</small></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ANALYTICS DASHBOARD -->
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Analytics dashboard</span>
+      <button class="btn-sm" style="color:var(--accent)" onclick="loadAnalytics()">Refresh</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Decisions (PERMIT vs DENY)</div>
+        <div style="position:relative;height:200px"><canvas id="chartDecisions"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Access by file</div>
+        <div style="position:relative;height:200px"><canvas id="chartFiles"></canvas></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Most active users</div>
+        <div style="position:relative;height:200px"><canvas id="chartUsers"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Activity (last 24h)</div>
+        <div style="position:relative;height:200px"><canvas id="chartTimeline"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Registered users</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="sortUsers" onchange="filterUsers()" style="background:var(--bg);border:1px solid var(--border);color:var(--text3);font-family:var(--mono);font-size:10px;padding:4px 8px;border-radius:6px;outline:none">
+          <option value="username-asc">Sort: name A-Z</option>
+          <option value="username-desc">Sort: name Z-A</option>
+          <option value="rSub-desc">Sort: role (high-low)</option>
+          <option value="tSub-desc">Sort: trust (high-low)</option>
+          <option value="status-asc">Sort: status</option>
+          <option value="registeredAt-desc">Sort: newest</option>
+        </select>
+        <input type="text" id="searchUsers" placeholder="Search users..." oninput="filterUsers()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:6px;outline:none;width:160px">
+        <button class="btn-sm" style="color:var(--accent)" onclick="loadUsers()">Refresh</button>
+      </div>
+    </div>
+    <div id="usersContainer" style="overflow-x:auto;max-height:400px;overflow-y:auto">
+      <div class="empty">Loading users...</div>
+    </div>
+  </div>
+
+  <!-- FILES -->
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">File registry</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="searchFiles" placeholder="Search files..." oninput="filterFiles()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:6px;outline:none;width:160px">
+        <select id="sortFiles" onchange="loadFiles()" style="background:var(--bg);border:1px solid var(--border);color:var(--text3);font-family:var(--mono);font-size:10px;padding:4px 8px;border-radius:6px;outline:none">
+          <option value="status">Sort: status</option>
+          <option value="sLevel">Sort: S_level</option>
+          <option value="pReq">Sort: P_req</option>
+          <option value="fileId">Sort: name</option>
+          <option value="uploadedBy">Sort: uploader</option>
+        </select>
+        <button class="btn-sm" style="color:var(--accent)" onclick="loadFiles()">Refresh</button>
+      </div>
+    </div>
+    <div id="filesContainer" style="overflow-x:auto;max-height:400px;overflow-y:auto">
+      <div class="empty">Loading files...</div>
+    </div>
+  </div>
+
+  <!-- MESSAGES — Telegram-style conversation threads -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="admin-chat-wrap">
+      <!-- Conversation sidebar -->
+      <div class="admin-chat-sidebar">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px;font-weight:600">Messages</span>
+          <button class="btn-sm" style="color:var(--green);font-size:10px;padding:2px 8px" onclick="showNewConvDialog()">+ New</button>
+        </div>
+        <div id="newConvDialog" style="display:none;padding:8px;border-bottom:1px solid var(--border)">
+          <select id="newConvUser" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 8px;border-radius:6px;outline:none;margin-bottom:4px">
+            <option value="">Select user...</option>
+          </select>
+          <button class="btn-sm btn-activate" style="width:100%;font-size:10px" onclick="startNewConv()">Start conversation</button>
+        </div>
+        <div id="convList" style="flex:1;overflow-y:auto">
+          <div class="empty" style="padding:20px;font-size:11px">Loading...</div>
+        </div>
+      </div>
+      <!-- Chat area -->
+      <div class="admin-chat-main">
+        <div id="chatHeader" style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:500;color:var(--text3)">
+          Select a conversation
+        </div>
+        <div id="chatArea" style="flex:1;overflow-y:auto;padding:10px">
+          <div style="text-align:center;padding:40px;color:var(--text3);font-size:12px">Select a user from the left to view messages</div>
+        </div>
+        <div id="chatInput" style="display:none;padding:10px;border-top:1px solid var(--border);display:flex;gap:6px">
+          <input type="text" id="adminChatMsg" placeholder="Type a reply..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:8px 10px;border-radius:6px;outline:none" onkeydown="if(event.key==='Enter')sendAdminChat()">
+          <button class="btn-sm btn-activate" onclick="sendAdminChat()" style="padding:8px 14px">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANOMALY ALERTS -->
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Anomaly alerts</span>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="anomalyCount" style="font-size:10px;font-family:var(--mono);color:var(--red)"></span>
+          <label style="font-size:10px;font-family:var(--mono);color:var(--text3);display:flex;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" id="showAllAnomalies" onchange="loadAnomalies()" style="width:12px;height:12px"> show reviewed
+          </label>
+          <button class="btn-sm" style="color:var(--accent)" onclick="loadAnomalies()">Refresh</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button id="btnReviewAllAnomalies" class="btn-sm" style="color:var(--green);display:none" onclick="markAllReviewed()">Review all</button>
+          <button id="btnDeleteAllAnomalies" class="btn-sm" style="color:var(--red);display:none" onclick="deleteAllAnomalies()">Delete all</button>
+        </div>
+      </div>
+    </div>
+    <div id="anomalyStats" style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap"></div>
+    <div id="anomalyContainer" style="overflow-x:auto;max-height:350px;overflow-y:auto">
+      <div class="empty">Loading anomaly data...</div>
+    </div>
+  </div>
+
+  <!-- AUDIT LOG -->
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Access audit log</span>
+      <button class="btn-sm" style="color:var(--accent)" onclick="loadAudit()">Refresh</button>
+    </div>
+    <div id="auditContainer" style="overflow-x:auto;max-height:400px;overflow-y:auto">
+      <div class="empty">Loading audit log...</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/src/entries/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+# === Sensitive credentials ===
+caac-env.sh
+*.env
+.env
+.env.*
+!.env.example
+
+# === Logs ===
+*.log
+logs/
+
+# === Nested duplicate ===
+/flexiguard/
+
+# === Broken WSL symlinks (cannot be accessed) ===
+backend/fabric-samples/test-network/test-network
+
+# === Extracted binaries (>100MB GitHub limit; reproducible from tarball) ===
+env/kubo/ipfs
+
+# === Node ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# === Java / Maven / Gradle build artifacts ===
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+.gradle/
+
+# === Frontend build output ===
+dist/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.vite/
+
+# === IDE / editor ===
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === OS / temp ===
+*.tmp
+*.bak
+*~
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# === Misc ===
+*.pid
+*.seed
+*.lock-wscript
+.npm

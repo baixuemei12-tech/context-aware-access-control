@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAAC — Scenario Demo</title>
+<link rel="preconnect" href="http://172.25.204.218:5051" crossorigin>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/cyberpunk.css">
+<link rel="stylesheet" href="css/perf.css">
+</head>
+<body class="space-page scenario-page">
+<canvas class="caac-space-bg" data-caac-stars data-density="58" data-link="132" data-speed="0.18" data-packets="7" aria-hidden="true"></canvas>
+
+<div class="scenario-shell">
+  <header>
+    <div class="logo">
+      <div class="logo-mark">SD</div>
+      <div>
+        <h1>Scenario Demo</h1>
+        <p>Visual request paths for CAAC defense and presentation</p>
+      </div>
+    </div>
+    <div class="hdr-links">
+      <a href="index.html">Dashboard</a>
+      <a href="overview.html">Overview</a>
+    </div>
+  </header>
+
+  <section class="scenario-hero">
+    <div>
+      <div class="badge badge-auto" style="display:inline-block;margin-bottom:14px">defense mode</div>
+      <h1>Show the access-control story without touching chaincode.</h1>
+      <p>This page is built for visual checks, screenshots, and thesis defense. Pick a scenario and the console shows the decision path through browser context, gateway rules, oracle/Fabric evaluation, RGCA streaming, and CAAR evidence.</p>
+    </div>
+    <div class="scenario-stage" aria-hidden="true">
+      <div class="scenario-orbit"></div>
+      <div class="scenario-node n1" data-flow-node="browser">Browser</div>
+      <div class="scenario-node n2" data-flow-node="gateway">Gateway</div>
+      <div class="scenario-node n3" data-flow-node="oracle">Oracle</div>
+      <div class="scenario-node n4" data-flow-node="fabric">Fabric</div>
+      <div class="scenario-node n5" data-flow-node="ipfs">IPFS</div>
+      <div class="scenario-packet" id="scenarioPacket"></div>
+    </div>
+  </section>
+
+  <section class="scenario-grid">
+    <div class="scenario-list">
+      <div class="card-hdr">
+        <span class="card-title">Test scenarios</span>
+        <span class="badge badge-user">mocked</span>
+      </div>
+      <div id="scenarioButtons"></div>
+    </div>
+
+    <div class="scenario-detail">
+      <div class="card-hdr">
+        <span class="card-title" id="scenarioTitle">—</span>
+        <span class="decision-badge" id="scenarioDecision">—</span>
+      </div>
+      <p id="scenarioDesc" style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px"></p>
+      <div class="scenario-runner">
+        <button type="button" class="btn-primary scenario-run-btn" id="scenarioRunBtn" onclick="runScenarioWalkthrough()">Run walkthrough</button>
+        <div class="scenario-run-state">
+          <span id="scenarioRunLabel">ready</span>
+          <div class="scenario-run-track"><span id="scenarioRunProgress"></span></div>
+        </div>
+      </div>
+      <div class="scenario-summary">
+        <div class="scenario-fact"><b>DT_score</b><span id="scenarioDt">—</span></div>
+        <div class="scenario-fact"><b>P_eff</b><span id="scenarioPeff">—</span></div>
+        <div class="scenario-fact"><b>RGCA tier</b><span id="scenarioTier">—</span></div>
+        <div class="scenario-fact"><b>Exposure</b><span id="scenarioExposure">—</span></div>
+      </div>
+      <div class="scenario-steps" id="scenarioSteps"></div>
+    </div>
+  </section>
+</div>
+
+<script type="module" src="/src/entries/scenarios.js"></script>
+</body>
+</html>

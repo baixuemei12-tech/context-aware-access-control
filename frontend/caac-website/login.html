@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAAC — Login</title>
+<link rel="preconnect" href="http://172.25.204.218:5051" crossorigin>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/cyberpunk.css">
+<link rel="stylesheet" href="css/perf.css">
+<style>
+  body.auth-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    overflow-x: hidden;
+  }
+  .auth-container {
+    width: min(1040px, 100%);
+    max-width: 1040px;
+    display: grid;
+    grid-template-columns: minmax(280px, .95fr) minmax(360px, 440px);
+    gap: 18px;
+    padding: 0;
+  }
+  .auth-rail,
+  .auth-panel {
+    min-width: 0;
+  }
+  .auth-rail {
+    position: relative;
+    min-height: 650px;
+    border: 1px solid var(--border-hi);
+    border-radius: 12px;
+    padding: 28px;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), transparent 38%),
+      radial-gradient(circle at 80% 18%, color-mix(in srgb, var(--teal) 18%, transparent), transparent 30%),
+      color-mix(in srgb, var(--bg2) 90%, transparent);
+    box-shadow: var(--panel-shadow);
+  }
+  .auth-rail::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(148,163,184,.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148,163,184,.07) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: linear-gradient(140deg, rgba(0,0,0,.78), transparent 72%);
+    pointer-events: none;
+  }
+  .auth-rail > * { position: relative; z-index: 1; }
+  .logo-section { text-align: left; margin-bottom: 34px; }
+  .logo-section .logo-mark { margin-bottom: 16px; }
+  .logo-section h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    line-height: 1;
+    letter-spacing: 0;
+    margin-bottom: 10px;
+  }
+  .logo-section p {
+    max-width: 470px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text2);
+  }
+  .auth-signal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 26px 0;
+  }
+  .auth-signal {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+  }
+  .auth-signal span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+  .auth-signal strong {
+    display: block;
+    margin-top: 7px;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .auth-flow {
+    display: grid;
+    gap: 10px;
+    margin-top: 38px;
+  }
+  .auth-flow-row {
+    display: grid;
+    grid-template-columns: 34px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--bg) 66%, transparent);
+  }
+  .auth-flow-row b {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: var(--accent2);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .auth-flow-row span {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .auth-flow-row small {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .auth-panel {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+  }
+  .auth-card,
+  #resetSection,
+  .info-box {
+    border-radius: 12px;
+    backdrop-filter: blur(14px);
+  }
+  .auth-card {
+    padding: 24px;
+    box-shadow: var(--panel-shadow);
+  }
+  .tabs {
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    margin-bottom: 18px;
+  }
+  .tab {
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .tab.active {
+    color: var(--text);
+    background: var(--accent2);
+    border-bottom-color: transparent;
+  }
+  .form-group { margin-bottom: 13px; }
+  .form-group input {
+    min-height: 42px;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+  }
+  .form-group input:focus {
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+  }
+  .auth-link {
+    font-size: 11px;
+    color: var(--accent);
+    font-family: var(--mono);
+    text-decoration: none;
+  }
+  .auth-link:hover { text-decoration: underline; }
+  .password-rules {
+    display: grid;
+    gap: 5px;
+    margin-top: -5px;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .password-rules span::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 7px;
+    background: currentColor;
+    opacity: .45;
+  }
+  .password-rules span.ok { color: var(--green); }
+  .verify-step { display: none; }
+  .verify-step.active { display: block; }
+  .otp-input {
+    font-family: var(--mono); font-size: 24px; text-align: center;
+    letter-spacing: 8px; width: 100%;
+  }
+  .resend-btn {
+    background: none; border: none; color: var(--accent); cursor: pointer;
+    font-family: var(--mono); font-size: 11px; padding: 4px 0;
+    text-decoration: underline;
+  }
+  .resend-btn:disabled { color: var(--text3); cursor: default; text-decoration: none; }
+  .captcha-row { display: flex; justify-content: center; margin: 12px 0; }
+
+  /* 2FA step */
+  .totp-step { display: none; text-align: center; padding: 10px 0; }
+  .totp-step.active { display: block; }
+  .totp-input {
+    font-family: var(--mono); font-size: 28px; text-align: center;
+    letter-spacing: 10px; width: 100%;
+  }
+  .step-mark {
+    width: 44px; height: 44px; margin: 0 auto 12px;
+    display: grid; place-items: center;
+    border-radius: 12px;
+    border: 1px solid var(--border-hi);
+    background: var(--accent2);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-weight: 700;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+  .totp-label {
+    font-size: 14px; font-weight: 500; margin-bottom: 6px;
+    color: var(--text1);
+  }
+  .totp-desc {
+    font-size: 12px; color: var(--text2); line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .back-link {
+    font-size: 12px; color: var(--accent); margin-top: 12px;
+    display: inline-block; cursor: pointer;
+  }
+  .info-box {
+    padding: 14px 16px;
+    font-size: 11px;
+  }
+  @media (max-width: 880px) {
+    body.auth-page { align-items: flex-start; padding: 18px; }
+    .auth-container { grid-template-columns: 1fr; }
+    .auth-rail { min-height: auto; padding: 22px; }
+    .auth-flow { display: none; }
+  }
+  @media (max-width: 540px) {
+    body.auth-page { padding: 12px; }
+    .auth-signal-grid { grid-template-columns: 1fr; }
+    .auth-card { padding: 18px; }
+  }
+</style>
+</head>
+<body class="space-page auth-page">
+<canvas class="caac-space-bg" data-caac-stars data-density="32" data-link="118" data-speed="0.1" data-packets="3" aria-hidden="true"></canvas>
+
+<main class="auth-container">
+  <section class="auth-rail" aria-label="CAAC system summary">
+    <div class="logo-section">
+      <div class="logo-mark">CA</div>
+      <h1>CAAC System</h1>
+      <p>Blockchain-enabled context-aware access control for approved users, trusted devices, and protected files.</p>
+    </div>
+    <div class="auth-signal-grid">
+      <div class="auth-signal"><span>Gateway</span><strong>Policy enforced</strong></div>
+      <div class="auth-signal"><span>Oracle</span><strong>Chain verified</strong></div>
+      <div class="auth-signal"><span>Storage</span><strong>IPFS sealed</strong></div>
+    </div>
+    <div class="auth-flow" aria-hidden="true">
+      <div class="auth-flow-row"><b>01</b><span>Authenticate</span><small>BCrypt + CAPTCHA</small></div>
+      <div class="auth-flow-row"><b>02</b><span>Evaluate context</span><small>device, network, trust</small></div>
+      <div class="auth-flow-row"><b>03</b><span>Stream approved files</span><small>RGCA session monitor</small></div>
+    </div>
+  </section>
+
+  <section class="auth-panel" aria-label="Authentication forms">
+  <div class="auth-card">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('login')">Login</div>
+      <div class="tab" onclick="switchTab('signup')">Sign Up</div>
+    </div>
+
+    <div id="errorMsg" class="error-msg"></div>
+    <div id="successMsg" class="success-msg"></div>
+
+    <!-- LOGIN -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-user" placeholder="Enter username" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password">
+      </div>
+      <!-- CAPTCHA appears after failed attempts (loaded dynamically) -->
+      <div id="loginCaptchaRow" class="captcha-row" style="display:none"></div>
+      <button class="btn-primary" id="btnLogin" onclick="doLogin()">Login</button>
+      <div style="text-align:center;margin-top:10px">
+        <a class="auth-link" href="#" onclick="document.getElementById('resetSection').style.display=document.getElementById('resetSection').style.display==='none'?'block':'none';return false">Reset password with admin code</a>
+      </div>
+    </div>
+
+    <!-- 2FA TOTP STEP (appears when server requires it) -->
+    <div id="totpStep" class="totp-step">
+      <div class="step-mark">2F</div>
+      <div class="totp-label">Two-Factor Authentication</div>
+      <div class="totp-desc">Enter the 6-digit code from your authenticator app</div>
+      <div class="form-group">
+        <input type="text" id="totp-input" class="totp-input" placeholder="000000" maxlength="6"
+          oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="one-time-code">
+      </div>
+      <button class="btn-primary" id="btnTotpSubmit" onclick="submitTotp()">Verify</button>
+      <div>
+        <a class="back-link" onclick="cancelTotp()">← Back to login</a>
+      </div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signupForm" style="display:none">
+      <div class="form-group">
+        <label>Display name</label>
+        <input type="text" id="signup-name" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="signup-user" placeholder="Choose a username" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-pass" placeholder="At least 8 chars, mixed types" autocomplete="new-password">
+      </div>
+      <div class="password-rules" id="passwordRules" aria-live="polite">
+        <span data-rule="length">8 or more characters</span>
+        <span data-rule="mix">uppercase, lowercase, number, and symbol</span>
+      </div>
+      <div class="form-group">
+        <label>Confirm password</label>
+        <input type="password" id="signup-pass2" placeholder="Repeat password" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>Email <span style="color:var(--text3);font-size:10px">(required)</span></label>
+        <input type="email" id="signup-email" placeholder="user@example.com">
+      </div>
+      <div class="form-group">
+        <label>Phone <span style="color:var(--text3);font-size:10px">(optional)</span></label>
+        <input type="tel" id="signup-phone" placeholder="+86 138-xxxx-xxxx">
+      </div>
+      <!-- CAPTCHA (loaded dynamically when backend requires it) -->
+      <div id="signupCaptchaRow" class="captcha-row" style="display:none"></div>
+      <button class="btn-primary" id="btnSignup" onclick="doSignup()">Create Account</button>
+    </div>
+
+    <!-- VERIFICATION STEP (appears after signup) -->
+    <div id="verifyStep" class="verify-step">
+      <!-- Email verification pending -->
+      <div id="verifyEmail" style="display:none;text-align:center;padding:10px 0">
+        <div class="step-mark">@</div>
+        <div style="font-size:14px;font-weight:500;margin-bottom:8px">Check your email</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px" id="emailVerifyMsg">
+          We sent a verification link to your email.
+          Click the link to verify your account.
+        </div>
+        <button class="resend-btn" id="btnResendEmail" onclick="resendVerification('email')">Resend email</button>
+      </div>
+
+      <!-- Phone OTP verification (hidden when disabled by backend config) -->
+      <div id="verifyPhone" style="display:none;text-align:center;padding:10px 0">
+        <div class="step-mark">OTP</div>
+        <div style="font-size:14px;font-weight:500;margin-bottom:8px">Enter verification code</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px" id="phoneVerifyMsg">
+          We sent a 6-digit code to your phone.
+        </div>
+        <div class="form-group">
+          <input type="text" id="otp-input" class="otp-input" placeholder="000000" maxlength="6"
+            oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="one-time-code">
+        </div>
+        <button class="btn-primary" id="btnVerifyOtp" onclick="submitOtp()">Verify</button>
+        <div style="margin-top:10px">
+          <button class="resend-btn" id="btnResendPhone" onclick="resendVerification('phone')">Resend code</button>
+        </div>
+      </div>
+
+      <div id="verifyApproval" style="display:none;text-align:center;padding:10px 0">
+        <div class="step-mark">OK</div>
+        <div style="font-size:14px;font-weight:500;margin-bottom:8px">Waiting for admin approval</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px" id="approvalVerifyMsg">
+          Your request is visible in the admin panel. You can log in after approval.
+        </div>
+      </div>
+
+      <div style="margin-top:16px;text-align:center">
+        <a class="auth-link" href="#" onclick="switchTab('login');return false">Back to login</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password Reset with Code (hidden by default, toggled from login form) -->
+  <div id="resetSection" class="auth-card" style="padding:18px;margin-top:12px;display:none">
+    <div style="font-size:13px;font-weight:500;margin-bottom:6px;text-align:center">Reset password with code</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;text-align:center;font-family:var(--mono)">
+      Got a reset code from admin? Enter it here.
+    </div>
+    <div id="resetError" class="error-msg"></div>
+    <div id="resetSuccess" class="success-msg"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="reset-username" placeholder="Your username">
+    </div>
+    <div class="form-group">
+      <label>Reset code</label>
+      <input type="text" id="reset-code" placeholder="8-character code from admin" maxlength="8" style="letter-spacing:2px">
+    </div>
+    <div class="form-group">
+      <label>New password</label>
+      <input type="password" id="reset-newpw" placeholder="At least 8 chars, mixed types">
+    </div>
+    <button class="btn-primary" style="background:var(--amber)" onclick="doResetWithCode()">Set new password</button>
+  </div>
+
+  <div class="info-box">
+    <p>Your context is collected automatically when you access files.<br>
+    Role and trust level are managed by the system administrator.</p>
+  </div>
+
+  </section>
+</main>
+
+<script type="module" src="/src/entries/login.js"></script>
+</body>
+</html>

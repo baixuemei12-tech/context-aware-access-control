@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAAC — Context-Aware Access Control</title>
+<link rel="stylesheet" href="css/common.css">
+</head>
+<body class="space-page overview-space">
+<canvas class="caac-space-bg" data-caac-stars data-density="88" data-link="150" data-speed="0.24" data-packets="10" aria-hidden="true"></canvas>
+<div class="scroll-progress" id="scrollProgress"></div>
+<nav class="ov-nav" aria-label="Overview sections">
+  <a href="#flow">Trust Flow</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#algorithms">Algorithms</a>
+  <a href="#framework">BV-GCA</a>
+  <a href="#context-model">Context</a>
+  <a href="#evaluation">Metrics</a>
+  <a href="scenarios.html">Scenarios</a>
+</nav>
+<div class="ov">
+  <div class="hero">
+    <div class="hero-logo reveal">CA</div>
+    <div class="hero-constellation reveal d1" aria-hidden="true">
+      <div class="hero-node core">CAAC</div>
+      <div class="hero-node browser">Browser</div>
+      <div class="hero-node gateway">Gateway</div>
+      <div class="hero-node oracle">Oracle</div>
+      <div class="hero-node fabric">Fabric</div>
+      <div class="hero-node ipfs">IPFS</div>
+      <span class="signal-dot"></span><span class="signal-dot s2"></span><span class="signal-dot s3"></span>
+    </div>
+    <h1 class="reveal d1">CAAC / BV-GCA Access Control</h1>
+    <p class="subtitle reveal d2">A deployed prototype for blockchain-backed authorization, encrypted IPFS file delivery, risk-budgeted streaming, continuous revocation, anomaly blocking, and auditable session receipts.</p>
+    <div class="meta reveal d3">Gateway · Oracle · Hyperledger Fabric · Kubo IPFS · Static web console<br>Matvei Prikhozhdenko · Supervisor: 陈亚兴 · Northwestern Polytechnical University</div>
+    <div class="cap-row reveal d4">
+      <span class="cap-pill">TRT-BL</span><span class="cap-pill">RGCA</span><span class="cap-pill">CSRP</span><span class="cap-pill">CAAR</span><span class="cap-pill">Encrypted IPFS</span><span class="cap-pill">TOTP</span><span class="cap-pill">Math CAPTCHA</span><span class="cap-pill">Anomaly blocking</span>
+    </div>
+    <div class="tech-marquee reveal d4" aria-hidden="true">
+      <div class="tech-track">
+        <span>Spring Boot Gateway</span><span>Hyperledger Fabric</span><span>Kubo IPFS</span><span>AES-256-GCM</span><span>HMAC Oracle</span><span>RiskBudgetService</span><span>RevocationScheduler</span><span>TOTP</span><span>CAAR Receipts</span>
+        <span>Spring Boot Gateway</span><span>Hyperledger Fabric</span><span>Kubo IPFS</span><span>AES-256-GCM</span><span>HMAC Oracle</span><span>RiskBudgetService</span><span>RevocationScheduler</span><span>TOTP</span><span>CAAR Receipts</span>
+      </div>
+    </div>
+    <div class="hero-actions reveal d4"><a href="login.html" class="ha-primary">Access the system →</a><a href="scenarios.html" class="ha-secondary">Scenario demo</a><a href="#flow" class="ha-secondary">Trust flow ↓</a></div>
+    <div class="scroll-hint">scroll to explore ↓</div>
+  </div>
+
+  <div id="flow">
+    <div class="stitle reveal">Live trust flow</div>
+    <div class="sdesc reveal">A visual path for the deployed request lifecycle. Demo mode keeps this presentation-friendly when Fabric or chaincode is intentionally offline.</div>
+    <div class="trust-flow-panel reveal">
+      <div class="trust-flow-grid">
+        <div class="trust-node-card">
+          <span class="flow-status">ready</span>
+          <h3>Browser</h3>
+          <p>Collects environment context and submits a token-authenticated request through the static console.</p>
+        </div>
+        <div class="trust-node-card">
+          <span class="flow-status warn" id="flowGatewayStatus">checking</span>
+          <h3>Gateway</h3>
+          <p>Authenticates users, resolves context, checks file rules, opens sessions, and streams data.</p>
+        </div>
+        <div class="trust-node-card">
+          <span class="flow-status warn" id="flowOracleStatus">local</span>
+          <h3>Oracle</h3>
+          <p>Signs and relays evaluateAccess and CAAR receipt calls to Fabric when the chain is available.</p>
+        </div>
+        <div class="trust-node-card">
+          <span class="flow-status warn" id="flowFabricStatus">optional</span>
+          <h3>Fabric</h3>
+          <p>Executes the deterministic PDP path. In visual checks, this layer can remain offline.</p>
+        </div>
+        <div class="trust-node-card">
+          <span class="flow-status" id="flowIpfsStatus">encrypted</span>
+          <h3>IPFS</h3>
+          <p>Stores ciphertext by CID while the gateway enforces authorization before plaintext delivery.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="architecture">
+    <div class="stitle reveal">System architecture</div>
+    <div class="sdesc reveal">Current deployed codebase: browser console, Spring Boot gateway, HMAC-protected oracle, Fabric chaincode, and encrypted IPFS storage</div>
+    <div class="arch-stack">
+      <div class="arch-layer reveal"><div class="layer-badge" style="background:rgba(251,191,36,.15);color:var(--amber)">Layer 1<br>PEP</div><div class="layer-info"><h3>CAAC Gateway</h3><p>Public enforcement point. Authenticates users, resolves browser context, checks file rules, applies object risk, manages sessions, risk budgets, anomaly blocking, streaming, admin workflows, and CAAR receipt queries.</p><div class="layer-tech">Spring Boot · REST API · TOTP · Math CAPTCHA · RiskBudgetService · RevocationScheduler</div></div></div>
+      <div class="arch-layer reveal d1"><div class="layer-badge" style="background:rgba(52,211,153,.15);color:var(--green)">Layer 2<br>Oracle</div><div class="layer-info"><h3>CAAC Oracle</h3><p>Trusted chaincode bridge. It rejects unsigned calls, verifies HMAC-SHA256 signatures with timestamp and nonce, submits access evaluations, and writes/queries CAAR session receipts.</p><div class="layer-tech">Spring Boot · Fabric Gateway SDK · HMAC-SHA256 · Replay protection</div></div></div>
+      <div class="arch-layer reveal d2"><div class="layer-badge" style="background:rgba(94,164,248,.15);color:var(--accent)">Layer 3<br>PDP</div><div class="layer-info"><h3>Hyperledger Fabric Chaincode</h3><p>Deterministic policy decision point. Executes evaluateAccess for DT_score/F_auth decisions and recordSessionReceipt for CAAR compliance evidence.</p><div class="layer-tech">Java chaincode · evaluateAccess · recordSessionReceipt · O(1) evaluation path</div></div></div>
+      <div class="arch-layer reveal d3"><div class="layer-badge" style="background:rgba(45,212,191,.15);color:var(--teal)">Layer 4<br>Storage</div><div class="layer-info"><h3>Encrypted IPFS Storage</h3><p>Files are encrypted before IPFS upload. Approved registry entries map file IDs to CIDs, and the gateway decrypts only after authorization and session ownership checks.</p><div class="layer-tech">Kubo · AES-256-GCM · Per-file keys · Approval queue · Preview endpoint</div></div></div>
+    </div>
+  </div>
+
+  <div class="stitle reveal" style="margin-top:50px">Data flow architecture</div>
+  <div class="sdesc reveal">Request lifecycle through all four layers with HMAC-signed channels</div>
+  <div class="diagram-wrap reveal">
+    <svg viewBox="0 0 600 600" width="100%" style="max-width:600px">
+      <defs><marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="inherit" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <rect x="190" y="20" width="220" height="50" rx="10" fill="rgba(94,164,248,.08)" stroke="rgba(94,164,248,.3)"/>
+      <text x="300" y="42" text-anchor="middle" fill="#5ea4f8" font-size="13" font-weight="600">Browser (Client)</text>
+      <text x="300" y="58" text-anchor="middle" fill="#4e6080" font-size="9" font-family="var(--mono)">context.js · auto-collection</text>
+      <line x1="300" y1="70" x2="300" y2="110" stroke="#5ea4f8" stroke-width="1.5" fill="none" marker-end="url(#fa)"/>
+      <text x="330" y="95" fill="#4e6080" font-size="9" font-family="var(--mono)">Gateway token</text>
+      <rect x="120" y="115" width="360" height="140" rx="10" fill="rgba(251,191,36,.05)" stroke="rgba(251,191,36,.3)"/>
+      <text x="300" y="138" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="600">Gateway / PEP </text>
+      <rect x="135" y="148" width="160" height="22" rx="4" fill="rgba(251,191,36,.08)" stroke="rgba(251,191,36,.12)" stroke-width=".5"/>
+      <text x="215" y="163" text-anchor="middle" fill="#8899b4" font-size="9">BCrypt · TOTP · Rate limit</text>
+      <rect x="305" y="148" width="160" height="22" rx="4" fill="rgba(251,191,36,.08)" stroke="rgba(251,191,36,.12)" stroke-width=".5"/>
+      <text x="385" y="163" text-anchor="middle" fill="#8899b4" font-size="9">C_O risk · Rules · Sessions</text>
+      <rect x="135" y="176" width="160" height="22" rx="4" fill="rgba(251,191,36,.08)" stroke="rgba(251,191,36,.12)" stroke-width=".5"/>
+      <text x="215" y="191" text-anchor="middle" fill="#8899b4" font-size="9">RGCA tier · Anomaly det.</text>
+      <rect x="305" y="176" width="160" height="22" rx="4" fill="rgba(52,211,153,.08)" stroke="rgba(52,211,153,.12)" stroke-width=".5"/>
+      <text x="385" y="191" text-anchor="middle" fill="#34d399" font-size="9">Algorithm 2 polling</text>
+      <rect x="135" y="204" width="330" height="22" rx="4" fill="rgba(248,113,113,.06)" stroke="rgba(248,113,113,.12)" stroke-width=".5"/>
+      <text x="300" y="219" text-anchor="middle" fill="#f87171" font-size="9">AES-256-GCM decrypt · Windowed budget streaming</text>
+      <rect x="135" y="232" width="330" height="18" rx="4" fill="rgba(94,164,248,.05)" stroke="rgba(94,164,248,.1)" stroke-width=".5"/>
+      <text x="300" y="245" text-anchor="middle" fill="#4e6080" font-size="9">Session manager · Audit logger (HMAC-signed)</text>
+      <line x1="300" y1="255" x2="300" y2="300" stroke="#34d399" stroke-width="1.5" fill="none" marker-end="url(#fa)"/>
+      <text x="340" y="282" fill="#34d399" font-size="9" font-family="var(--mono)">HMAC-SHA256</text>
+      <rect x="190" y="305" width="220" height="50" rx="10" fill="rgba(52,211,153,.06)" stroke="rgba(52,211,153,.3)"/>
+      <text x="300" y="327" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Oracle</text>
+      <text x="300" y="345" text-anchor="middle" fill="#4e6080" font-size="9">Fabric Gateway SDK · gRPC bridge</text>
+      <line x1="300" y1="355" x2="300" y2="400" stroke="#5ea4f8" stroke-width="1.5" fill="none" marker-end="url(#fa)"/>
+      <text x="330" y="382" fill="#4e6080" font-size="9" font-family="var(--mono)">gRPC</text>
+      <rect x="140" y="405" width="320" height="60" rx="10" fill="rgba(94,164,248,.06)" stroke="rgba(94,164,248,.3)"/>
+      <text x="300" y="428" text-anchor="middle" fill="#5ea4f8" font-size="13" font-weight="600">Hyperledger Fabric (PDP)</text>
+      <text x="300" y="445" text-anchor="middle" fill="#8899b4" font-size="9">Algorithm 1: DT_score → F_auth</text>
+      <text x="300" y="458" text-anchor="middle" fill="#4e6080" font-size="9" font-family="var(--mono)">O(1) · ~30ms avg · mychannel</text>
+      <path d="M140 435 L90 435 L90 185 L120 185" stroke="#4e6080" stroke-width="1" stroke-dasharray="4,3" fill="none" marker-end="url(#fa)"/>
+      <text x="58" y="320" fill="#4e6080" font-size="9" font-family="var(--mono)" transform="rotate(-90,58,320)">PERMIT | DT | CE</text>
+      <rect x="490" y="155" width="100" height="70" rx="10" fill="rgba(45,212,191,.06)" stroke="rgba(45,212,191,.3)"/>
+      <text x="540" y="180" text-anchor="middle" fill="#2dd4bf" font-size="12" font-weight="600">IPFS</text>
+      <text x="540" y="196" text-anchor="middle" fill="#4e6080" font-size="8">AES-256-GCM</text>
+      <text x="540" y="208" text-anchor="middle" fill="#4e6080" font-size="8">encrypted</text>
+      <line x1="480" y1="190" x2="490" y2="190" stroke="#2dd4bf" stroke-width="1.5" fill="none" marker-end="url(#fa)"/>
+      <path d="M480 140 L540 140 L540 45 L410 45" stroke="#f87171" stroke-width="1.5" fill="none" marker-end="url(#fa)" stroke-dasharray="6,3"/>
+      <text x="555" y="95" fill="#f87171" font-size="9" font-family="var(--mono)" transform="rotate(-90,555,95)">RGCA budget stream</text>
+      <rect x="140" y="500" width="320" height="80" rx="8" fill="rgba(255,255,255,.02)" stroke="rgba(100,160,255,.08)" stroke-width=".5"/>
+      <text x="155" y="520" fill="#4e6080" font-size="10" font-weight="600">Legend</text>
+      <line x1="155" y1="535" x2="185" y2="535" stroke="#5ea4f8" stroke-width="1.5"/><text x="192" y="539" fill="#8899b4" font-size="9">Request path</text>
+      <line x1="310" y1="535" x2="340" y2="535" stroke="#34d399" stroke-width="1.5"/><text x="347" y="539" fill="#8899b4" font-size="9">HMAC-signed</text>
+      <line x1="155" y1="555" x2="185" y2="555" stroke="#4e6080" stroke-width="1" stroke-dasharray="4,3"/><text x="192" y="559" fill="#8899b4" font-size="9">Response</text>
+      <line x1="310" y1="555" x2="340" y2="555" stroke="#f87171" stroke-width="1.5" stroke-dasharray="6,3"/><text x="347" y="559" fill="#8899b4" font-size="9">RGCA streaming</text>
+    </svg>
+  </div>
+
+  <div id="algorithms" class="stitle reveal" style="margin-top:70px">Authorization algorithms</div>
+  <div class="sdesc reveal">Implemented request path: on-chain evaluation, rule checks, risk budget admission, windowed streaming, and continuous revocation</div>
+  <div class="algo-grid four">
+    <div class="algo-card reveal">
+      <h3 style="color:var(--accent)">Phase 1 — Access Evaluation</h3>
+      <div class="formula-box" style="margin:0 0 14px">
+        <div class="formula-line"><span class="hl">CE(t)</span> = [w₁·L + w₂·N + w₃·D - <span class="am">δ·R_int</span>] × <span class="am">T_req(t)</span></div>
+        <div class="formula-line"><span class="hl">DT(t)</span> = (α·T_sub + β·CE) × Φ(B_freq)</div>
+        <div class="formula-line"><span class="hl">P_eff</span> = P_req × (1 + η × <span class="am">O_risk</span>)</div>
+        <div class="formula-line"><span class="am">F_auth</span>: PERMIT if R_sub ≥ S_level AND DT ≥ P_eff</div>
+      </div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--accent2);color:var(--accent)">1</div><p>Browser submits raw context; gateway derives client IP and resolves L_trust, N_status, D_sec, and T_req.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--accent2);color:var(--accent)">2</div><p>Gateway computes C_O object risk from access count, file size, and upload age, then raises P_req to P_eff.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--accent2);color:var(--accent)">3</div><p>Oracle submits the resolved request to Fabric chaincode through HMAC-signed evaluateAccess.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--accent2);color:var(--accent)">4</div><p>Gateway checks uploader rules, risk-budget admission, anomaly blocks, then opens a session if all gates pass.</p></div>
+    </div>
+    <div class="algo-card reveal d1">
+      <h3 style="color:var(--green)">Phase 2 — BV-GCA Streaming</h3>
+      <div style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;font-size:11px;font-family:var(--mono);color:var(--text2);line-height:1.7">while session active:<br>&nbsp;&nbsp;stream encrypted-file plaintext through gateway<br>&nbsp;&nbsp;enforce L(m,S,T_sub,n) window budget<br>&nbsp;&nbsp;on budget exhaustion → immediate chaincode re-eval<br>&nbsp;&nbsp;scheduler polls at 2s / 3s / 4s by adjusted margin<br>&nbsp;&nbsp;on DENY or CSRP escalation → revoke and close receipt</div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--green2);color:var(--green)">1</div><p>Session owner or admin requests the stream; gateway verifies session ownership before any bytes are delivered.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--green2);color:var(--green)">2</div><p>RGCA selects HIGH, MEDIUM, or LOW tier from risk margin and sends bytes under a bounded window budget.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--green2);color:var(--green)">3</div><p>RevocationScheduler re-evaluates active sessions and applies CSRP subnet risk when related sessions revoke.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--green2);color:var(--green)">4</div><p>On close, SessionManager records delivered bytes and submits a CAAR receipt asynchronously through the oracle.</p></div>
+    </div>
+    <div class="algo-card reveal d2">
+      <h3 style="color:var(--amber)">Phase 3 — TRT-BL Budget Control</h3>
+      <div class="formula-box" style="margin:0 0 14px">
+        <div class="formula-line"><span class="hl">L</span>(m,S,T,n) = min(B_max, μ·(1+κT)·S^θ·(1+ψn))</div>
+        <div class="formula-line"><span class="hl">G</span> = min(512 KB, S_remaining, 0.5B)</div>
+        <div class="formula-line"><span class="am">Daily bound</span>: L_total ≤ B + G + S_max</div>
+      </div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--amber2);color:var(--amber)">1</div><p>RiskBudgetService tracks cumulative user-file exposure per calendar day.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--amber2);color:var(--amber)">2</div><p>At 100% budget, the gateway forces HIGH-RISK delivery even if the trust margin is higher.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:var(--amber2);color:var(--amber)">3</div><p>After B + G is consumed, new access is denied until reset or a new period.</p></div>
+    </div>
+    <div class="algo-card reveal d3">
+      <h3 style="color:#a78bfa">Phase 4 — CAAR Evidence</h3>
+      <div style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;font-size:11px;font-family:var(--mono);color:var(--text2);line-height:1.7">on session close:<br>&nbsp;&nbsp;hash session ID with full SHA-256<br>&nbsp;&nbsp;record bytes delivered, tier, risk, bound<br>&nbsp;&nbsp;submit receipt via HMAC-signed oracle call<br>&nbsp;&nbsp;admin can query receipt by session ID</div>
+      <div class="algo-step"><div class="algo-num" style="background:rgba(167,139,250,.15);color:#a78bfa">1</div><p>Gateway logs local receipt data even if on-chain submission is non-fatal.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:rgba(167,139,250,.15);color:#a78bfa">2</div><p>Oracle writes CAAR evidence through Fabric using recordSessionReceipt.</p></div>
+      <div class="algo-step"><div class="algo-num" style="background:rgba(167,139,250,.15);color:#a78bfa">3</div><p>Receipt query endpoint uses the same full SHA-256 session hash for lookup.</p></div>
+    </div>
+  </div>
+
+  <div id="framework" class="stitle reveal" style="margin-top:70px;border-left-color:#7F77DD">BV-GCA framework</div>
+  <div class="sdesc reveal">Blockchain-Verified Graduated Continuous Authorization — proposed framework architecture with RGCA, risk budget, cluster risk, and CAAR components</div>
+  <div class="reveal bvgca-scroll" style="margin:20px -28px;overflow-x:auto">
+    <img src="bvgca-framework.svg" alt="BV-GCA Framework Architecture" style="width:100%;min-width:880px;max-height:85vh;object-fit:contain;object-position:center;display:block">
+  </div>
+
+  <div class="stitle reveal" style="margin-top:50px">Access decision flow</div>
+  <div class="sdesc reveal">From raw browser context to risk-graduated data delivery</div>
+  <div class="diagram-wrap reveal">
+    <svg viewBox="0 0 500 700" width="100%" style="max-width:500px">
+      <defs><marker id="fb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="inherit" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <rect x="140" y="10" width="220" height="45" rx="8" fill="rgba(94,164,248,.1)" stroke="rgba(94,164,248,.3)"/><text x="250" y="30" text-anchor="middle" fill="#5ea4f8" font-size="12" font-weight="600">Collect context</text><text x="250" y="46" text-anchor="middle" fill="#4e6080" font-size="9" font-family="var(--mono)">IP · time · platform · network</text>
+      <line x1="250" y1="55" x2="250" y2="80" stroke="#5ea4f8" stroke-width="1.5" fill="none" marker-end="url(#fb)"/>
+      <rect x="140" y="85" width="220" height="45" rx="8" fill="rgba(94,164,248,.1)" stroke="rgba(94,164,248,.3)"/><text x="250" y="105" text-anchor="middle" fill="#5ea4f8" font-size="12" font-weight="600">Resolve scores</text><text x="250" y="121" text-anchor="middle" fill="#4e6080" font-size="9" font-family="var(--mono)">L_trust · N_status · D_sec · T_req</text>
+      <line x1="250" y1="130" x2="250" y2="155" stroke="#5ea4f8" stroke-width="1.5" fill="none" marker-end="url(#fb)"/>
+      <rect x="130" y="160" width="240" height="45" rx="8" fill="rgba(45,212,191,.1)" stroke="rgba(45,212,191,.3)"/><text x="250" y="180" text-anchor="middle" fill="#2dd4bf" font-size="12" font-weight="600">Compute O_risk + P_eff</text><text x="250" y="196" text-anchor="middle" fill="#4e6080" font-size="9" font-family="var(--mono)">P_eff = P_req × (1 + η × O_risk)</text>
+      <line x1="250" y1="205" x2="250" y2="230" stroke="#2dd4bf" stroke-width="1.5" fill="none" marker-end="url(#fb)"/>
+      <rect x="110" y="235" width="280" height="55" rx="8" fill="rgba(94,164,248,.12)" stroke="rgba(94,164,248,.4)" stroke-width="1.5"/><text x="250" y="255" text-anchor="middle" fill="#5ea4f8" font-size="12" font-weight="600">Chaincode (on-chain PDP)</text><text x="250" y="272" text-anchor="middle" fill="#8899b4" font-size="9">CE → DT_score → F_auth</text><text x="250" y="284" text-anchor="middle" fill="#4e6080" font-size="9" font-family="var(--mono)">O(1) · immutable · 10ms</text>
+      <line x1="250" y1="290" x2="250" y2="320" stroke="#5ea4f8" stroke-width="1.5" fill="none" marker-end="url(#fb)"/>
+      <polygon points="250,325 320,365 250,405 180,365" fill="rgba(251,191,36,.08)" stroke="rgba(251,191,36,.4)"/><text x="250" y="362" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">DT ≥ P_eff</text><text x="250" y="378" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">R ≥ S ?</text>
+      <line x1="180" y1="365" x2="90" y2="365" stroke="#f87171" stroke-width="1.5" fill="none" marker-end="url(#fb)"/><text x="135" y="357" text-anchor="middle" fill="#f87171" font-size="10">NO</text>
+      <rect x="15" y="345" width="75" height="40" rx="8" fill="rgba(248,113,113,.1)" stroke="rgba(248,113,113,.3)"/><text x="52" y="370" text-anchor="middle" fill="#f87171" font-size="13" font-weight="600">DENY</text>
+      <line x1="250" y1="405" x2="250" y2="435" stroke="#34d399" stroke-width="1.5" fill="none" marker-end="url(#fb)"/><text x="268" y="424" fill="#34d399" font-size="10">YES</text>
+      <rect x="165" y="440" width="170" height="40" rx="8" fill="rgba(52,211,153,.1)" stroke="rgba(52,211,153,.3)"/><text x="250" y="464" text-anchor="middle" fill="#34d399" font-size="12" font-weight="600">Rules check</text>
+      <line x1="250" y1="480" x2="250" y2="510" stroke="#34d399" stroke-width="1.5" fill="none" marker-end="url(#fb)"/>
+      <rect x="140" y="515" width="220" height="40" rx="8" fill="rgba(251,191,36,.1)" stroke="rgba(251,191,36,.3)"/><text x="250" y="540" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600" font-family="var(--mono)">m = DT_score − P_eff</text>
+      <line x1="250" y1="555" x2="250" y2="580" stroke="#fbbf24" stroke-width="1.5" fill="none" marker-end="url(#fb)"/>
+      <rect x="100" y="585" width="300" height="35" rx="8" fill="rgba(251,191,36,.06)" stroke="rgba(251,191,36,.2)"/>      <text x="250" y="607" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">RGCA tier → Δt(m), B(m,S)</text>
+      <rect x="100" y="632" width="90" height="26" rx="6" fill="rgba(248,113,113,.08)" stroke="rgba(248,113,113,.25)"/><text x="145" y="650" text-anchor="middle" fill="#f87171" font-size="9" font-weight="600">HIGH m&lt;0.1</text>
+      <rect x="205" y="632" width="90" height="26" rx="6" fill="rgba(251,191,36,.08)" stroke="rgba(251,191,36,.25)"/><text x="250" y="650" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">MED 0.1–0.3</text>
+      <rect x="310" y="632" width="90" height="26" rx="6" fill="rgba(52,211,153,.08)" stroke="rgba(52,211,153,.25)"/><text x="355" y="650" text-anchor="middle" fill="#34d399" font-size="9" font-weight="600">LOW m≥0.3</text>
+      <line x1="250" y1="620" x2="145" y2="632" stroke="#f87171" stroke-width="1" stroke-dasharray="3,2"/><line x1="250" y1="620" x2="250" y2="632" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,2"/><line x1="250" y1="620" x2="355" y2="632" stroke="#34d399" stroke-width="1" stroke-dasharray="3,2"/>
+    </svg>
+  </div>
+
+  <div class="stitle reveal" style="margin-top:70px;border-left-color:var(--amber)">TRT-BL Bounded Streaming</div>
+  <div class="sdesc reveal">Trust-Rewarded Throughput Allocation under Bounded Leakage: the implemented formula that turns margin, file size, trust, and stable checks into a byte window</div>
+  <div class="trtbl-panel reveal">
+    <div class="trtbl-grid">
+      <div class="formula-box">
+        <div class="formula-line"><span class="hl">L(m,S,T_sub,n)</span> = min(B_max(m), μ(m) · (1 + κT_sub) · S^θ(m) · (1 + ψ(m)n))</div>
+        <div class="formula-line"><span class="hl">B(u,o,t)</span> = β · max(0.2, S_file / β) · (1 + T_sub)</div>
+        <div class="formula-line"><span class="hl">G</span> = min(B_max(HIGH), S_remaining, 0.5B)</div>
+        <div class="formula-line"><span class="am">Hard limit</span>: deny when cumulative delivery ≥ B + G</div>
+      </div>
+      <div class="bound-list">
+        <div class="bound-item"><div class="bound-k">Implementation boundary</div><div class="bound-v">Budget checks run before session registration and again during streaming when a window is exhausted.</div></div>
+        <div class="bound-item"><div class="bound-k">Acceleration reset</div><div class="bound-v">Stable-check acceleration resets on tier shifts, DT_score deltas, or CSRP escalation.</div></div>
+        <div class="bound-item"><div class="bound-k">Daily reset</div><div class="bound-v">Risk budgets are scoped by user, file, and calendar date, with scheduled midnight eviction.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="diagram-wrap reveal">
+    <svg viewBox="0 0 600 480" width="100%" style="max-width:600px">
+      <rect x="180" y="15" width="240" height="50" rx="10" fill="rgba(127,119,221,.1)" stroke="rgba(127,119,221,.4)" stroke-width="1.5"/><text x="300" y="37" text-anchor="middle" fill="#7F77DD" font-size="13" font-weight="600">Trust margin m</text><text x="300" y="54" text-anchor="middle" fill="#8899b4" font-size="10" font-family="var(--mono)">m = DT_score − P_eff</text>
+      <line x1="200" y1="65" x2="120" y2="105" stroke="#2dd4bf" stroke-width="1.5" fill="none" marker-end="url(#fa)"/><line x1="300" y1="65" x2="300" y2="105" stroke="#D85A30" stroke-width="1.5" fill="none" marker-end="url(#fa)"/><line x1="400" y1="65" x2="480" y2="105" stroke="#5ea4f8" stroke-width="1.5" fill="none" marker-end="url(#fa)"/>
+      <rect x="30" y="110" width="180" height="70" rx="8" fill="rgba(45,212,191,.08)" stroke="rgba(45,212,191,.3)"/><text x="120" y="133" text-anchor="middle" fill="#2dd4bf" font-size="12" font-weight="600">Adaptive polling</text><text x="120" y="150" text-anchor="middle" fill="#8899b4" font-size="10" font-family="var(--mono)">Δt = f(m)</text><text x="120" y="168" text-anchor="middle" fill="#4e6080" font-size="9">2s / 3s / 4s by tier</text>
+      <rect x="220" y="110" width="160" height="70" rx="8" fill="rgba(216,90,48,.08)" stroke="rgba(216,90,48,.3)"/><text x="300" y="133" text-anchor="middle" fill="#D85A30" font-size="12" font-weight="600">Windowed budget</text><text x="300" y="150" text-anchor="middle" fill="#8899b4" font-size="10" font-family="var(--mono)">L(m,S,T,n)</text><text x="300" y="168" text-anchor="middle" fill="#4e6080" font-size="9">Trust-rewarded throughput</text>
+      <rect x="390" y="110" width="180" height="70" rx="8" fill="rgba(94,164,248,.08)" stroke="rgba(94,164,248,.3)"/><text x="480" y="133" text-anchor="middle" fill="#5ea4f8" font-size="12" font-weight="600">Leakage bound</text><text x="480" y="150" text-anchor="middle" fill="#8899b4" font-size="10" font-family="var(--mono)">L_max = B(m, S)</text><text x="480" y="168" text-anchor="middle" fill="#4e6080" font-size="9">Provable upper limit</text>
+      <line x1="120" y1="180" x2="120" y2="215" stroke="#4e6080" stroke-width="1" stroke-dasharray="3,2" fill="none" marker-end="url(#fa)"/><line x1="300" y1="180" x2="300" y2="215" stroke="#4e6080" stroke-width="1" stroke-dasharray="3,2" fill="none" marker-end="url(#fa)"/><line x1="480" y1="180" x2="480" y2="215" stroke="#4e6080" stroke-width="1" stroke-dasharray="3,2" fill="none" marker-end="url(#fa)"/>
+      <rect x="30" y="220" width="540" height="100" rx="10" fill="rgba(255,255,255,.02)" stroke="rgba(100,160,255,.15)"/>      <text x="300" y="245" text-anchor="middle" fill="#d8e2f0" font-size="12" font-weight="600">Theorem 1: Per-window leakage bound</text><text x="300" y="268" text-anchor="middle" fill="#8899b4" font-size="10" font-family="var(--mono)">L = min(B_max, μ·(1+κT_sub)·S^θ·(1+ψn))</text><text x="300" y="292" text-anchor="middle" fill="#34d399" font-size="10">LOW: B_max 4 MB, θ=0.766, ψ=0.2392</text><text x="300" y="308" text-anchor="middle" fill="#f87171" font-size="10">HIGH: B_max 512 KB, θ=0.500, ψ=0</text>
+      <line x1="300" y1="320" x2="300" y2="350" stroke="#4e6080" stroke-width="1" stroke-dasharray="3,2" fill="none" marker-end="url(#fa)"/>
+      <rect x="80" y="355" width="440" height="45" rx="8" fill="rgba(52,211,153,.06)" stroke="rgba(52,211,153,.2)"/>      <text x="300" y="375" text-anchor="middle" fill="#34d399" font-size="11" font-weight="600">Low-trust sessions leak LESS data before revocation</text><text x="300" y="392" text-anchor="middle" fill="#8899b4" font-size="9">Budget-driven re-evaluation bounds total exposure per window</text>
+      <line x1="300" y1="400" x2="300" y2="425" stroke="#4e6080" stroke-width="1" stroke-dasharray="3,2" fill="none" marker-end="url(#fa)"/>
+      <rect x="50" y="430" width="500" height="40" rx="8" fill="rgba(251,191,36,.06)" stroke="rgba(251,191,36,.2)"/>      <text x="300" y="448" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">Daily cumulative budget: B + G + S_max</text><text x="300" y="462" text-anchor="middle" fill="#4e6080" font-size="9">G = min(512 KB, remaining file bytes, 0.5B)</text>
+    </svg>
+  </div>
+  <div class="rgca-tier-row reveal">
+    <div class="rgca-tier" style="background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.2)"><h4 style="color:var(--red)">HIGH-RISK (m &lt; 0.1)</h4><div class="tp">Polling every 2 seconds<br>B_max = 512 KB<br>θ=0.500 · μ=21.333 · ψ=0</div><div class="tb" style="color:var(--red)">Forced when daily soft budget is exceeded</div></div>
+    <div class="rgca-tier" style="background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.2)"><h4 style="color:var(--amber)">MEDIUM (0.1 ≤ m &lt; 0.3)</h4><div class="tp">Polling every 3 seconds<br>B_max = 2 MB<br>θ=0.585 · μ=19.709 · ψ=0.6876</div><div class="tb" style="color:var(--amber)">Stable sessions accelerate after checks</div></div>
+    <div class="rgca-tier" style="background:rgba(52,211,153,.04);border:1px solid rgba(52,211,153,.2)"><h4 style="color:var(--green)">LOW-RISK (m ≥ 0.3)</h4><div class="tp">Polling every 4 seconds<br>B_max = 4 MB<br>θ=0.766 · μ=4.300 · ψ=0.2392</div><div class="tb" style="color:var(--green)">Largest window for high-margin sessions</div></div>
+  </div>
+
+  <div id="context-model" class="stitle reveal" style="margin-top:70px">Context model</div>
+  <div class="sdesc reveal">C = (C_S, C_E, C_R, C_O) — four-dimensional context representation</div>
+  <div class="ctx-model">
+    <div class="ctx-card reveal"><h4 style="color:var(--accent)">C_S — Subject</h4><p style="font-size:11px;color:var(--text3);margin-bottom:10px">User identity &amp; history</p><div class="ctx-params"><div class="ctx-param">R_sub — Role level (1-5)</div><div class="ctx-param">T_sub — Dynamic trust (0-1)</div><div class="ctx-param">B_freq — Access frequency</div></div></div>
+    <div class="ctx-card reveal d1"><h4 style="color:var(--green)">C_E — Environment</h4><p style="font-size:11px;color:var(--text3);margin-bottom:10px">Auto-collected from browser</p><div class="ctx-params"><div class="ctx-param">L_trust — Location / IP trust</div><div class="ctx-param">N_status — Network security</div><div class="ctx-param">D_sec — Device security</div><div class="ctx-param">T_req — Temporal factor</div></div></div>
+    <div class="ctx-card reveal d2"><h4 style="color:var(--amber)">C_R — Resource</h4><p style="font-size:11px;color:var(--text3);margin-bottom:10px">File sensitivity &amp; policy</p><div class="ctx-params"><div class="ctx-param">S_level — Sensitivity class (1-5)</div><div class="ctx-param">P_req — DT_score threshold</div><div class="ctx-param">Rules — require_org, max_daily_access, min_trust, require_2fa</div></div></div>
+    <div class="ctx-card reveal d3"><h4 style="color:var(--teal)">C_O — Object</h4><p style="font-size:11px;color:var(--text3);margin-bottom:10px">Resource properties &amp; risk</p><div class="ctx-params"><div class="ctx-param">Access count — Usage history</div><div class="ctx-param">File size — Data volume</div><div class="ctx-param">O_risk — Computed risk factor</div></div></div>
+  </div>
+
+  <div class="stitle reveal" style="margin-top:70px">Implemented runtime improvements</div>
+  <div class="sdesc reveal">Gateway-side controls added around the O(1) chaincode decision path</div>
+  <div class="imp-list">
+    <div class="imp-item reveal"><div class="imp-num">1</div><div><h4>Continuous T_req</h4><p>Smooth cos² temporal decay replacing binary on/off. Working hours with gradual falloff — no abrupt cliff at boundaries.</p></div></div>
+    <div class="imp-item reveal d1"><div class="imp-num">2</div><div><h4>T_sub Evolution (EMA)</h4><p>Trust evolves dynamically: T_sub(n+1) = T_sub(n) + γ×(outcome - T_sub(n)). Good sessions build trust, revocations erode it.</p></div></div>
+    <div class="imp-item reveal d2"><div class="imp-num">3</div><div><h4>Object Risk Thresholding</h4><p>C_O raises P_req when files are large, frequently accessed, or recently uploaded. The effective threshold is sent to chaincode as P_eff.</p></div></div>
+    <div class="imp-item reveal d3"><div class="imp-num">4</div><div><h4>CSRP Cluster Risk</h4><p>Revocations are recorded per subnet. Related active sessions receive a margin penalty and reset their acceleration when the shared network becomes risky.</p></div></div>
+    <div class="imp-item reveal d4"><div class="imp-num">5</div><div><h4>Budgeted Delivery</h4><p>RiskBudgetService enforces daily per-user/file exposure. Soft limit forces HIGH-RISK streaming; hard limit denies access until reset.</p></div></div>
+  </div>
+
+  <div id="security-hardening" class="stitle reveal" style="margin-top:70px;border-left-color:var(--red)">Security hardening</div>
+  <div class="sdesc reveal">Defense-in-depth currently present in the gateway, oracle, frontend, storage, and deployment configuration</div>
+  <div class="sec-grid">
+    <div class="sec-category reveal">Identity and Account Protection</div>
+    <div class="sec-card reveal"><div class="sec-icon">BC</div><h4>BCrypt Authentication</h4><p>GPU-resistant password hashing with cost factor 12. Transparent migration from legacy hashes on login.</p></div>
+    <div class="sec-card reveal d1"><div class="sec-icon">2F</div><h4>TOTP Two-Factor Auth</h4><p>RFC 6238 compatible with Google Authenticator. QR code setup, 6-digit verification on every login.</p></div>
+    <div class="sec-card reveal d2"><div class="sec-icon">RC</div><h4>Reset-Code Controls</h4><p>Admin-issued reset codes are hashed, expire, and are rate-limited by username plus client IP.</p></div>
+    <div class="sec-card reveal"><div class="sec-icon">MC</div><h4>Signed Math CAPTCHA</h4><p>Self-hosted challenge tokens are HMAC-protected and expire server-side. No external CAPTCHA dependency is required for offline demos.</p></div>
+    <div class="sec-category reveal">Gateway, Oracle, and Chain Trust</div>
+    <div class="sec-card reveal"><div class="sec-icon">HS</div><h4>HMAC Oracle Signing</h4><p>Every gateway-to-oracle request is HMAC-SHA256 signed with timestamp and nonce.</p></div>
+    <div class="sec-card reveal d1"><div class="sec-icon">CR</div><h4>CAAR Receipts</h4><p>Session closeout evidence is hashed with full SHA-256 and submitted to Fabric through the oracle.</p></div>
+    <div class="sec-card reveal d2"><div class="sec-icon">AL</div><h4>HMAC Audit Logs</h4><p>Every audit entry is HMAC-signed. Tampered entries are detected during audit loading.</p></div>
+    <div class="sec-card reveal"><div class="sec-icon">ZD</div><h4>Zero-Trust Deny</h4><p>Oracle errors, invalid signatures, missing auth, failed rules, and exhausted budgets fail closed.</p></div>
+    <div class="sec-category reveal">Storage and Delivery Enforcement</div>
+    <div class="sec-card reveal"><div class="sec-icon">AE</div><h4>AES-256-GCM Encryption</h4><p>Files are encrypted before IPFS upload with per-file keys. CID access reveals ciphertext only.</p></div>
+    <div class="sec-card reveal d1"><div class="sec-icon">SO</div><h4>Session Ownership</h4><p>Stream endpoints require token auth and verify the requester owns the active session unless admin.</p></div>
+    <div class="sec-card reveal d2"><div class="sec-icon">BL</div><h4>Bounded Leakage</h4><p>TRT-BL and RiskBudgetService cap window and daily exposure before re-evaluation or denial.</p></div>
+    <div class="sec-card reveal"><div class="sec-icon">AB</div><h4>Anomaly Blocking</h4><p>Detects bursts, trust jumps, and sensitivity escalation; burst offenders are temporarily blocked with exponential backoff.</p></div>
+    <div class="sec-category reveal">Deployment and Browser Surface</div>
+    <div class="sec-card reveal"><div class="sec-icon">CI</div><h4>Credential Isolation</h4><p>Secrets are read from environment variables, including oracle and audit HMAC keys plus initial admin password.</p></div>
+    <div class="sec-card reveal d1"><div class="sec-icon">SH</div><h4>Security Headers</h4><p>Gateway emits CSP, frame blocking, content-type protection, referrer policy, and restricted browser permission headers.</p></div>
+    <div class="sec-card reveal d2"><div class="sec-icon">LR</div><h4>Log Rotation</h4><p>Anomaly logs rotate when they grow too large, keeping single-host deployment storage bounded.</p></div>
+  </div>
+  <div class="imp-list" style="margin-top:20px"><div class="imp-item reveal"><div class="imp-num sec">Z</div><div><h4>Zero-Trust Architecture</h4><p>Every layer defaults to DENY on any verification failure. No component trusts input from another without cryptographic verification. The gateway is the only public entry point.</p></div></div></div>
+
+  <div id="evaluation" class="stitle reveal" style="margin-top:70px;border-left-color:var(--green)">Performance evaluation</div>
+  <div class="sdesc reveal">Hyperledger Caliper stress benchmark — 13 rounds, evaluateAccess plus CAAR receipt submission</div>
+  <div class="chart-row">
+    <div class="chart-box reveal"><h4>Chaincode throughput (TPS)</h4><canvas id="ov-tps"></canvas></div>
+    <div class="chart-box reveal d1"><h4>Max latency by round (ms)</h4><canvas id="ov-lat"></canvas></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-box reveal">        <h4>Transaction outcome</h4><canvas id="ov-sec"></canvas></div>
+    <div class="chart-box reveal d1"><h4>End-to-end metrics</h4>
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-val" style="color:var(--accent)">1,950.4</div><div class="metric-label">peak evaluate TPS</div></div>
+        <div class="metric-card"><div class="metric-val" style="color:var(--green)">53.3</div><div class="metric-label">ms average evaluate latency</div></div>
+        <div class="metric-card"><div class="metric-val" style="color:var(--amber)">235.7</div><div class="metric-label">TPS CAAR receipt submit</div></div>
+        <div class="metric-card"><div class="metric-val" style="color:var(--teal)">3,210</div><div class="metric-label">ms avg receipt submit latency</div></div>
+        <div class="metric-card"><div class="metric-val" style="color:var(--green)">0</div><div class="metric-label">failures / 103,000 tx</div></div>
+        <div class="metric-card"><div class="metric-val" style="color:var(--accent)">O(1)</div><div class="metric-label">chaincode evaluate complexity</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reveal" style="text-align:center;margin-top:70px"><a href="login.html" class="ha-primary" style="display:inline-block;padding:14px 36px;border-radius:10px;font-size:15px;text-decoration:none">Access the system →</a></div>
+  <div class="footer reveal">CAAC System v3.0 · Hyperledger Fabric · IPFS · Spring Boot · AES-256-GCM · BCrypt<br>Northwestern Polytechnical University · 2026</div>
+</div>
+
+<script type="module" src="/src/entries/overview.js"></script>
+</body>
+</html>

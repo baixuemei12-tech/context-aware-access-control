@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAAC — Profile</title>
+<link rel="stylesheet" href="css/common.css">
+<style>
+  .security-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--mono); padding: 4px 10px; border-radius: 6px; }
+  .badge-on { background: rgba(52,211,153,0.12); color: var(--green); }
+  .badge-off { background: rgba(248,113,113,0.12); color: var(--red); }
+  .badge-pending { background: rgba(251,191,36,0.12); color: var(--amber); }
+  .qr-wrap { display: flex; flex-direction: column; align-items: center; padding: 20px; background: white; border-radius: 12px; margin: 12px auto; width: fit-content; }
+  .qr-wrap img { border-radius: 4px; }
+  .secret-code { font-family: var(--mono); font-size: 14px; letter-spacing: 2px; padding: 8px 16px; background: var(--bg); border: 1px dashed var(--border); border-radius: 6px; margin: 10px 0; text-align: center; user-select: all; cursor: copy; word-break: break-all; }
+  .totp-confirm-input { font-family: var(--mono); font-size: 24px; text-align: center; letter-spacing: 8px; width: 180px; margin: 8px auto; display: block; }
+  .pw-strength { height: 3px; border-radius: 2px; margin-top: 4px; transition: all 0.3s; }
+</style>
+</head>
+<body class="space-page profile-space">
+<canvas class="caac-space-bg" data-caac-stars data-density="30" data-link="115" data-speed="0.10" data-packets="3" aria-hidden="true"></canvas>
+
+<div class="app app-profile">
+  <header>
+    <div class="logo">
+      <div class="logo-mark" id="avatarMark">?</div>
+      <div>
+        <h1 id="profileTitle">User Profile</h1>
+        <p id="profileSubtitle">Loading...</p>
+      </div>
+    </div>
+    <div class="hdr-links">
+      <a href="index.html">Dashboard</a>
+      <a href="scenarios.html">Scenarios</a>
+    </div>
+  </header>
+
+  <div class="profile-command">
+    <section class="trust-orb-card">
+      <div class="trust-orb" id="profileTrustOrb"><span id="profileTrustValue">—</span></div>
+      <div class="trust-orb-label">subject trust</div>
+    </section>
+    <section class="identity-strip-card">
+      <div class="card-hdr">
+        <span class="card-title">Identity security posture</span>
+        <span class="badge badge-auto" id="profileRiskState">loading</span>
+      </div>
+      <div class="identity-strip">
+        <div class="identity-chip"><b>role</b><span id="profileRoleChip">—</span><small>R_sub authorization class</small></div>
+        <div class="identity-chip"><b>verification</b><span id="profileVerifyChip">—</span><small>email / phone state</small></div>
+        <div class="identity-chip"><b>2FA</b><span id="profile2faChip">checking</span><small>TOTP account guard</small></div>
+        <div class="identity-chip"><b>recent access</b><span id="profileAccessChip">—</span><small>permit / deny history</small></div>
+        <div class="identity-chip"><b>device</b><span id="profileDeviceChip">—</span><small id="profileDeviceHint">browser fingerprint</small></div>
+        <div class="identity-chip"><b>network</b><span id="profileNetworkChip">—</span><small>client capability</small></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Account Info -->
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Account</span>
+      <span class="badge badge-role" id="badgeRole">—</span>
+    </div>
+    <div class="info-list">
+      <div class="info-row"><span class="info-k">username</span><span class="info-v" id="info-user">—</span></div>
+      <div class="info-row"><span class="info-k">user ID</span><span class="info-v" id="info-id">—</span></div>
+      <div class="info-row"><span class="info-k">role (R_sub)</span><span class="info-v" id="info-role">—</span></div>
+      <div class="info-row"><span class="info-k">trust (T_sub)</span><span class="info-v" id="info-trust">—</span></div>
+      <div class="info-row"><span class="info-k">status</span><span class="info-v" id="info-status">—</span></div>
+      <div class="info-row"><span class="info-k">registered</span><span class="info-v" id="info-regdate">—</span></div>
+      <div class="info-row"><span class="info-k">last login</span><span class="info-v" id="info-lastlogin">—</span></div>
+    </div>
+  </div>
+
+  <!-- Verified Contact -->
+  <div class="card">
+    <div class="card-hdr">
+      <span class="card-title">Verified contact</span>
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">locked</span>
+    </div>
+    <div class="info-list">
+      <div class="info-row">
+        <span class="info-k">email</span>
+        <span class="info-v"><span id="info-email">—</span><span id="emailBadge" style="display:none;margin-left:6px;font-size:9px;font-family:var(--mono);padding:2px 6px;border-radius:4px"></span></span>
+      </div>
+      <div class="info-row">
+        <span class="info-k">phone</span>
+        <span class="info-v"><span id="info-phone">—</span><span id="phoneBadge" style="display:none;margin-left:6px;font-size:9px;font-family:var(--mono);padding:2px 6px;border-radius:4px"></span></span>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px;font-family:var(--mono);text-align:center">
+      Contact info is set during registration and verified. Changes require re-verification.
+    </div>
+  </div>
+
+  <!-- READ-ONLY: Personal info (admin viewing other user) -->
+  <div class="card" id="viewInfoCard" style="display:none">
+    <div class="card-hdr">
+      <span class="card-title">Personal information</span>
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">read-only</span>
+    </div>
+    <div class="info-list">
+      <div class="info-row"><span class="info-k">display name</span><span class="info-v" id="view-name">—</span></div>
+      <div class="info-row"><span class="info-k">organization</span><span class="info-v" id="view-org">—</span></div>
+    </div>
+  </div>
+
+  <!-- READ-ONLY: About (admin viewing other user) -->
+  <div class="card" id="viewAboutCard" style="display:none">
+    <div class="card-hdr">
+      <span class="card-title">About</span>
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">read-only</span>
+    </div>
+    <div class="info-list" id="viewAboutList">
+      <div class="empty">No about info</div>
+    </div>
+  </div>
+
+  <!-- Security (own profile only) -->
+  <div class="card" id="securityCard">
+    <div class="card-hdr">
+      <span class="card-title">Security</span>
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">account protection</span>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:500">Two-factor authentication</span>
+        <span class="security-badge" id="twofaBadge">loading...</span>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Protect your account with a 6-digit code from an authenticator app (Google Authenticator, Authy, etc.)</div>
+      <div id="twofaActions"></div>
+      <div id="twofaSetup" style="display:none"></div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:16px 0"></div>
+    <div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px">Change password</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Password is stored with BCrypt (cost 12).</div>
+      <div class="profile-grid">
+        <div class="field full"><label>Current password</label><input type="password" id="pw-current" placeholder="Enter current password" autocomplete="current-password"></div>
+        <div class="field"><label>New password</label><input type="password" id="pw-new" placeholder="At least 8 chars, mixed types" autocomplete="new-password" oninput="checkPwStrength()"><div class="pw-strength" id="pwStrength"></div></div>
+        <div class="field"><label>Confirm new password</label><input type="password" id="pw-confirm" placeholder="Repeat new password" autocomplete="new-password"></div>
+      </div>
+      <button class="btn-primary" onclick="changePassword()" style="background:var(--amber)">Change password</button>
+    </div>
+  </div>
+
+  <!-- Editable Profile (own profile only) -->
+  <div class="card" id="editCard">
+    <div class="card-hdr">
+      <span class="card-title">Personal information</span>
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">editable</span>
+    </div>
+    <div class="profile-grid">
+      <div class="field full"><label>Display name</label><input type="text" id="pf-name" placeholder="Your full name"></div>
+      <div class="field full"><label>Organization</label><input type="text" id="pf-org" placeholder="Company or university"></div>
+    </div>
+    <button class="btn-primary" id="btnSave" onclick="saveProfile()">Save changes</button>
+  </div>
+
+  <!-- About Me (own profile only) -->
+  <div class="card" id="aboutCard">
+    <div class="card-hdr">
+      <span class="card-title">About me</span>
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">editable</span>
+    </div>
+    <div class="profile-grid">
+      <div class="field"><label>Full name</label><input type="text" id="pf-fullname" placeholder="Your legal name"></div>
+      <div class="field"><label>Age</label><input type="number" id="pf-age" placeholder="25" min="1" max="150"></div>
+      <div class="field"><label>Location</label><input type="text" id="pf-location" placeholder="City, Country"></div>
+      <div class="field"><label>Occupation</label><input type="text" id="pf-occupation" placeholder="Your job title"></div>
+      <div class="field full"><label>Interests</label><input type="text" id="pf-interests" placeholder="Blockchain, AI, Security, ..."></div>
+      <div class="field full"><label>Bio</label><textarea id="pf-bio" placeholder="Tell us about yourself..." style="width:100%;height:70px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:8px 10px;border-radius:6px;outline:none;resize:vertical"></textarea></div>
+    </div>
+    <button class="btn-primary" onclick="saveAbout()" style="background:var(--teal)">Save about</button>
+  </div>
+
+  <!-- Files Uploaded -->
+  <div class="card">
+    <div class="card-hdr"><span class="card-title">Files uploaded</span></div>
+    <div id="filesContainer"><div class="empty">Loading...</div></div>
+  </div>
+
+  <!-- Access History -->
+  <div class="card" style="overflow-x:auto">
+    <div class="card-hdr"><span class="card-title">Access history</span></div>
+    <div id="historyContainer"><div class="empty">Loading...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script type="module" src="/src/entries/profile.js"></script>
+</body>
+</html>

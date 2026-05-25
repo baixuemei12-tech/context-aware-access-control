@@ -1,0 +1,28 @@
+#!/bin/bash
+# CAAC Gateway - Environment Configuration (TEMPLATE)
+# Copy this file to caac-env.sh and fill in real values:
+#   cp caac-env.sh.example caac-env.sh
+# Then source it before starting the gateway:
+#   source ./caac-env.sh
+
+export CAAC_BASE_URL='http://YOUR_HOST:5051'
+export CAAC_INITIAL_ADMIN_PASSWORD='CHANGE_ME'
+export CAAC_IPFS_API_URL='http://127.0.0.1:5001'
+export CAAC_IPFS_GATEWAY_URL='http://127.0.0.1:8080/ipfs'
+export IPFS_PATH='/opt/caac/ipfs-repo'
+export CAAC_ORACLE_HMAC_KEY="REPLACE_WITH_64_CHAR_HEX"
+export CAAC_AUDIT_HMAC_KEY="REPLACE_WITH_64_CHAR_HEX"
+export CAAC_MAIL_USERNAME="your-email@example.com"
+export CAAC_MAIL_PASSWORD="YOUR_SMTP_AUTH_TOKEN"
+export CAAC_HCAPTCHA_SITEKEY='YOUR_HCAPTCHA_SITEKEY'
+export CAAC_HCAPTCHA_SECRET='YOUR_HCAPTCHA_SECRET'
+export CAAC_CORS_ALLOWED_ORIGINS='http://YOUR_HOST,http://YOUR_HOST:5052,http://127.0.0.1:5052,http://localhost:5052'
+export CAAC_FRONTEND_LOGIN_URL='http://YOUR_HOST/icenter/login.html'
+
+export CAAC_CAPTCHA_ENABLED=false
+export CAAC_CAPTCHA_PROVIDER=both # both/auto/math
+export CAAC_EMAIL_VERIFICATION_ENABLED=true
+export CAAC_PHONE_VERIFICATION_ENABLED=false
+export CAAC_ADMIN_APPROVAL_REQUIRED=false
+
+export CAAC_FABRIC_CRYPTO_PATH='/opt/caac/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com'

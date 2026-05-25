@@ -1,0 +1,629 @@
+================================================================================
+                  CAAC / BV-GCA SYSTEM — USER GUIDE
+       Blockchain-enabled Context-Aware Access Control
+================================================================================
+
+  Author:  Matvei Prikhozhdenko
+  Institution: Northwestern Polytechnical University
+  Supervisor: Prof. Chen YaXing (陈亚兴)
+
+  System:  4-layer blockchain-backed access control prototype
+  Stack:   Spring Boot Gateway + Oracle + Hyperledger Fabric + Kubo IPFS
+  Encryption: AES-256-GCM (per-file keys) · BCrypt (passwords) · HMAC-SHA256 (oracle/audit)
+
+================================================================================
+                         TABLE OF CONTENTS
+================================================================================
+
+  1.  QUICK START — first 60 seconds
+  2.  PAGES OVERVIEW — what each page does
+  3.  DASHBOARD — the main workspace
+  4.  FILE ACCESS — how authorization works
+  5.  FILE UPLOAD — publishing a file
+  6.  MESSAGING — talking to admin
+  7.  PROFILE — your account & security
+  8.  ADMIN PANEL — management & monitoring
+  9.  SCENARIO DEMO — visual walkthroughs
+  10. CONTEXT MODEL — what the system knows about you
+  11. ALGORITHMS — how decisions are made
+  12. RGCA STREAMING — how file delivery works
+  13. SECURITY FEATURES — protection in depth
+  14. THEME & VISUAL MODES
+  15. PERFORMANCE MODES
+  16. DEMO MODE
+  17. KEYBOARD & UI TIPS
+  18. FAQ & TROUBLESHOOTING
+
+================================================================================
+  1. QUICK START — first 60 seconds
+================================================================================
+
+  Step 1:  Open the website — you land on the Overview page
+  Step 2:  Click "Access the system ->" to go to the Login page
+  Step 3:  Switch to "Sign Up" tab — fill in display name, username, password,
+           email, and click "Create Account"
+  Step 4:  If email verification is ON, check your inbox and click the link.
+           If OFF, your account may need admin approval.
+  Step 5:  Log in with your username and password
+  Step 6:  If the admin enabled TOTP 2FA on your account, enter the 6-digit
+           code from your authenticator app
+  Step 7:  You're on the Dashboard — select a file and click "Request access"
+
+  That's it. Your browser context (IP, time, device, network) is collected
+  automatically. No manual configuration needed.
+
+================================================================================
+  2. PAGES OVERVIEW
+================================================================================
+
+  The system has 7 pages:
+
+  overview.html  — Landing page. System architecture, algorithms, context
+                    model, performance charts, security hardening details.
+                    No login required. Good for understanding the system.
+
+  login.html     — Login and Sign Up forms. Email/phone verification.
+                    Password reset with admin code. TOTP 2FA prompt.
+
+  index.html     — Dashboard (main workspace). Context display, file list,
+                    access requests, risk inspector, request log, file upload.
+                    Requires login.
+
+  profile.html   — Your account. Trust score, role, verification status,
+                    2FA setup, password change, personal info, about me,
+                    uploaded files, access history. Requires login.
+
+  messages.html  — Direct message channel with the system admin.
+                    Real-time updates. Requires login (non-admin).
+
+  admin.html     — Admin Panel. User management, file registry, anomaly
+                    alerts, audit log, analytics charts, messaging.
+                    Requires admin role (R_sub = 5).
+
+  scenarios.html — Scenario Demo. Visual walkthroughs of access decisions
+                    (PERMIT, DENY, revocation, budget exhaustion, etc.) using
+                    mocked data. No login required. Built for presentations.
+
+================================================================================
+  3. DASHBOARD — the main workspace
+================================================================================
+
+  The Dashboard (index.html) is the central control page after login.
+
+  LEFT COLUMN:
+
+  +-------------------------+-----------------------------------------------+
+  | Card                    | What it shows                                 |
+  +-------------------------+-----------------------------------------------+
+  | Environmental Context   | Auto-collected browser data: IP, timestamp,   |
+  | (C_E)                   | timezone, network type, platform, user-agent, |
+  |                         | screen size, language, color depth, touch.     |
+  |                         | Click "Refresh context" to re-detect.         |
+  +-------------------------+-----------------------------------------------+
+  | Subject Context (C_S)   | Your user data from the server: username,     |
+  |                         | role (R_sub), trust (T_sub), access frequency  |
+  |                         | (B_freq), account status. Assigned by admin.  |
+  +-------------------------+-----------------------------------------------+
+  | Resource Context (C_R)  | File selection panel. Search/filter files,    |
+  |                         | see S_level (sensitivity class), P_req         |
+  |                         | (trust threshold), object context (access     |
+  |                         | count, file size, rules).                     |
+  |                         | Click "Request access" to submit.             |
+  +-------------------------+-----------------------------------------------+
+  | Publish a File          | Upload a file to IPFS. Pick a file, add a     |
+  |                         | description, set sensitivity (0.1-1.0 slider), |
+  |                         | and optionally set access rules:               |
+  |                         |  - Require organization (e.g. "NWPU")          |
+  |                         |  - Max accesses per day                        |
+  |                         |  - Minimum trust (T_sub) required              |
+  |                         | Uploaded files need admin approval before      |
+  |                         | anyone can access them.                       |
+  +-------------------------+-----------------------------------------------+
+
+  RIGHT COLUMN:
+
+  +-------------------------+-----------------------------------------------+
+  | Risk Inspector          | Live risk breakdown for the selected file:    |
+  |                         | user, T_sub, D_sec, N_status, S_level, P_req, |
+  |                         | RGCA tier, margin (DT - P_eff). Shows a      |
+  |                         | visual meter and explainer text.              |
+  +-------------------------+-----------------------------------------------+
+  | Result Area             | Shows the outcome of your access request:     |
+  |                         | PERMIT with session details, or DENY with     |
+  |                         | reason. If PERMIT, you can view/download the  |
+  |                         | file content here.                            |
+  +-------------------------+-----------------------------------------------+
+  | Request Log             | Timestamped log of all actions: context       |
+  |                         | collection, API calls, decisions, errors.     |
+  |                         | Click "clear" to reset.                       |
+  +-------------------------+-----------------------------------------------+
+
+  NAVIGATION:
+  - Hamburger menu (top-right) opens the slide panel with links to all pages
+  - Menu badge shows unread message count (if any)
+  - Admin Panel link appears only for admin users
+
+================================================================================
+  4. FILE ACCESS — how authorization works
+================================================================================
+
+  When you click "Request access", this is what happens:
+
+  1.  Your browser context is collected automatically (IP, time, device, etc.)
+  2.  The gateway resolves context scores:
+        - L_trust:  IP/network trust level (0-1)
+        - N_status: Network security score (0-1)
+        - D_sec:    Device security score (0-1)
+        - T_req:    Temporal factor (working hours = high, night = low)
+  3.  Object risk O_risk is computed from file size, access count, upload age
+  4.  The effective threshold P_eff is raised: P_eff = P_req * (1 + 0.2 * O_risk)
+  5.  Access rules are checked (org requirement, max daily access, min trust)
+  6.  The oracle submits the request to Fabric chaincode via HMAC-signed call
+  7.  Chaincode computes:
+        CE_score = [w1*L + w2*N + w3*D - delta*R_interaction] * T_req
+        DT_score = (alpha*T_sub + beta*CE) * Phi(B_freq)
+        F_auth:  PERMIT if R_sub >= S_level AND DT_score >= P_eff
+  8.  If PERMIT: a streaming session opens and the file is delivered in chunks
+      If DENY:  you see the reason (low trust, wrong role, bad network, etc.)
+
+  Common DENY reasons:
+    - "Insufficient role"     → your R_sub is below the file's S_level
+    - "Insufficient trust"   → your DT_score is below P_eff
+    - "Rule violation"       → org/min-trust/max-access rule not met
+    - "Risk budget exhausted" → daily download limit reached for this file
+    - "Account blocked"      → anomaly detected, account temporarily frozen
+
+================================================================================
+  5. FILE UPLOAD — publishing a file
+================================================================================
+
+  On the Dashboard, scroll down to "Publish a file":
+
+  1.  Click "Choose File" and select a file from your device
+  2.  Enter a brief description
+  3.  Set the sensitivity level using the slider (0.1 = low, 1.0 = maximum)
+      This determines S_level (1-5) and P_req (0.1-1.0) for access control
+  4.  Optionally configure access rules:
+      - "Require organization": only users from this org can access
+      - "Max accesses/day": cap the number of daily access requests
+      - "Min trust (T_sub)": only users with trust >= this value can access
+  5.  Click "Upload to IPFS"
+
+  Your file is:
+    - Encrypted with AES-256-GCM (per-file key)
+    - Uploaded to IPFS (off-chain encrypted storage)
+    - Registered in the gateway with pending status
+
+  An admin must APPROVE your file before anyone can request access to it.
+  Check your "Files uploaded" section on the Profile page to see status.
+
+================================================================================
+  6. MESSAGING — talking to admin
+================================================================================
+
+  The Messages page (messages.html) provides a direct chat channel with the
+  system administrator. This is useful for:
+    - Reporting issues or access problems
+    - Requesting role/trust changes
+    - Getting password reset codes
+    - General questions about the system
+
+  How it works:
+  - Messages are sent via the gateway API (not email)
+  - Unread count appears as a badge on the menu button
+  - Admin sees all conversations in their Admin Panel chat section
+  - Messages are stored server-side and persist between sessions
+
+  To send a message:
+  1. Open Messages from the hamburger menu
+  2. Type in the input field at the bottom
+  3. Press Enter or click "Send"
+
+================================================================================
+  7. PROFILE — your account & security
+================================================================================
+
+  The Profile page (profile.html) shows everything about your account.
+
+  TRUST ORB:          Visual display of your current T_sub (0-1)
+
+  IDENTITY STRIP:     Quick-glance cards showing:
+                        - Role (R_sub authorization class)
+                        - Verification (email/phone state)
+                        - 2FA status (TOTP on/off)
+                        - Recent access (permit/deny history)
+                        - Device (browser fingerprint)
+                        - Network (client capability)
+
+  ACCOUNT:            Username, user ID, role, trust, status, registration
+                      date, last login time.
+
+  VERIFIED CONTACT:   Your email and phone (set during registration).
+                      Email/phone badges show verification state.
+
+  SECURITY:           - Two-factor authentication setup:
+                        Enable TOTP to add a second factor. Scan the QR code
+                        with Google Authenticator or Authy, then confirm with
+                        a 6-digit code. After enabling, login requires both
+                        password and TOTP code.
+                      - Password change:
+                        Enter current + new password. Must be 8+ chars with
+                        uppercase, lowercase, number, and symbol.
+
+  PERSONAL INFO:      Display name and organization (editable).
+
+  ABOUT ME:           Full name, age, location, occupation, interests, bio
+                      (editable).
+
+  FILES UPLOADED:     List of files you've published, with approval status.
+
+  ACCESS HISTORY:     Log of all your file access attempts (PERMIT/DENY).
+
+================================================================================
+  8. ADMIN PANEL — management & monitoring
+================================================================================
+
+  The Admin Panel (admin.html) is visible only to users with R_sub = 5.
+
+  STATS ROW:          Total users, online now, registered files
+
+  SECURITY OPERATIONS:
+    - Pending users / pending files (approval queues)
+    - High sensitivity count (S3-S5 objects)
+    - Low trust users (T_sub < 0.5)
+    - Deny / revoke count from recent audit
+    - Unreviewed anomalies
+    Quick filter buttons let you jump to each category.
+
+  ANALYTICS DASHBOARD:
+    - PERMIT vs DENY decisions chart
+    - Access by file chart
+    - Most active users chart
+    - Activity timeline (last 24h)
+
+  USER MANAGEMENT:
+    - Sort by name, role, trust, status, or registration date
+    - Search users by name
+    - Per-user actions:
+        Set role (1-5), set trust (0-1), set status (active/suspended/pending)
+        Delete user, request password reset, send reset code
+    - Role labels: 1=Junior, 2=Staff, 3=Senior, 4=Manager, 5=Administrator
+
+  FILE REGISTRY:
+    - Sort by status, sensitivity, threshold, name, or uploader
+    - Search files by name
+    - Per-file actions:
+        Approve (sets final S_level and P_req), reject, delete
+        Reset access count, reset risk budget for a user
+        Preview file content (admin only)
+        Force context degradation (demo/testing)
+
+  MESSAGING:         Telegram-style interface to message any user directly.
+                     Conversation sidebar + chat area + reply input.
+
+  ANOMALY ALERTS:    Detected security events:
+                      - Burst access (>10 requests / 120 seconds)
+                      - Trust jumps (T_sub change > 0.15)
+                      - Sensitivity escalation
+                    Actions: review, unblock user, delete alerts
+                    Block duration: 10*e^(2x) minutes, capped at 24 hours
+
+  AUDIT LOG:         HMAC-signed, tamper-detected log of all access events.
+                    Shows timestamp, user, action, details.
+
+================================================================================
+  9. SCENARIO DEMO — visual walkthroughs
+================================================================================
+
+  The Scenario Demo (scenarios.html) is a presentation tool that shows
+  how the system makes decisions, without requiring a live Fabric network.
+
+  Available scenarios:
+    - Clean PERMIT          High trust, safe device, working hours
+    - Off-hours DENY         T_req is near-zero at night
+    - Untrusted device DENY  D_sec too low
+    - Insufficient role DENY R_sub < S_level
+    - VPN/WiFi switch       N_status changes mid-session → revocation
+    - Context degradation   Admin forces D_sec down → re-evaluation
+    - Budget exhaustion     Daily download limit reached
+    - TOTP 2FA required     Admin-enabled second factor
+    - Burst anomaly         Rapid access attempts trigger blocking
+    - CSRP cluster risk     Related session revokes affect your subnet
+
+  How to use:
+  1. Select a scenario from the list
+  2. Click "Run walkthrough"
+  3. Watch the animated flow: Browser → Gateway → Oracle → Fabric → IPFS
+  4. See DT_score, P_eff, RGCA tier, and exposure bound computed step-by-step
+  5. The request log shows the decision path with timestamps
+
+  This page works in DEMO MODE (no backend needed) and is ideal for:
+    - Thesis defense presentations
+    - Screenshots for papers
+    - Understanding how context factors affect decisions
+
+================================================================================
+  10. CONTEXT MODEL — what the system knows about you
+================================================================================
+
+  The system uses a 4-dimensional context model C = (C_S, C_E, C_R, C_O):
+
+  C_S — SUBJECT (who you are)
+    R_sub   Role level (1-5), set by admin. Determines which files you can see.
+    T_sub   Dynamic trust (0-1). Evolves with good/bad sessions.
+            T_sub(n+1) = T_sub(n) + 0.1 * (outcome - T_sub(n))
+    B_freq  Access frequency. High frequency reduces Phi(B_freq).
+
+  C_E — ENVIRONMENT (where/when/how you connect)
+    L_trust   Location/IP trust. LAN/known networks score higher.
+    N_status  Network security. HTTPS/encrypted = high, open WiFi = low.
+    D_sec     Device security. Large screen + desktop + no touch = high.
+              Small screen + mobile + touch = lower.
+    T_req     Temporal factor. Working hours (8AM-10PM) = high.
+              Night (3AM) = near-zero. Smooth cos² decay, not binary cutoff.
+
+  C_R — RESOURCE (what you're accessing)
+    S_level   Sensitivity class (1-5), set by uploader, approved by admin.
+    P_req     Minimum DT_score required for access.
+    Rules     Optional: require_org, max_daily_access, min_trust, require_2fa.
+
+  C_O — OBJECT (file properties)
+    Access count   How many times this file has been accessed.
+    File size      Larger files = higher O_risk = higher effective threshold.
+    Upload age     Recently uploaded files carry higher O_risk.
+
+  All C_E values are collected AUTOMATICALLY from your browser.
+  You don't need to enter anything — just log in and request access.
+
+================================================================================
+  11. ALGORITHMS — how decisions are made
+================================================================================
+
+  ALGORITHM 1 — Access Evaluation (on-chain, O(1)):
+
+    Step 1: Compute context-environment score
+      CE_score = [w1*L_trust + w2*N_status + w3*D_sec - delta*R_interaction] * T_req(t)
+
+    Step 2: Compute dynamic trust score
+      DT_score = (alpha*T_sub + beta*CE_score) * Phi(B_freq)
+      where Phi(B_freq) = 1.0 if B_freq <= tau, else e^(-lambda*(B_freq-tau))
+
+    Step 3: Compute effective threshold
+      O_risk = 0.4*novelty + 0.3*sizeFactor + 0.3*ageFactor
+      P_eff  = P_req * (1 + 0.2 * O_risk)
+
+    Step 4: Decision
+      F_auth: PERMIT if (R_sub >= S_level) AND (DT_score >= P_eff), else DENY
+
+  ALGORITHM 2 — Continuous Revocation (RGCA):
+
+    After PERMIT, the system continuously monitors your session:
+    - Trust margin m = DT_score - P_eff determines your tier
+    - Tier controls polling interval, streaming speed, and data budget
+    - If your context degrades (VPN drops, device changes), the scheduler
+      re-evaluates and may REVOKE access mid-download
+    - CSRP: if another user on your /24 subnet gets revoked, YOUR margin
+      gets penalized too (cluster risk propagation)
+
+================================================================================
+  12. RGCA STREAMING — how file delivery works
+================================================================================
+
+  When access is PERMITTED, the file is NOT sent all at once.
+  Instead, it's streamed through the gateway with risk-graduated controls:
+
+  +----------+----------+----------+----------+----------+----------+
+  | Tier     | Margin   | Polling  | Chunk    | Chunk    | Max per  |
+  |          |          | interval | delay    | size     | window   |
+  +----------+----------+----------+----------+----------+----------+
+  | HIGH     | m < 0.1  | 2 sec    | 1000 ms  | 500 B    | 512 KB   |
+  | MEDIUM   | 0.1-0.3  | 3 sec    | 250 ms   | 500 B    | 2 MB     |
+  | LOW      | m >= 0.3 | 4 sec    | 100 ms   | 500 B    | 4 MB     |
+  +----------+----------+----------+----------+----------+----------+
+
+  Text files: chunk delay as shown above
+  Binary files: higher delays (500ms HIGH, 50ms MED, 0ms LOW) and larger
+  chunks (2 KB, 4 KB, 8 KB respectively)
+
+  What this means for you:
+  - HIGH-RISK tier: file loads slowly, 2-second pauses between chunks
+  - LOW-RISK tier:  file loads quickly, minimal delays
+  - Tier can change mid-download if your context changes
+  - If revoked mid-download, the stream stops immediately
+
+  DAILY BUDGET:
+  Each user has a daily download budget per file. If exceeded:
+    - Soft limit: forced to HIGH-RISK tier (slow but still downloading)
+    - Hard limit: access denied until next day (midnight reset)
+    - Admin can manually reset your budget
+
+  TRT-BOUNDED STREAMING (TRT-BL):
+  The per-window delivery is bounded by a provable formula:
+    L(m,S,T,n) = min(B_max, mu*(1+kappa*T_sub)*S^theta*(1+psi*n))
+  This guarantees that even if your session is compromised, the attacker
+  cannot exfiltrate more than B_max bytes before the next re-evaluation.
+
+================================================================================
+  13. SECURITY FEATURES — protection in depth
+================================================================================
+
+  YOUR ACCOUNT:
+    BCrypt passwords        Cost factor 12 hashing. GPU-resistant.
+    TOTP 2FA               RFC 6238, 6-digit codes, Google Authenticator.
+    Math CAPTCHA            Self-hosted HMAC-signed challenges (no external deps).
+    Email verification      QQ Mail SMTP with timed verification links.
+    Password reset codes    Admin-issued, hashed, IP-bound, rate-limited.
+    Session tokens          UUID-based, 24h TTL, activity tracking.
+
+  THE SYSTEM:
+    AES-256-GCM encryption  Every file encrypted before IPFS storage.
+    HMAC oracle signing     Every gateway→oracle request HMAC-SHA256 signed.
+    CAAR receipts           On-chain evidence of every access session.
+    HMAC audit logs         Tamper detection — altered entries flagged on load.
+    Anomaly detection       Burst/trust-jump/sensitivity-escalation detection.
+    Rate limiting           Sliding window per IP.
+    Security headers        CSP, X-Frame-Options DENY, CORP, COOP.
+    Zero-trust deny         Any verification failure → DENY by default.
+
+  NETWORK:
+    Oracle bound to localhost Only the gateway can reach the oracle.
+    IPFS bound to localhost   Only the gateway can read IPFS.
+    Fabric: gRPC TLS          Mutual TLS between peers and orderer.
+    Gateway: only public port All other services are internal.
+
+================================================================================
+  14. THEME & VISUAL MODES
+================================================================================
+
+  The system supports 3 visual modes:
+
+  LIGHT THEME:
+    Clean, bright interface. Best for presentations and well-lit rooms.
+    Toggle: click the theme button (shows "Dark" or "Light")
+
+  DARK THEME:
+    Default. Dark background, softer colors. Easier on the eyes.
+    Toggle: click the theme button
+
+  CYBERPUNK MODE:
+    Special visual overlay with neon cyan/yellow accents, scan lines,
+    and glitch effects. Activated by clicking the "CYBR" button.
+    To exit: click "NIGHT" button (returns to light theme).
+    Note: cyberpunk mode has heavier animations. If your device is slow,
+    the system may automatically disable it.
+
+================================================================================
+  15. PERFORMANCE MODES
+================================================================================
+
+  The system auto-detects your device capability and selects a performance
+  mode. You can manually cycle through modes by clicking the "Perf" button.
+
+  +----------+-------+-------------------------------------------+
+  | Mode     | FPS   | What's different                           |
+  +----------+-------+-------------------------------------------+
+  | SMOOTH   | 20    | Minimal animations. For very slow devices. |
+  | LITE     | 24    | No cursor effects, reduced backdrop blur,  |
+  |          |       | lighter particle effects.                  |
+  | BALANCED | 36    | Default. Moderate effects. Good on most    |
+  |          |       | laptops and phones.                        |
+  | FULL     | 60    | All effects enabled. Best on desktop with  |
+  |          |       | dedicated GPU.                             |
+  +----------+-------+-------------------------------------------+
+
+  Auto-detection considers: screen size, touch capability, CPU cores,
+  device memory, save-data preference, and reduced-motion setting.
+
+  You can also force a mode via URL: ?perf=full or ?perf=lite
+
+================================================================================
+  16. DEMO MODE
+================================================================================
+
+  Demo mode is a special state where the system works visually even when
+  the blockchain (Fabric) or oracle is offline.
+
+  Toggle: click the "Demo on/off" button in the UI.
+
+  What changes in demo mode:
+    - Overview page shows "demo" / "visual" instead of "offline" for
+      gateway/oracle/Fabric status
+    - Scenario Demo runs with mocked data (no real chaincode needed)
+    - Dashboard shows simulated context values
+    - All visual features remain active
+
+  When to use:
+    - Presenting the system when the server is not fully running
+    - Taking screenshots for your thesis or paper
+    - Testing the frontend without backend dependencies
+
+  IMPORTANT: Demo mode is for DISPLAY ONLY. No real access decisions
+  or file operations occur. Always turn demo OFF for real usage.
+
+================================================================================
+  17. KEYBOARD & UI TIPS
+================================================================================
+
+  - Hamburger menu: click the 3-line button (top-right) for page navigation
+  - Slide panel: shows your avatar, name, role, and all page links
+  - Defense guide: click the "Defense" button for a step-by-step presentation
+    walkthrough (6 steps from architecture to user security posture)
+  - Scroll progress: thin bar at the top shows how far you've scrolled
+  - File search: type in the search box on the dashboard to filter files
+    (supports fuzzy matching — partial names work)
+  - Request log: all actions are timestamped in the log area
+  - Toast notifications: success/error messages appear briefly at the bottom
+  - Page transitions: clicking internal links triggers a smooth fade
+  - Escape key: closes the slide panel and defense guide overlay
+  - Ctrl+click / Cmd+click: opens links in a new tab (bypasses transitions)
+
+================================================================================
+  18. FAQ & TROUBLESHOOTING
+================================================================================
+
+  Q: Why is my access request DENIED?
+  A: Check the Risk Inspector on the right side of the Dashboard.
+     It shows your T_sub, D_sec, N_status, S_level, P_req, and margin.
+     Common fixes:
+       - Low trust (T_sub):  contact admin to increase your trust score
+       - Wrong time:         T_req is near-zero at night (3-6 AM). Try during
+                             working hours (8 AM - 10 PM China time)
+       - Weak device:        use a desktop with a large screen
+       - Untrusted network:  avoid public WiFi; use wired LAN or VPN
+
+  Q: Why is my file download so slow?
+  A: You're probably in HIGH-RISK tier (margin < 0.1). This means the
+     system is being cautious because your trust/context scores are close
+     to the threshold. As your T_sub increases from good sessions, you'll
+     move to MEDIUM and then LOW tier with faster delivery.
+
+  Q: Why did my download stop mid-way?
+  A: The RGCA scheduler re-evaluated your session and detected a context
+     change (e.g., your VPN dropped, your network changed, or another user
+     on your subnet was revoked). Access can be revoked at any time during
+     streaming — this is by design for continuous security.
+
+  Q: How do I enable 2FA?
+  A: Go to Profile → Security → Two-factor authentication → Enable.
+     Scan the QR code with Google Authenticator or Authy, then enter the
+     6-digit confirmation code. After that, every login requires TOTP.
+
+  Q: I forgot my password. What do I do?
+  A: On the Login page, click "Reset password with admin code". You need
+     an 8-character reset code from the admin. Contact the admin via
+     the Messages page to request one.
+
+  Q: Why does the Overview page say "offline" or "demo"?
+  A: The blockchain network or oracle may not be running on the server.
+     If you're presenting, turn on Demo Mode for visual placeholders.
+     If you need real access, contact the admin to start the server stack.
+
+  Q: How do I get a higher role?
+  A: Only the admin can change your R_sub. Use the Messages page to
+     request a role change. Higher roles (4-5) can access more sensitive
+     files but also carry more responsibility.
+
+  Q: Can I access the site from my phone?
+  A: Yes, the site is responsive. However, mobile devices typically get
+     lower D_sec scores (smaller screen, touch input), which may result
+     in higher RGCA tiers (slower downloads). For best results, use a
+     desktop or laptop.
+
+  Q: What is the "Defense" button?
+  A: It opens a 6-step presentation guide that walks through the system
+     architecture → context collection → access decision → scenario demo →
+     admin evidence → user security posture. Useful for thesis defense
+     prep or explaining the system to others.
+
+  Q: Why is my uploaded file still "pending"?
+  A: An admin must approve every uploaded file before it becomes accessible.
+     The admin sets the final S_level and P_req during approval. Contact
+     the admin via Messages if approval is taking too long.
+
+================================================================================
+
+  CAAC System v3.0
+  Northwestern Polytechnical University — 2026
+  Questions? Use the Messages page to contact the admin.
+
+================================================================================

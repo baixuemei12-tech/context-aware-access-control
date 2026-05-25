@@ -1,0 +1,852 @@
+/* ============================================================================
+   v3 — fixed-top toggles + heavy perf trims
+   These come last so they override any earlier positioning + filter rules.
+   ============================================================================ */
+
+/* (A) Theme + CYBR toggles → TOP-LEFT, always visible (was bottom-left) */
+.theme-toggle {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  left: max(18px, env(safe-area-inset-left));
+  bottom: auto;
+  right: auto;
+  z-index: 1300;
+}
+.cyber-toggle {
+  position: fixed;
+  top: calc(max(18px, env(safe-area-inset-top)) + 44px);
+  left: max(18px, env(safe-area-inset-left));
+  bottom: auto;
+  right: auto;
+  z-index: 1300;
+}
+@media (max-width: 520px) {
+  .theme-toggle {
+    top: 10px;
+    left: 10px;
+    bottom: auto;
+    height: 36px;
+    min-width: 56px;
+  }
+  .cyber-toggle {
+    top: 54px;
+    left: 10px;
+    bottom: auto;
+    right: auto;
+    height: 36px;
+    min-width: 70px;
+  }
+}
+
+/* (B) Defense toggle → directly UNDER the demo toggle, on every viewport */
+.defense-toggle {
+  position: fixed;
+  top: 114px;       /* demo is top:72 + 34h + 8 gap */
+  right: max(18px, env(safe-area-inset-right));
+  bottom: auto;
+  z-index: 1300;
+}
+@media (max-width: 520px) {
+  /* Demo got pushed to bottom-right on phone; stack defense ABOVE it. */
+  .defense-toggle {
+    top: auto;
+    right: 12px;
+    bottom: calc(58px + env(safe-area-inset-bottom));
+    height: 36px;
+  }
+}
+/* Cyber-mode defense skin: keep the "under demo" stack */
+html[data-visual-mode="cyber"] .defense-toggle {
+  top: 114px;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: auto;
+}
+@media (max-width: 520px) {
+  html[data-visual-mode="cyber"] .defense-toggle {
+    top: auto;
+    right: 12px;
+    bottom: calc(58px + env(safe-area-inset-bottom));
+  }
+}
+
+/* (C) HEAVY PERFORMANCE TRIMS — biggest wins first ----------------------- */
+
+/* C1. Backdrop blur is one of the largest cross-page paint costs. Keep a
+   small blur only in FULL; other perf modes use opaque/translucent fills. */
+html:not([data-perf-mode="full"]) .theme-toggle,
+html:not([data-perf-mode="full"]) .demo-toggle,
+html:not([data-perf-mode="full"]) .defense-toggle,
+html:not([data-perf-mode="full"]) .cyber-toggle,
+html:not([data-perf-mode="full"]) .perf-toggle,
+html:not([data-perf-mode="full"]) .ov-nav,
+html:not([data-perf-mode="full"]) .auth-card,
+html:not([data-perf-mode="full"]) #resetSection,
+html:not([data-perf-mode="full"]) .info-box,
+html:not([data-perf-mode="full"]) .space-page header,
+html:not([data-perf-mode="full"]) .msg-app header,
+html:not([data-perf-mode="full"]) .scenario-list,
+html:not([data-perf-mode="full"]) .scenario-detail,
+html:not([data-perf-mode="full"]) .ops-panel,
+html:not([data-perf-mode="full"]) .ops-timeline-panel,
+html:not([data-perf-mode="full"]) .trust-orb-card,
+html:not([data-perf-mode="full"]) .identity-strip-card,
+html:not([data-perf-mode="full"]) .trust-node-card,
+html:not([data-perf-mode="full"]) .hero-node,
+html:not([data-perf-mode="full"]) .scenario-node,
+html:not([data-perf-mode="full"]) .scenario-stage,
+html:not([data-perf-mode="full"]) .card,
+html:not([data-perf-mode="full"]) .result-card,
+html:not([data-perf-mode="full"]) .stat-card,
+html:not([data-perf-mode="full"]) .msg-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-perf-mode="full"] .theme-toggle,
+html[data-perf-mode="full"] .demo-toggle,
+html[data-perf-mode="full"] .defense-toggle,
+html[data-perf-mode="full"] .cyber-toggle,
+html[data-perf-mode="full"] .perf-toggle,
+html[data-perf-mode="full"] .ov-nav,
+html[data-perf-mode="full"] .auth-card,
+html[data-perf-mode="full"] #resetSection,
+html[data-perf-mode="full"] .info-box,
+html[data-perf-mode="full"] .space-page header,
+html[data-perf-mode="full"] .msg-app header,
+html[data-perf-mode="full"] .scenario-list,
+html[data-perf-mode="full"] .scenario-detail,
+html[data-perf-mode="full"] .ops-panel,
+html[data-perf-mode="full"] .ops-timeline-panel,
+html[data-perf-mode="full"] .trust-orb-card,
+html[data-perf-mode="full"] .identity-strip-card,
+html[data-perf-mode="full"] .trust-node-card,
+html[data-perf-mode="full"] .hero-node,
+html[data-perf-mode="full"] .scenario-node,
+html[data-perf-mode="full"] .scenario-stage,
+html[data-perf-mode="full"] .card,
+html[data-perf-mode="full"] .result-card,
+html[data-perf-mode="full"] .stat-card,
+html[data-perf-mode="full"] .msg-card {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* C2. Cyber effects: FULL gets SVG noise; BALANCED gets cheap CSS HUD noise;
+   LITE/SMOOTH keep color and scanlines but drop the repaint-heavy overlay. */
+html[data-perf-mode="lite"][data-visual-mode="cyber"] body::after,
+html[data-perf-mode="smooth"][data-visual-mode="cyber"] body::after {
+  display: none;
+}
+html[data-perf-mode="balanced"][data-visual-mode="cyber"] body::after {
+  display: block;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,240,255,.045) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(0deg, rgba(252,238,12,.035) 0 1px, transparent 1px 20px);
+  opacity: .075;
+  mix-blend-mode: normal;
+  animation: cbNoise 1.2s steps(2) infinite;
+}
+html:not([data-perf-mode="full"])[data-visual-mode="cyber"] body::before {
+  mix-blend-mode: normal;
+}
+
+/* Glitch on big titles is cheap enough for BALANCED, but too much for LITE/SMOOTH. */
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .hero h1,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .scenario-hero h1,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .logo-section h1,
+html[data-perf-mode="smooth"][data-visual-mode="cyber"] .hero h1,
+html[data-perf-mode="smooth"][data-visual-mode="cyber"] .scenario-hero h1,
+html[data-perf-mode="smooth"][data-visual-mode="cyber"] .logo-section h1 {
+  animation: none !important;
+  text-shadow: 1px 0 var(--cb-red), -1px 0 var(--cb-cyan);
+}
+html[data-perf-mode="balanced"][data-visual-mode="cyber"] .hero h1,
+html[data-perf-mode="balanced"][data-visual-mode="cyber"] .scenario-hero h1,
+html[data-perf-mode="balanced"][data-visual-mode="cyber"] .logo-section h1 {
+  animation-duration: 7.5s;
+}
+
+/* C3. Scenario-orbit dashed-rotating border is GPU-cheap but constant work.
+   Pause off Full. */
+html:not([data-perf-mode="full"]) .scenario-orbit,
+html:not([data-perf-mode="full"]) .tech-track {
+  animation-duration: 0s;
+  animation-iteration-count: 1;
+}
+html:not([data-perf-mode="full"]) .scenario-orbit {
+  animation: none;
+  border-style: solid;
+  opacity: .4;
+}
+
+/* C4. Cyberpunk scanlines (body::before) are repeated 1px gradients across
+   the whole viewport. Coarsen them on lite/smooth so paint is cheaper. */
+html[data-perf-mode="lite"][data-visual-mode="cyber"] body::before,
+html[data-perf-mode="smooth"][data-visual-mode="cyber"] body::before {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 4px, rgba(0,0,0,.22) 4px 5px);
+  mix-blend-mode: normal;
+}
+
+/* C5. Constellation canvas: dim + skip mid-tier processing under cyber. The
+   canvas already auto-scales density via visuals.js perf gates; we just turn
+   the visible weight down so it stops competing for paint area. */
+html[data-visual-mode="cyber"] .caac-space-bg { opacity: .10; }
+html[data-perf-mode="lite"]   .caac-space-bg { opacity: .18; }
+html[data-perf-mode="smooth"] .caac-space-bg { opacity: .12; }
+
+/* C6. Reveal-on-scroll: removed blur+filter on lite/smooth (filter triggers
+   per-frame composite re-render — most expensive transform). */
+html[data-perf-mode="lite"]   .reveal,
+html[data-perf-mode="smooth"] .reveal,
+html[data-perf-mode="lite"]   .reveal.visible,
+html[data-perf-mode="smooth"] .reveal.visible {
+  filter: none !important;
+  transform: none !important;
+  transition-duration: .25s !important;
+}
+
+/* C7. Tone down floating-toggle backdrop-blur on lite/smooth (cheapest win
+   for users with weakest GPUs). */
+html[data-perf-mode="lite"]   .theme-toggle,
+html[data-perf-mode="lite"]   .cyber-toggle,
+html[data-perf-mode="lite"]   .demo-toggle,
+html[data-perf-mode="lite"]   .defense-toggle,
+html[data-perf-mode="smooth"] .theme-toggle,
+html[data-perf-mode="smooth"] .cyber-toggle,
+html[data-perf-mode="smooth"] .demo-toggle,
+html[data-perf-mode="smooth"] .defense-toggle {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--bg2);
+}
+
+/* C8. Drop the corner stamps bonus from the prior pass — extra paint layer
+   for negligible visual gain. */
+html[data-visual-mode="cyber"] body::before {
+  box-shadow: none !important;
+}
+
+/* C9. Reduce paint surface from cyber card linear+linear gradient stacks
+   on lite — solid background instead. */
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .card,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .auth-card,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .stat-card,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .scenario-detail,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .scenario-list,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .ops-panel,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .ops-timeline-panel,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .trust-orb-card,
+html[data-perf-mode="lite"][data-visual-mode="cyber"] .identity-strip-card {
+  background: var(--cb-bg2);
+}
+
+/* C10. Keep non-FULL modes responsive by capping the largest glow shadows. */
+html:not([data-perf-mode="full"]) {
+  --panel-shadow: 0 12px 28px rgba(0,0,0,.18);
+  --soft-shadow: 0 8px 18px rgba(0,0,0,.14);
+}
+html:not([data-perf-mode="full"]) .card,
+html:not([data-perf-mode="full"]) .auth-card,
+html:not([data-perf-mode="full"]) .result-card,
+html:not([data-perf-mode="full"]) .stat-card,
+html:not([data-perf-mode="full"]) .scenario-list,
+html:not([data-perf-mode="full"]) .scenario-detail,
+html:not([data-perf-mode="full"]) .ops-panel,
+html:not([data-perf-mode="full"]) .ops-timeline-panel,
+html:not([data-perf-mode="full"]) .trust-orb-card,
+html:not([data-perf-mode="full"]) .identity-strip-card,
+html:not([data-perf-mode="full"]) .trust-node-card {
+  box-shadow: var(--soft-shadow) !important;
+}
+html:not([data-perf-mode="full"])[data-visual-mode="cyber"] .btn-primary:hover,
+html:not([data-perf-mode="full"])[data-visual-mode="cyber"] .scenario-run-btn:hover,
+html:not([data-perf-mode="full"])[data-visual-mode="cyber"] .ha-primary:hover,
+html:not([data-perf-mode="full"])[data-visual-mode="cyber"] .cyber-toggle:hover,
+html:not([data-perf-mode="full"])[data-visual-mode="cyber"] .theme-toggle:hover,
+html:not([data-perf-mode="full"])[data-visual-mode="cyber"] .defense-toggle:hover,
+html:not([data-perf-mode="full"])[data-visual-mode="cyber"] .perf-toggle:hover {
+  box-shadow: 0 0 0 1px currentColor, 0 8px 18px rgba(0,0,0,.25) !important;
+}
+
+/* The later neon experiment layer intentionally hardens dark surfaces.
+   These late overrides make index.html/dashboard honor the Acid Press
+   light theme without leaking into cyber mode. */
+html[data-theme="light"]:not([data-visual-mode="cyber"]) body.dashboard-space {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(245,211,0,.22), transparent 31%),
+    radial-gradient(circle at 95% 12%, rgba(91,30,230,.11), transparent 32%),
+    repeating-linear-gradient(90deg, rgba(91,30,230,.045) 0 1px, transparent 1px 68px),
+    var(--bg);
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space header {
+  background:
+    linear-gradient(90deg, rgba(251,246,233,.96), rgba(245,211,0,.18)),
+    var(--bg2);
+  border-color: rgba(201,191,166,.76);
+  box-shadow: 0 10px 26px rgba(91,30,230,.08);
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .card,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .result-card,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .caac-decision-panel,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .caac-session-monitor,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .caar-receipt {
+  background:
+    linear-gradient(145deg, rgba(251,246,233,.98), rgba(241,235,222,.94)),
+    var(--bg2);
+  border-color: rgba(201,191,166,.74);
+  box-shadow: 0 14px 34px rgba(91,30,230,.08);
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .card::before,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .result-card::before {
+  height: 2px;
+  background: linear-gradient(90deg, #5b1ee6, #e8431f 50%, #f5d300);
+  opacity: 1;
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .ctx-row,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .info-row,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .info_row,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .score-item,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .risk-metric,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .file-list-scroll {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.42), rgba(245,211,0,.045)),
+    rgba(251,246,233,.72);
+  border-color: rgba(201,191,166,.74);
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .ctx-row:hover,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .info_row:hover,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .file-list-item:hover {
+  border-color: rgba(91,30,230,.30);
+  background: rgba(245,211,0,.16);
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .file-list-item {
+  border-bottom-color: rgba(201,191,166,.58);
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .file-list-item.selected {
+  background: linear-gradient(90deg, rgba(245,211,0,.30), rgba(91,30,230,.08));
+  border-left-color: #5b1ee6;
+  box-shadow: inset 3px 0 0 #f5d300;
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .file-list-item .file-icon,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .panel-link .pl-icon {
+  border-color: rgba(91,30,230,.28);
+  background: rgba(91,30,230,.08);
+  color: #5b1ee6;
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .file-list-item .file-slevel,
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .badge {
+  background: rgba(245,211,0,.22);
+  border-color: rgba(232,67,31,.30);
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .btn-secondary {
+  background: rgba(251,246,233,.68);
+  border-color: rgba(91,30,230,.30);
+  color: #5b1ee6;
+}
+
+html[data-theme="light"]:not([data-visual-mode="cyber"]) .dashboard-space .btn-secondary:hover {
+  background: rgba(245,211,0,.26);
+  border-color: rgba(232,67,31,.44);
+}
+
+/* Cyber mode uses its own HUD layer; stop the star canvas and reduce
+   constant repaint cost from the static/noise layer. */
+html[data-visual-mode="cyber"] .caac-space-bg {
+  display: none;
+}
+
+html[data-visual-mode="cyber"] body::after {
+  animation-duration: .42s;
+  opacity: .10;
+}
+
+html[data-visual-mode="cyber"][data-perf-mode="lite"] body::after,
+html[data-visual-mode="cyber"][data-perf-mode="smooth"] body::after {
+  animation: none;
+  opacity: .06;
+}
+
+@media (max-width: 720px) {
+  html[data-visual-mode="cyber"] body::after {
+    animation: none;
+    opacity: .06;
+  }
+}
+
+/* Cyber controls and action buttons: sharper hover/active feedback. */
+html[data-visual-mode="cyber"] .btn-primary,
+html[data-visual-mode="cyber"] .btn-secondary,
+html[data-visual-mode="cyber"] .btn-sm,
+html[data-visual-mode="cyber"] .btn-danger-demo,
+html[data-visual-mode="cyber"] .scenario-run-btn,
+html[data-visual-mode="cyber"] .ha-primary,
+html[data-visual-mode="cyber"] .ha-secondary,
+html[data-visual-mode="cyber"] .cyber-toggle,
+html[data-visual-mode="cyber"] .theme-toggle,
+html[data-visual-mode="cyber"] .defense-toggle {
+  position: relative;
+  overflow: hidden;
+  transition: transform .14s ease, box-shadow .14s ease, background-color .14s ease, border-color .14s ease, color .14s ease, filter .14s ease;
+}
+
+html[data-visual-mode="cyber"] .btn-primary::after,
+html[data-visual-mode="cyber"] .btn-danger-demo::after,
+html[data-visual-mode="cyber"] .scenario-run-btn::after,
+html[data-visual-mode="cyber"] .ha-primary::after,
+html[data-visual-mode="cyber"] .cyber-toggle::after,
+html[data-visual-mode="cyber"] .theme-toggle::after,
+html[data-visual-mode="cyber"] .defense-toggle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 0 34%, rgba(255,255,255,.52) 48%, transparent 62% 100%);
+  transform: translateX(-130%);
+  transition: transform .28s cubic-bezier(.19,1,.22,1);
+}
+
+html[data-visual-mode="cyber"] .btn-primary:hover::after,
+html[data-visual-mode="cyber"] .btn-danger-demo:hover::after,
+html[data-visual-mode="cyber"] .scenario-run-btn:hover::after,
+html[data-visual-mode="cyber"] .ha-primary:hover::after,
+html[data-visual-mode="cyber"] .cyber-toggle:hover::after,
+html[data-visual-mode="cyber"] .theme-toggle:hover::after,
+html[data-visual-mode="cyber"] .defense-toggle:hover::after {
+  transform: translateX(130%);
+}
+
+html[data-visual-mode="cyber"] .btn-primary:hover,
+html[data-visual-mode="cyber"] .scenario-run-btn:hover,
+html[data-visual-mode="cyber"] .ha-primary:hover {
+  transform: translateY(-2px) skewX(-1deg);
+  filter: saturate(1.12);
+  box-shadow: 0 0 0 2px var(--cb-yellow), 0 0 28px rgba(252,238,12,.45), 6px 6px 0 rgba(255,45,85,.30);
+}
+
+html[data-visual-mode="cyber"] .btn-secondary:hover,
+html[data-visual-mode="cyber"] .btn-sm:hover,
+html[data-visual-mode="cyber"] .ha-secondary:hover {
+  transform: translateY(-2px);
+  color: var(--cb-void);
+  background: var(--cb-cyan);
+  border-color: var(--cb-cyan);
+  box-shadow: 0 0 0 2px rgba(0,240,255,.30), 0 0 24px rgba(0,240,255,.30);
+}
+
+html[data-visual-mode="cyber"] button:active,
+html[data-visual-mode="cyber"] .btn-primary:active,
+html[data-visual-mode="cyber"] .btn-secondary:active,
+html[data-visual-mode="cyber"] .btn-sm:active {
+  transform: translateY(0) scale(.985);
+}
+
+html[data-visual-mode="cyber"] button:disabled,
+html[data-visual-mode="cyber"] .btn-primary:disabled,
+html[data-visual-mode="cyber"] .btn-secondary:disabled,
+html[data-visual-mode="cyber"] .btn-sm:disabled {
+  transform: none;
+  filter: grayscale(.4);
+  box-shadow: none;
+}
+
+html[data-visual-mode="cyber"] .btn-danger-demo {
+  border: 1px solid var(--cb-red);
+  border-radius: 0;
+  background: linear-gradient(90deg, rgba(255,45,85,.22), rgba(10,3,6,.70));
+  color: var(--cb-red);
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+
+html[data-visual-mode="cyber"] .btn-danger-demo:hover {
+  color: #fff;
+  background: linear-gradient(90deg, var(--cb-red), rgba(252,238,12,.22));
+  box-shadow: 0 0 0 2px rgba(255,45,85,.35), 0 0 26px rgba(255,45,85,.42);
+}
+
+/* Defense presenter follows the selected cyber mode too. */
+html[data-visual-mode="cyber"] .defense-toggle {
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  border-color: var(--cb-cyan);
+  background: rgba(10,3,6,.78);
+  color: var(--cb-cyan);
+  box-shadow: 0 0 0 1px rgba(0,240,255,.22), 0 0 24px rgba(0,240,255,.16);
+  text-transform: uppercase;
+  letter-spacing: .16em;
+}
+
+html[data-visual-mode="cyber"] .defense-toggle:hover {
+  color: var(--cb-void);
+  background: var(--cb-cyan);
+}
+
+html[data-visual-mode="cyber"] .defense-backdrop {
+  background: rgba(10,3,6,.78);
+  backdrop-filter: blur(3px);
+}
+
+html[data-visual-mode="cyber"] .defense-panel {
+  border-radius: 0;
+  border-color: var(--cb-cyan-d);
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  background:
+    linear-gradient(180deg, rgba(0,240,255,.06), transparent 34%),
+    linear-gradient(145deg, rgba(90,17,25,.92), rgba(10,3,6,.96));
+  box-shadow: 0 0 0 1px rgba(0,240,255,.18), 0 34px 90px rgba(10,3,6,.72);
+}
+
+html[data-visual-mode="cyber"] .defense-kicker,
+html[data-visual-mode="cyber"] .defense-count {
+  color: var(--cb-cyan);
+}
+
+html[data-visual-mode="cyber"] .defense-close,
+html[data-visual-mode="cyber"] .defense-step,
+html[data-visual-mode="cyber"] .defense-card {
+  border-radius: 0;
+  border-color: var(--cb-line);
+  background: rgba(10,3,6,.62);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+html[data-visual-mode="cyber"] .defense-step:hover,
+html[data-visual-mode="cyber"] .defense-step.active {
+  border-color: var(--cb-cyan);
+  background: rgba(0,240,255,.10);
+  box-shadow: inset 3px 0 0 var(--cb-yellow), 0 0 20px rgba(0,240,255,.16);
+}
+
+html[data-visual-mode="cyber"] .defense-step span {
+  border-radius: 0;
+  background: var(--cb-yellow);
+  color: var(--cb-void);
+}
+
+html[data-visual-mode="cyber"] .defense-progress {
+  border-radius: 0;
+  background: rgba(10,3,6,.76);
+  border-color: var(--cb-line);
+}
+
+html[data-visual-mode="cyber"] .defense-progress span {
+  background: linear-gradient(90deg, var(--cb-cyan), var(--cb-yellow), var(--cb-red));
+  box-shadow: 0 0 18px rgba(0,240,255,.42);
+}
+
+@media (hover: none) {
+  html[data-visual-mode="cyber"] .btn-primary:hover,
+  html[data-visual-mode="cyber"] .btn-secondary:hover,
+  html[data-visual-mode="cyber"] .btn-sm:hover,
+  html[data-visual-mode="cyber"] .scenario-run-btn:hover,
+  html[data-visual-mode="cyber"] .ha-primary:hover,
+  html[data-visual-mode="cyber"] .ha-secondary:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   v2 fixes — toggle stack, dynamic cyber buttons, defense skin, perf trims
+   ============================================================================ */
+
+/* (1) Stack theme + cyber toggles on the LEFT, raised above bottom content. */
+.theme-toggle {
+  left: max(18px, env(safe-area-inset-left));
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  right: auto;
+}
+.cyber-toggle {
+  left: max(18px, env(safe-area-inset-left));
+  bottom: calc(118px + env(safe-area-inset-bottom));
+  right: auto;
+}
+@media (max-width: 520px) {
+  .theme-toggle  { bottom: calc(58px + env(safe-area-inset-bottom)); }
+  .cyber-toggle  { bottom: calc(102px + env(safe-area-inset-bottom)); right: auto; left: 12px; }
+}
+
+/* (5) In cyberpunk mode the light/dark toggle is meaningless — disable it. */
+html[data-visual-mode="cyber"] .theme-toggle {
+  pointer-events: none;
+  opacity: .35;
+  filter: grayscale(.6);
+  cursor: not-allowed;
+}
+html[data-visual-mode="cyber"] .theme-toggle::after {
+  content: ' ⏼';
+  color: var(--cb-red);
+  font-weight: 700;
+}
+
+/* (3) Dynamic cyber-mode hover for ALL primary action surfaces.
+   The base cyberpunk block defines the static look — these add the
+   "I can press it" affordance: lift + glow + corner ticks. */
+html[data-visual-mode="cyber"] .btn-primary,
+html[data-visual-mode="cyber"] .scenario-run-btn,
+html[data-visual-mode="cyber"] .ha-primary,
+html[data-visual-mode="cyber"] .btn-secondary,
+html[data-visual-mode="cyber"] .ha-secondary,
+html[data-visual-mode="cyber"] .btn-sm,
+html[data-visual-mode="cyber"] .panel-link,
+html[data-visual-mode="cyber"] .scenario-button,
+html[data-visual-mode="cyber"] .tab,
+html[data-visual-mode="cyber"] .ops-filter {
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, color .12s ease, letter-spacing .12s ease;
+  position: relative;
+}
+@media (hover: hover) {
+  html[data-visual-mode="cyber"] .btn-primary:hover,
+  html[data-visual-mode="cyber"] .scenario-run-btn:hover,
+  html[data-visual-mode="cyber"] .ha-primary:hover {
+    transform: translateY(-2px);
+    background: #fff200;
+    color: var(--cb-void);
+    letter-spacing: .28em;
+    box-shadow:
+      0 0 0 2px var(--cb-yellow),
+      0 0 28px rgba(252,238,12,.55),
+      0 8px 22px rgba(0,0,0,.55);
+  }
+  html[data-visual-mode="cyber"] .btn-secondary:hover,
+  html[data-visual-mode="cyber"] .ha-secondary:hover,
+  html[data-visual-mode="cyber"] .btn-sm:hover {
+    transform: translateY(-1px);
+    color: var(--cb-cyan);
+    background: rgba(0,240,255,.10);
+    box-shadow: 0 0 0 1px var(--cb-cyan), 0 0 18px rgba(0,240,255,.35);
+  }
+  html[data-visual-mode="cyber"] .panel-link:hover {
+    background: rgba(0,240,255,.10);
+    color: var(--cb-cyan);
+    border-left: 2px solid var(--cb-cyan);
+    padding-left: calc(20px - 2px);
+  }
+  html[data-visual-mode="cyber"] .scenario-button:hover {
+    transform: translateX(4px);
+    border-color: var(--cb-cyan);
+    background: rgba(0,240,255,.08);
+  }
+  html[data-visual-mode="cyber"] .tab:hover:not(.active) {
+    color: var(--cb-cyan);
+    border-color: var(--cb-cyan);
+    background: rgba(0,240,255,.06);
+  }
+  /* Cards lift slightly + cyan rim on hover — was flat before */
+  html[data-visual-mode="cyber"] .card:hover,
+  html[data-visual-mode="cyber"] .stat-card:hover,
+  html[data-visual-mode="cyber"] .scenario-detail:hover,
+  html[data-visual-mode="cyber"] .ops-panel:hover {
+    transform: translateY(-1px);
+    border-color: var(--cb-cyan);
+    box-shadow: 0 0 0 1px var(--cb-cyan-d), 0 14px 38px rgba(10,3,6,.6), 0 0 22px rgba(0,240,255,.10);
+  }
+  /* The cyber-toggle itself gets a glitch-flicker on hover */
+  html[data-visual-mode="cyber"] .cyber-toggle:hover {
+    background: #fff200;
+    text-shadow: 1px 0 var(--cb-red), -1px 0 var(--cb-cyan);
+    animation: cbHoverFlicker 1.2s steps(1) infinite;
+  }
+}
+@keyframes cbHoverFlicker {
+  0%, 88%, 100% { text-shadow: 1px 0 var(--cb-red), -1px 0 var(--cb-cyan); }
+  92%           { text-shadow: 3px 0 var(--cb-red), -3px 0 var(--cb-cyan); transform: translate(-2px, 1px); }
+  95%           { text-shadow: -2px 0 var(--cb-red), 2px 0 var(--cb-cyan); transform: translate(2px, -1px); }
+}
+
+/* (3b) Active-press feedback — give both modes a real "click" tick */
+html[data-visual-mode="cyber"] .btn-primary:active,
+html[data-visual-mode="cyber"] .scenario-run-btn:active,
+html[data-visual-mode="cyber"] .ha-primary:active {
+  transform: translateY(0);
+  background: var(--cb-cyan);
+  box-shadow: 0 0 0 2px var(--cb-cyan), 0 0 32px rgba(0,240,255,.55);
+}
+
+/* (4) Defense toggle — cyberpunk skin (yellow chevron + cyan rim) */
+html[data-visual-mode="cyber"] .defense-toggle {
+  border: 1px solid var(--cb-cyan-d);
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  background: linear-gradient(90deg, rgba(252,238,12,.16), rgba(10,3,6,.85));
+  color: var(--cb-yellow);
+  font-family: var(--mono);
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  backdrop-filter: none;
+  box-shadow: 0 0 0 1px rgba(252,238,12,.25), 0 12px 28px rgba(10,3,6,.55);
+}
+html[data-visual-mode="cyber"] .defense-toggle::before {
+  content: '⌘ ';
+  color: var(--cb-cyan);
+  margin-right: 4px;
+}
+@media (hover: hover) {
+  html[data-visual-mode="cyber"] .defense-toggle:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(90deg, rgba(252,238,12,.32), rgba(10,3,6,.85));
+    color: #fff200;
+    box-shadow: 0 0 0 2px var(--cb-yellow), 0 0 24px rgba(252,238,12,.45);
+  }
+}
+html[data-visual-mode="cyber"] .defense-panel {
+  border: 1px solid var(--cb-cyan-d);
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  background:
+    linear-gradient(180deg, rgba(0,240,255,.05), transparent 24%),
+    linear-gradient(180deg, rgba(90,17,25,.7), rgba(10,3,6,.92));
+  box-shadow: 0 0 0 1px rgba(0,240,255,.18), 0 34px 90px rgba(10,3,6,.7);
+}
+html[data-visual-mode="cyber"] .defense-backdrop {
+  background: rgba(10,3,6,.72);
+  backdrop-filter: none;
+}
+html[data-visual-mode="cyber"] .defense-close {
+  border-color: var(--cb-cyan-d);
+  border-radius: 0;
+  color: var(--cb-cyan);
+  background: transparent;
+}
+html[data-visual-mode="cyber"] .defense-kicker,
+html[data-visual-mode="cyber"] .defense-count {
+  color: var(--cb-cyan);
+  letter-spacing: .18em;
+}
+
+/* (6) PERF: cyberpunk overlays were the main lag source.
+   - Drop the SVG noise turbulence on touch devices (it animates at ~7fps but
+     its mix-blend-mode + large repaint is GPU-expensive)
+   - Bigger noise step interval (was .14s = ~7fps, now .28s = ~3.5fps; eye
+     barely notices but compositor work halves)
+   - Constellation backdrop becomes effectively static in cyber mode (we keep
+     the fade-in but tell visuals.js to listen for mode-change to refresh palette)
+   - Glitch on .hero h1 etc. was every 4.5s — keep, that's already cheap.
+   - No backdrop-filter on cyber cards (already done). */
+html[data-visual-mode="cyber"] body::after {
+  animation-duration: .28s;
+  opacity: .10;
+}
+@media (hover: none), (max-width: 768px) {
+  html[data-visual-mode="cyber"] body::after { animation: none; opacity: .06; }
+  html[data-visual-mode="cyber"] body::before {
+    background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,.28) 3px 4px);
+  }
+  html[data-visual-mode="cyber"] .hero h1,
+  html[data-visual-mode="cyber"] .scenario-hero h1,
+  html[data-visual-mode="cyber"] .logo-section h1 {
+    animation: none;
+    text-shadow: 1px 0 var(--cb-red), -1px 0 var(--cb-cyan);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-visual-mode="cyber"] body::after { animation: none; }
+  html[data-visual-mode="cyber"] .cyber-toggle:hover { animation: none; }
+}
+
+/* (7) BONUS: JACK_IN flash — a one-shot scanline sweep when the mode toggles.
+   Triggered by adding/removing a .cb-jack-flash class via JS for ~700ms. */
+.cb-jack-flash::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(0,240,255,.8) 50%, transparent 100%);
+  background-size: 100% 12px;
+  background-repeat: no-repeat;
+  background-position: 0 -12px;
+  animation: cbJackIn .7s cubic-bezier(.22,.9,.34,1) forwards;
+  mix-blend-mode: screen;
+}
+@keyframes cbJackIn {
+  0%   { background-position: 0 -12px; opacity: 0; }
+  20%  { opacity: 1; }
+  100% { background-position: 0 100vh; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cb-jack-flash::before { display: none; }
+}
+
+/* (7b) BONUS: corner stamps on shell — only in cyber mode, only on big screens */
+@media (min-width: 900px) {
+  html[data-visual-mode="cyber"] body::before {
+    box-shadow:
+      inset 22px 22px 0 -20px var(--cb-cyan),
+      inset -22px -22px 0 -20px var(--cb-yellow);
+  }
+}
+
+/* Final cascade reconciliation: Claude's late v2 block disabled the Light
+   control in cyber mode. Keep the visual affordances, but make the control
+   usable and keep both mode buttons raised on the left. */
+.theme-toggle {
+  left: max(18px, env(safe-area-inset-left));
+  right: auto;
+  bottom: calc(78px + env(safe-area-inset-bottom));
+}
+
+.cyber-toggle {
+  left: max(18px, env(safe-area-inset-left));
+  right: auto;
+  bottom: calc(120px + env(safe-area-inset-bottom));
+}
+
+html[data-visual-mode="cyber"] .theme-toggle {
+  pointer-events: auto;
+  opacity: 1;
+  filter: none;
+  cursor: pointer;
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  border-color: var(--cb-cyan);
+  background: rgba(0,240,255,.10);
+  color: var(--cb-cyan);
+  box-shadow: 0 0 0 1px rgba(0,240,255,.24), 0 0 18px rgba(0,240,255,.20);
+}
+
+html[data-visual-mode="cyber"] .theme-toggle::after {
+  content: '';
+}
+
+html[data-visual-mode="cyber"] .theme-toggle:hover {
+  color: var(--cb-void);
+  background: var(--cb-cyan);
+  border-color: var(--cb-cyan);
+  text-shadow: none;
+  animation: none;
+}
+
+html[data-visual-mode="cyber"] .defense-toggle::before {
+  content: '>> ';
+  color: var(--cb-cyan);
+  margin-right: 4px;
+}
+
+html[data-visual-mode="cyber"] .defense-toggle {
+  color: #fcee0c !important;
+  border-color: #0aa8b5 !important;
+}
+
+@media (max-width: 520px) {
+  .theme-toggle {
+    left: 12px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
+  .cyber-toggle {
+    left: 12px;
+    right: auto;
+    bottom: calc(122px + env(safe-area-inset-bottom));
+  }
+}

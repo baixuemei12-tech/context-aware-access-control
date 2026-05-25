@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 1380" width="1100" height="1380" font-family="&#39;Segoe UI&#39;, Arial, sans-serif">
+
+  
+  <defs>
+    <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L6,2.5 z" fill="#3d5a8a"></path>
+    </marker>
+    <marker id="arrow-green" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L6,2.5 z" fill="#2e7d32"></path>
+    </marker>
+    <marker id="arrow-orange" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L6,2.5 z" fill="#f57c00"></path>
+    </marker>
+    <marker id="arrow-purple" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L6,2.5 z" fill="#6a1b9a"></path>
+    </marker>
+    <marker id="arrow-grey" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L6,2.5 z" fill="#8b9fc1"></path>
+    </marker>
+    <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L6,2.5 z" fill="#e53935"></path>
+    </marker>
+    <marker id="arrow-amber" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L6,2.5 z" fill="#f9a825"></path>
+    </marker>
+  </defs>
+
+  
+  <rect width="1100" height="1380" fill="transparent" rx="0"></rect>
+  <g>
+
+  
+  <text x="550" y="44" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff" letter-spacing="1">BV-GCA Framework Architecture</text>
+  <text x="550" y="66" text-anchor="middle" font-size="12" fill="#8b9fc1">Blockchain-Verified Graduated Continuous Authorization</text>
+
+  
+  <rect x="30" y="82" width="1040" height="690" rx="14" fill="none" stroke="#2a3a5c" stroke-width="1.5" stroke-dasharray="6,4"></rect>
+  <text x="50" y="100" font-size="11" fill="#2a3a5c" font-weight="600" letter-spacing="2">BV-GCA FRAMEWORK</text>
+
+  
+  
+  <rect x="36" y="430" width="88" height="65" rx="6" fill="#1a1f2e" stroke="#2e7d32" stroke-width="1"></rect>
+  <text x="80" y="445" text-anchor="middle" font-size="9" fill="#66bb6a" font-weight="600">LAYER 1</text>
+  <text x="80" y="468" text-anchor="middle" font-size="9" fill="#66bb6a">Hyperledger</text>
+  <text x="80" y="481" text-anchor="middle" font-size="9" fill="#66bb6a">Fabric</text>
+
+  
+  <rect x="36" y="108" width="88" height="45" rx="6" fill="#1a1f2e" stroke="#f9a825" stroke-width="1"></rect>
+  <text x="80" y="125" text-anchor="middle" font-size="9" fill="#ffa726" font-weight="600">LAYER 2</text>
+  <text x="80" y="142" text-anchor="middle" font-size="9" fill="#ffa726">Oracle</text>
+
+  
+  <rect x="36" y="220" width="88" height="100" rx="6" fill="#1a1f2e" stroke="#6a1b9a" stroke-width="1"></rect>
+  <text x="80" y="242" text-anchor="middle" font-size="9" fill="#ce93d8" font-weight="600">LAYER 3</text>
+  <text x="80" y="265" text-anchor="middle" font-size="9" fill="#ce93d8">Gateway</text>
+  <text x="80" y="288" text-anchor="middle" font-size="9" fill="#ce93d8">BV-GCA</text>
+  <text x="80" y="300" text-anchor="middle" font-size="9" fill="#ce93d8">Components</text>
+
+  
+  <rect x="138" y="106" width="160" height="52" rx="10" fill="#1e2740" stroke="#3d5a8a" stroke-width="1.5"></rect>
+  <text x="218" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#7eb3f7">User / Client</text>
+  <text x="218" y="144" text-anchor="middle" font-size="10" fill="#8b9fc1">Access Request + Context</text>
+
+  
+  <line x1="298" y1="120" x2="334" y2="120" stroke="#3d5a8a" stroke-width="1.5" marker-end="url(#arrow-blue)"></line>
+  <text x="316" y="113" text-anchor="middle" font-size="7" fill="#5a7ab0">① request</text>
+
+  
+  <rect x="338" y="100" width="145" height="38" rx="8" fill="#1a0d2e" stroke="#6a1b9a" stroke-width="1.5"></rect>
+  <text x="410" y="115" text-anchor="middle" font-size="9" font-weight="700" fill="#ce93d8">ContextResolver</text>
+  <text x="410" y="127" text-anchor="middle" font-size="7.5" fill="#e1bee7">L,N,D,T → P_eff (Gateway)</text>
+
+  
+  <line x1="483" y1="119" x2="519" y2="119" stroke="#f9a825" stroke-width="1.5" marker-end="url(#arrow-amber)"></line>
+  <text x="501" y="113" text-anchor="middle" font-size="7" fill="#ffa726">② HMAC</text>
+
+  
+  <rect x="523" y="100" width="130" height="38" rx="8" fill="#2a1f10" stroke="#f9a825" stroke-width="1.5"></rect>
+  <text x="588" y="115" text-anchor="middle" font-size="9" font-weight="700" fill="#ffa726">Oracle (L2)</text>
+  <text x="588" y="127" text-anchor="middle" font-size="7.5" fill="#ffcc80">Relay → Fabric eval</text>
+
+  
+  <line x1="653" y1="119" x2="689" y2="119" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#arrow-green)"></line>
+  <text x="671" y="113" text-anchor="middle" font-size="7" fill="#4caf50">③ eval</text>
+
+  
+  <rect x="693" y="100" width="185" height="38" rx="8" fill="#1a2a1a" stroke="#2e7d32" stroke-width="1.5"></rect>
+  <text x="785" y="115" text-anchor="middle" font-size="9" font-weight="700" fill="#66bb6a">Fabric Chaincode (L1)</text>
+  <text x="785" y="127" text-anchor="middle" font-size="7.5" fill="#a5d6a7">Algo 1: CE, DT → PERMIT|DT|CE</text>
+
+  
+  <rect x="140" y="165" width="740" height="20" rx="8" fill="#2a1f10" stroke="#f57c00" stroke-width="2"></rect>
+  <text x="155" y="177" font-size="10" font-weight="700" fill="#ffa726">Trust Margin</text>
+  <text x="310" y="177" font-size="9" fill="#ffcc80">m = DT_score − P_eff</text>
+  <text x="490" y="177" font-size="9" fill="#ffcc80">m&#39; = m − η_N × min(R_N, 1.0)</text>
+  <text x="710" y="177" font-size="8" fill="#e65100" font-weight="600">(Computed in Gateway, not on-chain)</text>
+
+  
+  <path d="M785,138 L785,148 L508,148 L508,161" stroke="#2e7d32" stroke-width="1.5" fill="none" marker-end="url(#arrow-green)" stroke-dasharray="4,3"></path>
+  <text x="650" y="155" font-size="7" fill="#4caf50">④ returns DT, CE</text>
+
+  
+
+  
+  <rect x="138" y="195" width="240" height="175" rx="12" fill="#0d1f2d" stroke="#0277bd" stroke-width="2"></rect>
+  <rect x="138" y="195" width="240" height="30" rx="12" fill="#01579b"></rect>
+  <rect x="138" y="210" width="240" height="15" fill="#01579b"></rect>
+  <text x="258" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">① RGCA</text>
+  <text x="258" y="222" text-anchor="middle" font-size="9" fill="#b3e5fc">Risk-Graduated Continuous Auth</text>
+
+  <text x="152" y="248" font-size="10" font-weight="600" fill="#4fc3f7">Adaptive Polling Δt:</text>
+  <rect x="152" y="254" width="210" height="14" rx="3" fill="#0d2a3d"></rect>
+  <text x="157" y="264" font-size="8.5" fill="#e53935">HIGH (m&lt;0.1):  Δt=2s  α=2%  B=64–512KB</text>
+  <rect x="152" y="270" width="210" height="14" rx="3" fill="#0d2a3d"></rect>
+  <text x="157" y="280" font-size="8.5" fill="#fb8c00">MED  (0.1–0.3): Δt=3s  α=3%  B=64KB–2MB</text>
+  <rect x="152" y="286" width="210" height="14" rx="3" fill="#0d2a3d"></rect>
+  <text x="157" y="296" font-size="8.5" fill="#43a047">LOW  (m≥0.3):  Δt=4s  α=10%  B=256KB–4MB</text>
+
+  <line x1="152" y1="308" x2="362" y2="308" stroke="#1565c0" stroke-width="0.8" stroke-dasharray="3,2"></line>
+  <text x="152" y="322" font-size="9" font-weight="600" fill="#4fc3f7">Theorem 1:</text>
+  <text x="152" y="334" font-size="9" fill="#b3e5fc">L_max = min(B_max, max(B_min, α×S))</text>
+  <text x="152" y="348" font-size="8.5" fill="#81d4fa">Bounded per-window leakage</text>
+  <text x="152" y="360" font-size="8.5" fill="#4fc3f7">Budget-driven streaming to client</text>
+
+  
+  <rect x="408" y="195" width="260" height="175" rx="12" fill="#1a0d2e" stroke="#6a1b9a" stroke-width="2"></rect>
+  <rect x="408" y="195" width="260" height="30" rx="12" fill="#4a148c"></rect>
+  <rect x="408" y="210" width="260" height="15" fill="#4a148c"></rect>
+  <text x="538" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">② Risk Budget + Cluster Risk</text>
+  <text x="538" y="222" text-anchor="middle" font-size="9" fill="#e1bee7">Cross-session exposure control</text>
+
+  <text x="422" y="248" font-size="10" font-weight="600" fill="#ce93d8">Risk Budget:</text>
+  <text x="422" y="261" font-size="9" fill="#e1bee7">B(u,o,t) = β × S_file × (1 + T_sub(u))</text>
+  <text x="422" y="274" font-size="8.5" fill="#ba68c8">L_cum ≥ B  →  force HIGH-RISK tier</text>
+  <text x="422" y="287" font-size="8.5" fill="#e53935">L_cum ≥ 1.5B  →  DENY access</text>
+
+  <line x1="422" y1="297" x2="652" y2="297" stroke="#6a1b9a" stroke-width="0.8" stroke-dasharray="3,2"></line>
+  <text x="422" y="311" font-size="10" font-weight="600" fill="#ce93d8">Cluster Risk R_N:</text>
+  <text x="422" y="324" font-size="9" fill="#e1bee7">R_N(t) = e^(−λc × Δt)   λc=0.1/min</text>
+  <text x="422" y="337" font-size="8.5" fill="#ba68c8">Propagates revocation to /24 subnet</text>
+  <text x="422" y="350" font-size="9" font-weight="600" fill="#ce93d8">Theorem 2:</text>
+  <text x="422" y="363" font-size="8.5" fill="#e1bee7">L_total ≤ 1.5×B + L_max(HIGH)</text>
+
+  
+  <rect x="698" y="195" width="220" height="175" rx="12" fill="#1a1a0d" stroke="#f57f17" stroke-width="2"></rect>
+  <rect x="698" y="195" width="220" height="30" rx="12" fill="#e65100"></rect>
+  <rect x="698" y="210" width="220" height="15" fill="#e65100"></rect>
+  <text x="808" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">③ CAAR</text>
+  <text x="808" y="222" text-anchor="middle" font-size="9" fill="#ffe0b2">Compliance-Assured Access Receipts</text>
+
+  <text x="712" y="248" font-size="10" font-weight="600" fill="#ffb74d">Receipt Schema (11 fields):</text>
+  <text x="712" y="261" font-size="8" fill="#ffe0b2">• sessionHash, userHash (privacy)</text>
+  <text x="712" y="274" font-size="8" fill="#ffe0b2">• fileId, rgcaTier, bytesDelivered</text>
+  <text x="712" y="287" font-size="8" fill="#ffe0b2">• wasRevoked, leakageBound</text>
+  <text x="712" y="300" font-size="8" fill="#ffe0b2">• budgetUsed, budgetLimit</text>
+  <text x="712" y="313" font-size="8" fill="#ffe0b2">• clusterRisk, compliant</text>
+
+  <line x1="712" y1="322" x2="902" y2="322" stroke="#e65100" stroke-width="0.8" stroke-dasharray="3,2"></line>
+  <text x="712" y="336" font-size="9" font-weight="600" fill="#ffb74d">Invariant:</text>
+  <text x="712" y="349" font-size="8.5" fill="#ffe0b2">compliant = (bytesDelivered ≤ leakageBound)</text>
+  <text x="712" y="362" font-size="8.5" fill="#ffe0b2">Self-reported by gateway; auditable post-hoc</text>
+
+  
+
+  
+  <rect x="138" y="410" width="320" height="90" rx="10" fill="#1a1f2e" stroke="#3d5a8a" stroke-width="1.5"></rect>
+  <text x="298" y="430" text-anchor="middle" font-size="11" font-weight="700" fill="#7eb3f7">Algorithm 2: Continuous Poll Loop</text>
+  <text x="298" y="446" text-anchor="middle" font-size="9" fill="#8b9fc1">Every Δt(m): re-evaluate via Oracle → Fabric</text>
+  <text x="298" y="459" text-anchor="middle" font-size="9" fill="#8b9fc1">Revocation → update R_N via CSRP</text>
+  <text x="298" y="473" text-anchor="middle" font-size="9" fill="#8b9fc1">Co-located sessions see reduced m&#39; next poll</text>
+  <text x="298" y="487" text-anchor="middle" font-size="9" fill="#e53935">⑥ Revoke → ⑦ Update L_cum → ⑧ Submit Receipt</text>
+
+  
+  <rect x="490" y="410" width="480" height="90" rx="10" fill="#0d1a0d" stroke="#2e7d32" stroke-width="2"></rect>
+  <text x="730" y="430" text-anchor="middle" font-size="12" font-weight="700" fill="#66bb6a">Hyperledger Fabric Blockchain</text>
+  <text x="730" y="447" text-anchor="middle" font-size="9" fill="#a5d6a7">CAACContract | recordSessionReceipt() | getSessionReceipt() | O(1)</text>
+
+  
+  <rect x="510" y="460" width="64" height="30" rx="5" fill="#1a2e1a" stroke="#388e3c" stroke-width="1"></rect>
+  <text x="542" y="472" text-anchor="middle" font-size="7.5" fill="#66bb6a">Block N</text>
+  <text x="542" y="484" text-anchor="middle" font-size="7" fill="#81c784">Eval</text>
+  <rect x="590" y="460" width="64" height="30" rx="5" fill="#1a2e1a" stroke="#388e3c" stroke-width="1"></rect>
+  <text x="622" y="472" text-anchor="middle" font-size="7.5" fill="#66bb6a">Block N+1</text>
+  <text x="622" y="484" text-anchor="middle" font-size="7" fill="#81c784">Receipt</text>
+  <rect x="670" y="460" width="64" height="30" rx="5" fill="#1a2e1a" stroke="#388e3c" stroke-width="1"></rect>
+  <text x="702" y="472" text-anchor="middle" font-size="7.5" fill="#66bb6a">Block N+2</text>
+  <text x="702" y="484" text-anchor="middle" font-size="7" fill="#81c784">Revoke</text>
+  <rect x="750" y="460" width="64" height="30" rx="5" fill="#1a2e1a" stroke="#388e3c" stroke-width="1"></rect>
+  <text x="782" y="472" text-anchor="middle" font-size="7.5" fill="#66bb6a">Block N+3</text>
+  <text x="782" y="484" text-anchor="middle" font-size="7" fill="#81c784">Receipt</text>
+  <rect x="830" y="460" width="64" height="30" rx="5" fill="#1a2e1a" stroke="#388e3c" stroke-width="1"></rect>
+  <text x="862" y="472" text-anchor="middle" font-size="7.5" fill="#66bb6a">Block N+4</text>
+  <text x="862" y="484" text-anchor="middle" font-size="7" fill="#81c784">Audit</text>
+  
+  <line x1="574" y1="475" x2="590" y2="475" stroke="#388e3c" stroke-width="2"></line>
+  <line x1="654" y1="475" x2="670" y2="475" stroke="#388e3c" stroke-width="2"></line>
+  <line x1="734" y1="475" x2="750" y2="475" stroke="#388e3c" stroke-width="2"></line>
+  <line x1="814" y1="475" x2="830" y2="475" stroke="#388e3c" stroke-width="2"></line>
+
+  
+
+  
+  <rect x="138" y="535" width="220" height="68" rx="10" fill="#1a0d2e" stroke="#6a1b9a" stroke-width="1.5"></rect>
+  <text x="248" y="554" text-anchor="middle" font-size="11" font-weight="700" fill="#ce93d8">RiskBudgetService</text>
+  <text x="248" y="569" text-anchor="middle" font-size="9" fill="#e1bee7">Tracks L_cum per user-object-period</text>
+  <text x="248" y="582" text-anchor="middle" font-size="9" fill="#ba68c8">β_text=500KB · β_binary=50MB</text>
+  <text x="248" y="595" text-anchor="middle" font-size="8" fill="#9575cd">Gateway Layer | Zero chaincode changes</text>
+
+  
+  <rect x="390" y="535" width="230" height="68" rx="10" fill="#1a0d2e" stroke="#7e57c2" stroke-width="1.5"></rect>
+  <text x="505" y="554" text-anchor="middle" font-size="11" font-weight="700" fill="#b39ddb">SessionManager</text>
+  <text x="505" y="569" text-anchor="middle" font-size="9" fill="#e1bee7">Adaptive γ(R_sub) EMA trust evolution</text>
+  <text x="505" y="582" text-anchor="middle" font-size="9" fill="#ba68c8">γ: Admin=0.05 · User=0.10 · Guest=0.15</text>
+  <text x="505" y="595" text-anchor="middle" font-size="8" fill="#9575cd">Generates + submits CAAR receipts</text>
+
+  
+  <rect x="650" y="535" width="320" height="68" rx="10" fill="#1a1f0d" stroke="#827717" stroke-width="1.5"></rect>
+  <text x="810" y="554" text-anchor="middle" font-size="11" font-weight="700" fill="#d4e157">Auditor / Verifier</text>
+  <text x="810" y="569" text-anchor="middle" font-size="9" fill="#f0f4c3">Query: receipts WHERE compliant=false</text>
+  <text x="810" y="582" text-anchor="middle" font-size="9" fill="#f0f4c3">Expected result: 0 (zero violations)</text>
+  <text x="810" y="595" text-anchor="middle" font-size="8" fill="#cddc39">Non-zero → bug or tampering → forensic review</text>
+
+  
+  <rect x="138" y="630" width="832" height="120" rx="10" fill="#111520" stroke="#2a3a5c" stroke-width="1"></rect>
+  <text x="554" y="650" text-anchor="middle" font-size="11" font-weight="700" fill="#8b9fc1" letter-spacing="2">SESSION DATA FLOW</text>
+
+  
+  <rect x="152" y="659" width="26" height="14" rx="4" fill="#3d5a8a"></rect>
+  <text x="165" y="670" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">①</text>
+  <text x="182" y="670" font-size="8.5" fill="#b0c4de">Client → Gateway (JWT + context)</text>
+
+  <rect x="352" y="659" width="26" height="14" rx="4" fill="#f9a825"></rect>
+  <text x="365" y="670" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">②</text>
+  <text x="382" y="670" font-size="8.5" fill="#b0c4de">Gateway → Oracle → Fabric (eval)</text>
+
+  <rect x="582" y="659" width="26" height="14" rx="4" fill="#2e7d32"></rect>
+  <text x="595" y="670" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">③</text>
+  <text x="612" y="670" font-size="8.5" fill="#b0c4de">Fabric returns DT_score → Gateway computes m</text>
+
+  <rect x="782" y="659" width="26" height="14" rx="4" fill="#4a148c"></rect>
+  <text x="795" y="670" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">④</text>
+  <text x="812" y="670" font-size="8.5" fill="#b0c4de">Budget check + CSRP: m&#39; = m − η_N·R_N</text>
+
+  <rect x="152" y="681" width="26" height="14" rx="4" fill="#0277bd"></rect>
+  <text x="165" y="692" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">⑤</text>
+  <text x="182" y="692" font-size="8.5" fill="#b0c4de">RGCA selects tier → stream data</text>
+
+  <rect x="352" y="681" width="26" height="14" rx="4" fill="#e65100"></rect>
+  <text x="365" y="692" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">⑥</text>
+  <text x="382" y="692" font-size="8.5" fill="#b0c4de">Algo 2 polls every Δt(m); revoke if m≤0</text>
+
+  <rect x="582" y="681" width="26" height="14" rx="4" fill="#4a148c"></rect>
+  <text x="595" y="692" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">⑦</text>
+  <text x="612" y="692" font-size="8.5" fill="#b0c4de">Update R_N, L_cum, co-session m&#39;</text>
+
+  <rect x="782" y="681" width="26" height="14" rx="4" fill="#e65100"></rect>
+  <text x="795" y="692" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">⑧</text>
+  <text x="812" y="692" font-size="8.5" fill="#b0c4de">Submit CAAR receipt via Oracle → Fabric</text>
+
+  
+  <line x1="152" y1="704" x2="950" y2="704" stroke="#2a3a5c" stroke-width="0.8" stroke-dasharray="4,3"></line>
+
+  <text x="165" y="718" font-size="9" font-weight="600" fill="#e53935">HIGH  m&lt;0.1</text>
+  <text x="165" y="731" font-size="8.5" fill="#8b9fc1">Δt=2s · α=2% · B=64–512KB</text>
+  <text x="165" y="744" font-size="8.5" fill="#8b9fc1">Tightest leakage bound</text>
+
+  <text x="340" y="718" font-size="9" font-weight="600" fill="#fb8c00">MEDIUM  0.1–0.3</text>
+  <text x="340" y="731" font-size="8.5" fill="#8b9fc1">Δt=3s · α=3% · B=64KB–2MB</text>
+  <text x="340" y="744" font-size="8.5" fill="#8b9fc1">Balanced control</text>
+
+  <text x="530" y="718" font-size="9" font-weight="600" fill="#43a047">LOW  m≥0.3</text>
+  <text x="530" y="731" font-size="8.5" fill="#8b9fc1">Δt=4s · α=10% · B=256KB–4MB</text>
+  <text x="530" y="744" font-size="8.5" fill="#8b9fc1">High throughput</text>
+
+  <text x="690" y="718" font-size="9" font-weight="600" fill="#4fc3f7">Adaptive Learning Rate</text>
+  <text x="690" y="731" font-size="8.5" fill="#8b9fc1">Admin γ=0.05 | User γ=0.10 | Guest γ=0.15</text>
+  <text x="690" y="744" font-size="8.5" fill="#8b9fc1">Role-aware EMA trust (SessionManager)</text>
+
+  
+  
+  <path d="M258,186 L258,193" stroke="#0277bd" stroke-width="0.8" fill="none" marker-end="url(#arrow-blue)" stroke-dasharray="3,2"></path>
+  
+  <path d="M538,186 L538,193" stroke="#6a1b9a" stroke-width="0.8" fill="none" marker-end="url(#arrow-purple)" stroke-dasharray="3,2"></path>
+  
+  <path d="M808,185 L808,193" stroke="#f57c00" stroke-width="0.8" fill="none" marker-end="url(#arrow-orange)" stroke-dasharray="3,2"></path>
+
+  
+  <path d="M258 370 L258 406" stroke="#0277bd" stroke-width="1" fill="none" marker-end="url(#arrow-blue)"></path>
+  
+  <path d="M450 370 L390 408" stroke="#6a1b9a" stroke-width="1" fill="none" marker-end="url(#arrow-purple)"></path>
+  
+  <path d="M808 370 L808 395 L808 406" stroke="#f57c00" stroke-width="1" fill="none" marker-end="url(#arrow-orange)"></path>
+
+  
+  <line x1="458" y1="455" x2="486" y2="455" stroke="#3d5a8a" stroke-width="1" marker-end="url(#arrow-blue)"></line>
+
+  
+  <line x1="298" y1="500" x2="248" y2="532" stroke="#6a1b9a" stroke-width="1" marker-end="url(#arrow-purple)"></line>
+  
+  <line x1="350" y1="500" x2="430" y2="532" stroke="#7e57c2" stroke-width="1" marker-end="url(#arrow-purple)"></line>
+  
+  <line x1="600" y1="500" x2="720" y2="531" stroke="#2e7d32" stroke-width="1" marker-end="url(#arrow-green)"></line>
+
+  
+  <text x="550" y="794" text-anchor="middle" font-size="9" fill="#3a4a6a">BV-GCA · Matvei Prikhozhdenko · Northwestern Polytechnical University · April 2026</text>
+
+  
+  <line x1="30" y1="832" x2="1070" y2="832" stroke="#2a3a5c" stroke-width="1" stroke-dasharray="8,4"></line>
+
+  
+  <text x="550" y="858" text-anchor="middle" font-size="16" font-weight="700" fill="#ffffff" letter-spacing="1">Macro Flow-Control</text>
+
+  
+  
+  <rect x="42" y="876" width="195" height="20" rx="4" fill="#1e2740" stroke="#3d5a8a" stroke-width="1"></rect>
+  <text x="139" y="890" text-anchor="middle" font-size="9" fill="#7eb3f7" font-weight="600">Context A_t</text>
+  <rect x="52" y="900" width="185" height="20" rx="4" fill="#1e2740" stroke="#3d5a8a" stroke-width="1"></rect>
+  <text x="144" y="914" text-anchor="middle" font-size="9" fill="#7eb3f7" font-weight="600">Context A_1</text>
+  
+  <rect x="62" y="924" width="174" height="110" rx="6" fill="#131929" stroke="#3d5a8a" stroke-width="1.5"></rect>
+  <text x="149" y="940" text-anchor="middle" font-size="9" font-weight="700" fill="#7eb3f7">Context A_0</text>
+  <line x1="72" y1="945" x2="226" y2="945" stroke="#2a3a5c" stroke-width="0.8"></line>
+  <text x="72" y="958" font-size="8" fill="#8b9fc1">Factor1: User Role (R_sub)</text>
+  <text x="72" y="971" font-size="8" fill="#8b9fc1">Factor2: Device Security (D_sec)</text>
+  <text x="72" y="984" font-size="8" fill="#8b9fc1">Factor3: Network Status (N_status)</text>
+  <text x="72" y="997" font-size="8" fill="#8b9fc1">Factor4: Location Trust (L_trust)</text>
+  <text x="72" y="1010" font-size="8" fill="#8b9fc1">Factor5: Temporal (T_req)</text>
+  <text x="72" y="1023" font-size="8" fill="#8b9fc1">Factor6: Object Risk (O_risk)</text>
+  
+  <circle cx="50" cy="886" r="7" fill="none" stroke="#8b9fc1" stroke-width="1.2"></circle>
+  <line x1="50" y1="883" x2="50" y2="886" stroke="#8b9fc1" stroke-width="1"></line>
+  <line x1="50" y1="886" x2="53" y2="886" stroke="#8b9fc1" stroke-width="1"></line>
+  <circle cx="60" cy="909" r="7" fill="none" stroke="#8b9fc1" stroke-width="1.2"></circle>
+  <line x1="60" y1="906" x2="60" y2="909" stroke="#8b9fc1" stroke-width="1"></line>
+  <line x1="60" y1="909" x2="63" y2="909" stroke="#8b9fc1" stroke-width="1"></line>
+  
+  <rect x="62" y="1042" width="80" height="34" rx="5" fill="#1a1f2e" stroke="#3d5a8a" stroke-width="1"></rect>
+  <text x="102" y="1054" text-anchor="middle" font-size="8" font-weight="600" fill="#4fc3f7">Context</text>
+  <text x="102" y="1065" text-anchor="middle" font-size="7.5" fill="#4fc3f7">Collection</text>
+  <text x="102" y="1074" text-anchor="middle" font-size="6.5" fill="#6a8ec1">(auto-collect)</text>
+  <rect x="156" y="1042" width="80" height="34" rx="5" fill="#1a1f2e" stroke="#3d5a8a" stroke-width="1"></rect>
+  <text x="196" y="1057" text-anchor="middle" font-size="8" font-weight="600" fill="#8b9fc1">Data Entry</text>
+  <text x="196" y="1068" text-anchor="middle" font-size="8" fill="#66bb6a">IPFS CID</text>
+  <text x="139" y="1095" text-anchor="middle" font-size="10" font-weight="700" fill="#e53935">Root Entity</text>
+  <line x1="142" y1="1059" x2="156" y2="1059" stroke="#3d5a8a" stroke-width="1" stroke-dasharray="3,2"></line>
+
+  
+  <path d="M238 982 L330 982" stroke="#8b9fc1" stroke-width="1.5" fill="none" marker-end="url(#arrow-grey)"></path>
+  <text x="284" y="977" text-anchor="middle" font-size="7.5" fill="#8b9fc1" font-weight="600">Access request →</text>
+  <path d="M330 998 L238 998" stroke="#8b9fc1" stroke-width="1.5" fill="none" marker-end="url(#arrow-grey)"></path>
+  <text x="284" y="1011" text-anchor="middle" font-size="7.5" fill="#8b9fc1" font-weight="600">← Authorization</text>
+
+  
+  <rect x="312" y="876" width="195" height="20" rx="4" fill="#1a1f2e" stroke="#4a148c" stroke-width="1"></rect>
+  <text x="409" y="890" text-anchor="middle" font-size="9" fill="#ce93d8" font-weight="600">Context B_t</text>
+  <rect x="322" y="900" width="185" height="20" rx="4" fill="#1a1f2e" stroke="#4a148c" stroke-width="1"></rect>
+  <text x="414" y="914" text-anchor="middle" font-size="9" fill="#ce93d8" font-weight="600">Context B_1</text>
+  <rect x="332" y="924" width="174" height="110" rx="6" fill="#150d1f" stroke="#6a1b9a" stroke-width="1.5"></rect>
+  <text x="419" y="940" text-anchor="middle" font-size="9" font-weight="700" fill="#ce93d8">Context B_0</text>
+  <line x1="342" y1="945" x2="496" y2="945" stroke="#4a148c" stroke-width="0.8"></line>
+  <text x="342" y="958" font-size="8" fill="#e1bee7">Factor1: DT_score</text>
+  <text x="342" y="971" font-size="8" fill="#e1bee7">Factor2: RGCA Tier</text>
+  <text x="342" y="984" font-size="8" fill="#e1bee7">Factor3: Trust Margin m</text>
+  <text x="342" y="997" font-size="8" fill="#e1bee7">Factor4: Cluster Risk R_N</text>
+  <text x="342" y="1010" font-size="8" fill="#e1bee7">Factor5: L_cum budget usage</text>
+  <text x="342" y="1023" font-size="8" fill="#e1bee7">Factor6: P_eff threshold</text>
+  <circle cx="320" cy="886" r="7" fill="none" stroke="#9575cd" stroke-width="1.2"></circle>
+  <line x1="320" y1="883" x2="320" y2="886" stroke="#9575cd" stroke-width="1"></line>
+  <line x1="320" y1="886" x2="323" y2="886" stroke="#9575cd" stroke-width="1"></line>
+  <circle cx="330" cy="909" r="7" fill="none" stroke="#9575cd" stroke-width="1.2"></circle>
+  <line x1="330" y1="906" x2="330" y2="909" stroke="#9575cd" stroke-width="1"></line>
+  <line x1="330" y1="909" x2="333" y2="909" stroke="#9575cd" stroke-width="1"></line>
+  <rect x="332" y="1042" width="80" height="34" rx="5" fill="#1a0d2e" stroke="#6a1b9a" stroke-width="1"></rect>
+  <text x="372" y="1057" text-anchor="middle" font-size="8" font-weight="600" fill="#ce93d8">Adaptive</text>
+  <text x="372" y="1068" text-anchor="middle" font-size="8" fill="#ce93d8">Strategy</text>
+  <rect x="426" y="1042" width="80" height="34" rx="5" fill="#1a0d2e" stroke="#6a1b9a" stroke-width="1"></rect>
+  <text x="466" y="1057" text-anchor="middle" font-size="8" font-weight="600" fill="#9575cd">Data Entry</text>
+  <text x="466" y="1068" text-anchor="middle" font-size="8" fill="#ffa726">CAAR Receipt</text>
+  <text x="409" y="1095" text-anchor="middle" font-size="10" font-weight="700" fill="#e53935">1st-Level Entity</text>
+  <line x1="412" y1="1059" x2="426" y2="1059" stroke="#6a1b9a" stroke-width="1" stroke-dasharray="3,2"></line>
+
+  
+  <path d="M508 982 L598 982" stroke="#8b9fc1" stroke-width="1.5" fill="none" marker-end="url(#arrow-grey)"></path>
+  <text x="543" y="977" text-anchor="middle" font-size="7" fill="#8b9fc1">HMAC eval →</text>
+  <path d="M601 998 L510 998" stroke="#8b9fc1" stroke-width="1.5" fill="none" marker-end="url(#arrow-grey)"></path>
+  <text x="543" y="1011" text-anchor="middle" font-size="7" fill="#8b9fc1">← Decision + m</text>
+
+  
+  <rect x="582" y="876" width="195" height="20" rx="4" fill="#0d1a0d" stroke="#2e7d32" stroke-width="1"></rect>
+  <text x="679" y="890" text-anchor="middle" font-size="9" fill="#66bb6a" font-weight="600">Context M_t</text>
+  <rect x="592" y="900" width="185" height="20" rx="4" fill="#0d1a0d" stroke="#2e7d32" stroke-width="1"></rect>
+  <text x="684" y="914" text-anchor="middle" font-size="9" fill="#66bb6a" font-weight="600">Context M_1</text>
+  <rect x="602" y="924" width="174" height="110" rx="6" fill="#0d1a0d" stroke="#388e3c" stroke-width="1.5"></rect>
+  <text x="689" y="940" text-anchor="middle" font-size="9" font-weight="700" fill="#66bb6a">Context M_0</text>
+  <line x1="612" y1="945" x2="766" y2="945" stroke="#2e7d32" stroke-width="0.8"></line>
+  <text x="612" y="958" font-size="8" fill="#a5d6a7">Factor1: Block hash</text>
+  <text x="612" y="971" font-size="8" fill="#a5d6a7">Factor2: Channel ID</text>
+  <text x="612" y="984" font-size="8" fill="#a5d6a7">Factor3: Endorser set</text>
+  <text x="612" y="997" font-size="8" fill="#a5d6a7">Factor4: Timestamp</text>
+  <text x="612" y="1010" font-size="8" fill="#a5d6a7">Factor5: TxID</text>
+  <text x="612" y="1023" font-size="8" fill="#a5d6a7">FactorN: etc.</text>
+  <circle cx="590" cy="886" r="7" fill="none" stroke="#66bb6a" stroke-width="1.2"></circle>
+  <line x1="590" y1="883" x2="590" y2="886" stroke="#66bb6a" stroke-width="1"></line>
+  <line x1="590" y1="886" x2="593" y2="886" stroke="#66bb6a" stroke-width="1"></line>
+  <circle cx="600" cy="909" r="7" fill="none" stroke="#66bb6a" stroke-width="1.2"></circle>
+  <line x1="600" y1="906" x2="600" y2="909" stroke="#66bb6a" stroke-width="1"></line>
+  <line x1="600" y1="909" x2="603" y2="909" stroke="#66bb6a" stroke-width="1"></line>
+  <rect x="602" y="1042" width="80" height="34" rx="5" fill="#0d1a0d" stroke="#2e7d32" stroke-width="1"></rect>
+  <text x="642" y="1057" text-anchor="middle" font-size="8" font-weight="600" fill="#66bb6a">Adaptive</text>
+  <text x="642" y="1068" text-anchor="middle" font-size="8" fill="#66bb6a">Strategy</text>
+  <rect x="696" y="1042" width="80" height="34" rx="5" fill="#0d1a0d" stroke="#2e7d32" stroke-width="1"></rect>
+  <text x="736" y="1057" text-anchor="middle" font-size="8" font-weight="600" fill="#81c784">Data Entry</text>
+  <text x="736" y="1068" text-anchor="middle" font-size="8" fill="#81c784">Ledger/IPFS</text>
+  <text x="679" y="1095" text-anchor="middle" font-size="10" font-weight="700" fill="#e53935">Nth-Level Entity</text>
+  <line x1="682" y1="1059" x2="696" y2="1059" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"></line>
+
+  
+  <line x1="30" y1="1110" x2="1070" y2="1110" stroke="#2a3a5c" stroke-width="1" stroke-dasharray="5,3"></line>
+
+  
+  <rect x="42" y="1118" width="1016" height="220" rx="10" fill="none" stroke="#2a3a5c" stroke-width="1.5" stroke-dasharray="6,4"></rect>
+  <text x="550" y="1140" text-anchor="middle" font-size="16" font-weight="700" fill="#ffffff" letter-spacing="1">Micro Flow-Control</text>
+
+  
+  <circle cx="550" cy="1185" r="16" fill="#1e2740" stroke="#7eb3f7" stroke-width="2"></circle>
+  <text x="550" y="1191" text-anchor="middle" font-size="18" fill="#7eb3f7">👤</text>
+  <text x="550" y="1215" text-anchor="middle" font-size="10" font-weight="700" fill="#e53935">User Role</text>
+  
+  <path d="M520 1195 A35 35 0 1 1 580 1195" stroke="#e53935" stroke-width="2" fill="none" marker-end="url(#arrow-red)"></path>
+
+  
+  <rect x="60" y="1148" width="370" height="170" rx="8" fill="#131929" stroke="#3d5a8a" stroke-width="1.5"></rect>
+  <text x="245" y="1168" text-anchor="middle" font-size="11" font-weight="700" fill="#7eb3f7">User operation</text>
+  <line x1="70" y1="1174" x2="420" y2="1174" stroke="#2a3a5c" stroke-width="0.8"></line>
+
+  <rect x="80" y="1182" width="155" height="36" rx="6" fill="#1a2a1a" stroke="#2e7d32" stroke-width="1.2"></rect>
+  <text x="157" y="1197" text-anchor="middle" font-size="9" font-weight="600" fill="#66bb6a">Authorization</text>
+  <text x="157" y="1210" text-anchor="middle" font-size="8.5" fill="#a5d6a7">&amp; normal status</text>
+
+  <rect x="255" y="1182" width="155" height="36" rx="6" fill="#1a2a1a" stroke="#2e7d32" stroke-width="1.2"></rect>
+  <text x="332" y="1197" text-anchor="middle" font-size="9" font-weight="600" fill="#66bb6a">Role Change</text>
+  <text x="332" y="1210" text-anchor="middle" font-size="8.5" fill="#a5d6a7">Adaptive γ update</text>
+
+  <rect x="80" y="1232" width="155" height="36" rx="6" fill="#0d1f2d" stroke="#0277bd" stroke-width="1.2"></rect>
+  <text x="157" y="1247" text-anchor="middle" font-size="9" font-weight="600" fill="#4fc3f7">RGCA Streaming</text>
+  <text x="157" y="1260" text-anchor="middle" font-size="8.5" fill="#81d4fa">Tier-matched delivery</text>
+
+  <rect x="255" y="1232" width="155" height="36" rx="6" fill="#1a1a0d" stroke="#f57c00" stroke-width="1.2"></rect>
+  <text x="332" y="1247" text-anchor="middle" font-size="9" font-weight="600" fill="#ffb74d">CAAR Receipt</text>
+  <text x="332" y="1260" text-anchor="middle" font-size="8.5" fill="#ffe0b2">Session close + submit</text>
+
+  
+  <line x1="430" y1="1230" x2="516" y2="1200" stroke="#3d5a8a" stroke-width="1.5" marker-end="url(#arrow-blue)"></line>
+  <line x1="510" y1="1218" x2="435" y2="1248" stroke="#3d5a8a" stroke-width="1.5" marker-end="url(#arrow-blue)"></line>
+
+  
+  <rect x="670" y="1148" width="380" height="170" rx="8" fill="#1a0a0a" stroke="#e53935" stroke-width="1.5"></rect>
+  <text x="860" y="1168" text-anchor="middle" font-size="11" font-weight="700" fill="#ef9a9a">Abnormal user operation</text>
+  <line x1="680" y1="1174" x2="1040" y2="1174" stroke="#5c1a1a" stroke-width="0.8"></line>
+
+  
+  <circle cx="720" cy="1202" r="12" fill="none" stroke="#e53935" stroke-width="2"></circle>
+  <line x1="712" y1="1194" x2="728" y2="1210" stroke="#e53935" stroke-width="2"></line>
+  <rect x="740" y="1186" width="145" height="32" rx="5" fill="#2a0d0d" stroke="#e53935" stroke-width="1"></rect>
+  <text x="812" y="1199" text-anchor="middle" font-size="8.5" font-weight="600" fill="#ef9a9a">Exceeding Risk Budget</text>
+  <text x="812" y="1212" text-anchor="middle" font-size="8" fill="#e57373">L_cum &gt;= 1.5 x B → DENY</text>
+
+  
+  <circle cx="720" cy="1248" r="12" fill="none" stroke="#e53935" stroke-width="2"></circle>
+  <line x1="712" y1="1240" x2="728" y2="1256" stroke="#e53935" stroke-width="2"></line>
+  <rect x="740" y="1232" width="145" height="32" rx="5" fill="#2a0d0d" stroke="#e53935" stroke-width="1"></rect>
+  <text x="812" y="1245" text-anchor="middle" font-size="8.5" font-weight="600" fill="#ef9a9a">Cluster Risk Trigger</text>
+  <text x="812" y="1258" text-anchor="middle" font-size="8" fill="#e57373">R_N &gt; 0 → reduce m&#39;</text>
+
+  
+  <circle cx="900" cy="1202" r="12" fill="none" stroke="#e53935" stroke-width="2"></circle>
+  <line x1="892" y1="1194" x2="908" y2="1210" stroke="#e53935" stroke-width="2"></line>
+  <rect x="920" y="1186" width="120" height="32" rx="5" fill="#2a0d0d" stroke="#e53935" stroke-width="1"></rect>
+  <text x="980" y="1199" text-anchor="middle" font-size="8.5" font-weight="600" fill="#ef9a9a">Unauthorized</text>
+  <text x="980" y="1212" text-anchor="middle" font-size="8" fill="#e57373">Access</text>
+
+  
+  <circle cx="900" cy="1248" r="12" fill="none" stroke="#e53935" stroke-width="2"></circle>
+  <line x1="892" y1="1240" x2="908" y2="1256" stroke="#e53935" stroke-width="2"></line>
+  <rect x="920" y="1232" width="120" height="32" rx="5" fill="#2a0d0d" stroke="#e53935" stroke-width="1"></rect>
+  <text x="980" y="1245" text-anchor="middle" font-size="8.5" font-weight="600" fill="#ef9a9a">Role Disguise</text>
+  <text x="980" y="1258" text-anchor="middle" font-size="8" fill="#e57373">Token forgery → block</text>
+
+  
+  <line x1="584" y1="1200" x2="660" y2="1220" stroke="#e53935" stroke-width="1.5" marker-end="url(#arrow-red)"></line>
+
+  
+  <text x="550" y="1368" text-anchor="middle" font-size="9" fill="#3a4a6a">BV-GCA · Matvei Prikhozhdenko · Northwestern Polytechnical University · April 2026</text>
+
+  </g>
+</svg>

@@ -1,0 +1,400 @@
+/* ============================================================================
+   CYBERPUNK MODE — toggled by html[data-visual-mode="cyber"]
+   Genre treatment, not CDPR's exact UI: crimson void, cyan HUD, yellow glitch.
+   ============================================================================ */
+:root {
+  --cb-void:    #0a0306;
+  --cb-bg:      #1a0608;
+  --cb-bg2:     #260a0e;
+  --cb-bg3:     #340e14;
+  --cb-crimson: #5a1119;
+  --cb-text:    #f5e8d6;
+  --cb-text2:   #b89d80;
+  --cb-text3:   #7a6657;
+  --cb-cyan:    #00f0ff;
+  --cb-cyan-d:  #0aa8b5;
+  --cb-yellow:  #fcee0c;
+  --cb-yellow-d:#a89b00;
+  --cb-red:     #ff2d55;
+  --cb-red-d:   #a81230;
+  --cb-line:    rgba(255,212,180,.18);
+  --cb-line-hi: rgba(0,240,255,.45);
+}
+html[data-visual-mode="cyber"] {
+  color-scheme: dark;
+  --bg: var(--cb-bg);
+  --bg2: var(--cb-bg2);
+  --bg3: var(--cb-bg3);
+  --bg4: var(--cb-crimson);
+  --text: var(--cb-text);
+  --text2: var(--cb-text2);
+  --text3: var(--cb-text3);
+  --accent: var(--cb-cyan);
+  --accent-hover: var(--cb-cyan-d);
+  --accent2: rgba(0,240,255,.14);
+  --teal: var(--cb-cyan);
+  --magenta: var(--cb-yellow);
+  --magenta2: rgba(252,238,12,.14);
+  --amber: var(--cb-yellow);
+  --amber2: rgba(252,238,12,.14);
+  --red: var(--cb-red);
+  --red2: rgba(255,45,85,.13);
+  --green: #2eff7a;
+  --green2: rgba(46,255,122,.14);
+  --border: var(--cb-line);
+  --border-hi: var(--cb-line-hi);
+  --neon-line: rgba(0,240,255,.35);
+  --panel-shadow: 0 0 0 1px rgba(0,240,255,.06), 0 22px 60px rgba(10,3,6,.7);
+  --soft-shadow: 0 0 0 1px rgba(0,240,255,.04), 0 14px 40px rgba(10,3,6,.55);
+  --focus-ring: 0 0 0 1px var(--cb-cyan), 0 0 22px rgba(0,240,255,.35);
+}
+html[data-visual-mode="cyber"] body {
+  background:
+    radial-gradient(ellipse 80% 60% at 100% 0%, var(--cb-crimson) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 0% 100%, #1a0810 0%, transparent 50%),
+    linear-gradient(180deg, var(--cb-bg) 0%, var(--cb-void) 100%);
+}
+html[data-visual-mode="cyber"] body::before {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,.35) 2px 3px),
+    repeating-linear-gradient(0deg, transparent 0 4px, rgba(0,240,255,.025) 4px 5px);
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+html[data-visual-mode="cyber"] body::after {
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .9  0 0 0 0 .8  0 0 0 .35 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  opacity: .14;
+  mix-blend-mode: screen;
+  animation: cbNoise .14s steps(2) infinite;
+}
+@keyframes cbNoise {
+  0%   { transform: translate(0,0); }
+  50%  { transform: translate(-1px, 2px); }
+  100% { transform: translate(2px, -1px); }
+}
+
+/* Hide constellation in cyberpunk mode — the noise + scanlines do the work */
+html[data-visual-mode="cyber"] .caac-space-bg { opacity: .14; }
+
+/* Cards: hard angular cuts, crimson surfaces, cyan top-right corner triangle */
+html[data-visual-mode="cyber"] .card,
+html[data-visual-mode="cyber"] .auth-card,
+html[data-visual-mode="cyber"] .scenario-list,
+html[data-visual-mode="cyber"] .scenario-detail,
+html[data-visual-mode="cyber"] .ops-panel,
+html[data-visual-mode="cyber"] .ops-timeline-panel,
+html[data-visual-mode="cyber"] .trust-orb-card,
+html[data-visual-mode="cyber"] .identity-strip-card,
+html[data-visual-mode="cyber"] .stat-card,
+html[data-visual-mode="cyber"] .info-box {
+  background:
+    linear-gradient(180deg, rgba(0,240,255,.04), transparent 30%),
+    linear-gradient(180deg, rgba(90,17,25,.55), rgba(10,3,6,.75));
+  border: 1px solid var(--cb-cyan-d);
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  position: relative;
+  backdrop-filter: none;
+}
+html[data-visual-mode="cyber"] .card::before,
+html[data-visual-mode="cyber"] .auth-card::before,
+html[data-visual-mode="cyber"] .stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 14px; height: 14px;
+  background: var(--cb-cyan);
+  clip-path: polygon(100% 0, 100% 100%, 0 0);
+  pointer-events: none;
+}
+html[data-visual-mode="cyber"] .card::after,
+html[data-visual-mode="cyber"] .auth-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 14px; height: 14px;
+  background: var(--cb-yellow);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+
+/* Headers: angular HUD strip with cyan border, cyan kicker text */
+html[data-visual-mode="cyber"] .space-page header,
+html[data-visual-mode="cyber"] .msg-app header {
+  background: linear-gradient(180deg, rgba(10,3,6,.92), rgba(10,3,6,.6));
+  border: 1px solid var(--cb-line);
+  border-bottom: 1px solid var(--cb-cyan-d);
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+}
+html[data-visual-mode="cyber"] .logo h1 {
+  font-family: var(--mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+html[data-visual-mode="cyber"] .logo p {
+  color: var(--cb-cyan);
+  letter-spacing: .14em;
+}
+html[data-visual-mode="cyber"] .logo-mark {
+  background: var(--cb-bg2);
+  color: var(--cb-cyan);
+  border: 1px solid var(--cb-cyan-d);
+  border-radius: 0;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+  box-shadow: 0 0 0 1px rgba(0,240,255,.18), 0 0 24px rgba(0,240,255,.18);
+}
+
+/* Buttons: yellow with hard chevron clip, red-deep > prefix */
+html[data-visual-mode="cyber"] .btn-primary,
+html[data-visual-mode="cyber"] .scenario-run-btn,
+html[data-visual-mode="cyber"] .ha-primary {
+  background: var(--cb-yellow);
+  color: var(--cb-void);
+  border: none;
+  border-radius: 0;
+  font-family: var(--mono);
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+  box-shadow: none;
+}
+html[data-visual-mode="cyber"] .btn-primary::before,
+html[data-visual-mode="cyber"] .scenario-run-btn::before,
+html[data-visual-mode="cyber"] .ha-primary::before {
+  content: '> ';
+  color: var(--cb-red-d);
+  font-weight: 700;
+}
+html[data-visual-mode="cyber"] .btn-primary:hover,
+html[data-visual-mode="cyber"] .scenario-run-btn:hover,
+html[data-visual-mode="cyber"] .ha-primary:hover {
+  background: #fff200;
+  box-shadow: 0 0 0 2px var(--cb-yellow), 0 0 24px rgba(252,238,12,.45);
+  transform: none;
+}
+html[data-visual-mode="cyber"] .btn-secondary,
+html[data-visual-mode="cyber"] .ha-secondary,
+html[data-visual-mode="cyber"] .btn-sm {
+  border-color: var(--cb-cyan-d);
+  color: var(--cb-cyan);
+  border-radius: 0;
+  background: transparent;
+}
+
+/* Inputs: angular cut, cyan left rail, cyan focus glow */
+html[data-visual-mode="cyber"] .field input,
+html[data-visual-mode="cyber"] .field select,
+html[data-visual-mode="cyber"] .form-group input,
+html[data-visual-mode="cyber"] .file-search-input,
+html[data-visual-mode="cyber"] textarea,
+html[data-visual-mode="cyber"] .msg-input-row input {
+  background: rgba(10,3,6,.7);
+  border: 1px solid var(--cb-line);
+  border-left: 2px solid var(--cb-cyan-d);
+  border-radius: 0;
+  color: var(--cb-text);
+  font-family: var(--mono);
+  letter-spacing: .04em;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+}
+html[data-visual-mode="cyber"] .field input:focus,
+html[data-visual-mode="cyber"] .field select:focus,
+html[data-visual-mode="cyber"] .form-group input:focus,
+html[data-visual-mode="cyber"] textarea:focus {
+  border-color: var(--cb-cyan);
+  border-left-color: var(--cb-cyan);
+  background: rgba(0,240,255,.06);
+  box-shadow: 0 0 0 1px var(--cb-cyan), 0 0 18px rgba(0,240,255,.25);
+}
+
+/* Badges + decisions: angular */
+html[data-visual-mode="cyber"] .badge,
+html[data-visual-mode="cyber"] .status-badge,
+html[data-visual-mode="cyber"] .decision-badge {
+  border-radius: 0;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+  font-family: var(--mono);
+  letter-spacing: .12em;
+}
+html[data-visual-mode="cyber"] .decision-PERMIT { background: rgba(46,255,122,.14); color: #2eff7a; border-color: rgba(46,255,122,.4); }
+html[data-visual-mode="cyber"] .decision-DENY   { background: rgba(255,45,85,.14); color: var(--cb-red); border-color: var(--cb-red-d); }
+
+/* Tabs as angular chevrons */
+html[data-visual-mode="cyber"] .tab {
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  font-family: var(--mono);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+html[data-visual-mode="cyber"] .tab.active {
+  background: var(--cb-cyan);
+  color: var(--cb-void);
+  border-color: var(--cb-cyan);
+}
+
+/* Glitch on the biggest headline (overview hero h1, scenario-hero h1, login title) */
+html[data-visual-mode="cyber"] .hero h1,
+html[data-visual-mode="cyber"] .scenario-hero h1,
+html[data-visual-mode="cyber"] .logo-section h1 {
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: var(--cb-text);
+  text-shadow: 2px 0 var(--cb-red), -2px 0 var(--cb-cyan);
+  animation: cbGlitch 4.5s steps(1) infinite;
+}
+@keyframes cbGlitch {
+  0%, 92%, 100% { text-shadow: 2px 0 var(--cb-red), -2px 0 var(--cb-cyan); transform: translate(0,0); }
+  93% { text-shadow: 4px 0 var(--cb-red), -4px 0 var(--cb-cyan); transform: translate(-1px,1px); }
+  94% { text-shadow: -3px 0 var(--cb-red), 3px 0 var(--cb-cyan); transform: translate(1px,-1px); }
+  96% { text-shadow: 0 0 var(--cb-red), 0 0 var(--cb-cyan); transform: translate(0,0); }
+}
+
+/* Section titles in overview / kicker get cyan bracketed treatment */
+html[data-visual-mode="cyber"] .stitle {
+  border-left-color: var(--cb-cyan) !important;
+  font-family: var(--mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+html[data-visual-mode="cyber"] .stitle::before {
+  content: '/// ';
+  color: var(--cb-text3);
+}
+
+/* Risk inspector / scenario nodes inherit clip + cyan accent */
+html[data-visual-mode="cyber"] .scenario-node,
+html[data-visual-mode="cyber"] .hero-node,
+html[data-visual-mode="cyber"] .trust-node-card,
+html[data-visual-mode="cyber"] .risk-metric,
+html[data-visual-mode="cyber"] .ops-card,
+html[data-visual-mode="cyber"] .identity-chip,
+html[data-visual-mode="cyber"] .ctx-row,
+html[data-visual-mode="cyber"] .info-row {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  border-color: var(--cb-line);
+  background: linear-gradient(180deg, rgba(90,17,25,.35), rgba(10,3,6,.55));
+}
+html[data-visual-mode="cyber"] .scenario-node.active,
+html[data-visual-mode="cyber"] .scenario-step.active {
+  border-color: var(--cb-cyan);
+  box-shadow: 0 0 0 1px var(--cb-cyan), 0 0 22px rgba(0,240,255,.35);
+}
+
+/* Hero scoped polish */
+html[data-visual-mode="cyber"] .hero::before {
+  background: linear-gradient(180deg, rgba(10,3,6,.7), transparent 92%),
+    repeating-linear-gradient(90deg, transparent 0 46px, rgba(0,240,255,.06) 46px 47px),
+    repeating-linear-gradient(0deg, transparent 0 46px, rgba(0,240,255,.06) 46px 47px);
+  border-color: var(--cb-cyan-d);
+  border-radius: 0;
+}
+html[data-visual-mode="cyber"] .cap-pill {
+  background: rgba(0,240,255,.06);
+  border-color: var(--cb-cyan-d);
+  color: var(--cb-cyan);
+  border-radius: 0;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+}
+html[data-visual-mode="cyber"] .ov-nav {
+  background: linear-gradient(180deg, rgba(10,3,6,.92), rgba(10,3,6,.6));
+  border-color: var(--cb-cyan-d);
+  border-radius: 0;
+}
+html[data-visual-mode="cyber"] .ov-nav a {
+  color: var(--cb-text2);
+  border-radius: 0;
+  font-family: var(--mono);
+  letter-spacing: .12em;
+}
+html[data-visual-mode="cyber"] .ov-nav a.active,
+html[data-visual-mode="cyber"] .ov-nav a:hover {
+  color: var(--cb-cyan);
+  background: rgba(0,240,255,.10);
+}
+
+/* Trust orb in cyberpunk: cyan pointer, dark void core */
+html[data-visual-mode="cyber"] .trust-orb {
+  background:
+    radial-gradient(circle at center, var(--cb-bg) 0 55%, transparent 56%),
+    conic-gradient(var(--cb-cyan) var(--trust-angle, 0deg), rgba(255,212,180,.14) 0);
+  box-shadow: 0 0 0 1px var(--cb-cyan-d), 0 0 28px rgba(0,240,255,.25);
+}
+html[data-visual-mode="cyber"] .trust-orb span {
+  color: var(--cb-cyan);
+  text-shadow: 0 0 12px var(--cb-cyan);
+}
+
+/* The cyberpunk toggle button itself */
+.cyber-toggle {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: 18px;
+  z-index: 1300;
+  height: 34px;
+  min-width: 92px;
+  padding: 0 14px;
+  border: 1px solid var(--border-hi);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg2) 88%, transparent);
+  color: var(--text2);
+  box-shadow: var(--panel-shadow);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .18s, color .18s, border-color .18s, background-color .18s;
+}
+.cyber-toggle:hover {
+  transform: translateY(-2px);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+html[data-visual-mode="cyber"] .cyber-toggle {
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  background: var(--cb-yellow);
+  color: var(--cb-void);
+  border: none;
+  font-weight: 700;
+  letter-spacing: .26em;
+  box-shadow: 0 0 0 2px var(--cb-yellow-d), 0 0 22px rgba(252,238,12,.35);
+}
+html[data-visual-mode="cyber"] .cyber-toggle::before {
+  content: '> ';
+  color: var(--cb-red-d);
+}
+html[data-visual-mode="cyber"] .cyber-toggle:hover {
+  background: #fff200;
+  transform: translateY(-2px);
+}
+@media (max-width: 520px) {
+  .cyber-toggle {
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    right: 12px;
+    height: 38px;
+    min-width: 84px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-visual-mode="cyber"] body::after { animation: none; }
+  html[data-visual-mode="cyber"] .hero h1,
+  html[data-visual-mode="cyber"] .scenario-hero h1,
+  html[data-visual-mode="cyber"] .logo-section h1 { animation: none; text-shadow: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-rail::before {
+    animation: none !important;
+    opacity: .32;
+  }
+}

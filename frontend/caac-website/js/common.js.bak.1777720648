@@ -1,0 +1,581 @@
+/* ============================================================
+   CAAC System — Common JavaScript
+   Shared across all pages: auth, utils, constants
+   ============================================================ */
+
+const GATEWAY_URL = (() => {
+  const override = (window.CAAC_GATEWAY_URL || '').trim();
+  if (override) return override.replace(/\/+$/, '');
+  const host = (window.location && window.location.hostname) ? window.location.hostname : 'localhost';
+  const protocol = (window.location && (window.location.protocol === 'http:' || window.location.protocol === 'https:'))
+    ? window.location.protocol
+    : 'http:';
+  if (host.endsWith('.trycloudflare.com')) {
+    return `${protocol}//${host}`;
+  }
+  return `${protocol}//${host}:5051`;
+})();
+const ROLE_LABELS = { 1: 'Junior', 2: 'Staff', 3: 'Senior', 4: 'Manager', 5: 'Administrator' };
+const S_LABELS = { 1: 'Public', 2: 'Internal', 3: 'Confidential', 4: 'Restricted', 5: 'Top Secret' };
+const PERF_MODE_KEY = 'caac_perf_mode';
+
+const CAAC_PERF = (() => {
+  const mq = query => window.matchMedia && window.matchMedia(query).matches;
+  const validModes = new Set(['smooth', 'lite', 'balanced', 'full']);
+  const params = new URLSearchParams(window.location.search || '');
+  const requested = (params.get('perf') || '').toLowerCase();
+  let saved = '';
+  try { saved = (localStorage.getItem(PERF_MODE_KEY) || '').toLowerCase(); } catch {}
+
+  const reduceMotion = mq('(prefers-reduced-motion: reduce)');
+  const coarsePointer = mq('(any-pointer: coarse)');
+  const smallScreen = mq('(max-width: 720px)');
+  const tinyScreen = mq('(max-width: 420px)');
+  const lowMemory = !!(navigator.deviceMemory && navigator.deviceMemory <= 4);
+  const lowConcurrency = !!(navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+  const saveData = !!(navigator.connection && navigator.connection.saveData);
+
+  let mode = validModes.has(requested) ? requested : (validModes.has(saved) ? saved : '');
+  if (!mode) {
+    mode = (reduceMotion || saveData || tinyScreen || (smallScreen && coarsePointer) || (lowMemory && lowConcurrency))
+      ? 'lite'
+      : 'balanced';
+  }
+  if (validModes.has(requested)) {
+    try { localStorage.setItem(PERF_MODE_KEY, mode); } catch {}
+  }
+
+  const perf = {
+    mode,
+    reduceMotion,
+    coarsePointer,
+    smallScreen,
+    tinyScreen,
+    lowMemory,
+    lowConcurrency,
+    saveData,
+    isSmooth: mode === 'smooth',
+    isLite: mode === 'lite' || mode === 'smooth',
+    isBalanced: mode === 'balanced',
+    isFull: mode === 'full'
+  };
+  perf.targetFps = perf.isSmooth ? 20 : (perf.isLite ? 24 : (perf.isFull ? 60 : 36));
+  document.documentElement.setAttribute('data-perf-mode', mode);
+  window.CAAC_PERF = perf;
+  return perf;
+})();
+
+let currentUser = null;
+
+// ================================================================
+// THEME MANAGEMENT
+// ================================================================
+const THEME_KEY = 'caac_theme';
+const DEMO_MODE_KEY = 'caac_demo_mode';
+
+function preferredTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch {}
+  if (saved === 'light' || saved === 'dark') return saved;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function setTheme(theme) {
+  const next = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem(THEME_KEY, next); } catch {}
+  document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
+    btn.textContent = next === 'light' ? 'Dark' : 'Light';
+    btn.setAttribute('aria-label', 'Switch to ' + (next === 'light' ? 'dark' : 'light') + ' theme');
+  });
+  window.dispatchEvent(new CustomEvent('caac-theme-change', { detail: { theme: next } }));
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || preferredTheme();
+  setTheme(current === 'light' ? 'dark' : 'light');
+}
+
+function installThemeToggle() {
+  if (document.querySelector('[data-theme-toggle]')) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'theme-toggle';
+  btn.setAttribute('data-theme-toggle', '');
+  btn.onclick = toggleTheme;
+  document.body.appendChild(btn);
+  setTheme(document.documentElement.getAttribute('data-theme') || preferredTheme());
+}
+
+document.documentElement.setAttribute('data-theme', preferredTheme());
+window.addEventListener('DOMContentLoaded', installThemeToggle);
+
+// ================================================================
+// DEMO MODE AND PAGE TRANSITIONS
+// ================================================================
+function isDemoMode() {
+  try { return localStorage.getItem(DEMO_MODE_KEY) === 'true'; } catch { return false; }
+}
+
+function setDemoMode(enabled) {
+  const next = !!enabled;
+  try { localStorage.setItem(DEMO_MODE_KEY, next ? 'true' : 'false'); } catch {}
+  document.body.classList.toggle('demo-mode', next);
+  document.documentElement.classList.toggle('demo-mode', next);
+  document.querySelectorAll('[data-demo-toggle]').forEach(btn => {
+    btn.textContent = next ? 'Demo on' : 'Demo off';
+    btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+  });
+  window.dispatchEvent(new CustomEvent('caac-demo-mode-change', { detail: { enabled: next } }));
+}
+
+function toggleDemoMode() {
+  setDemoMode(!isDemoMode());
+}
+
+function installDemoModeToggle() {
+  if (document.querySelector('[data-demo-toggle]')) {
+    setDemoMode(isDemoMode());
+    return;
+  }
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'demo-toggle';
+  btn.setAttribute('data-demo-toggle', '');
+  btn.onclick = toggleDemoMode;
+  document.body.appendChild(btn);
+  setDemoMode(isDemoMode());
+}
+
+function installPageTransitions() {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.body.classList.add('caac-page-ready');
+  document.addEventListener('click', event => {
+    const anchor = event.target.closest('a[href]');
+    if (!anchor || event.defaultPrevented) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (anchor.target || anchor.hasAttribute('download')) return;
+    const href = anchor.getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
+    const url = new URL(anchor.href, window.location.href);
+    if (url.origin !== window.location.origin) return;
+    if (url.pathname === window.location.pathname && url.hash) return;
+    event.preventDefault();
+    document.body.classList.add('caac-page-leaving');
+    setTimeout(() => { window.location.href = url.href; }, 140);
+  });
+}
+
+const DEFENSE_STEPS = [
+  {
+    page: 'overview.html',
+    stage: 'Architecture',
+    title: '1. System entry point',
+    summary: 'Start with the browser console, gateway, oracle, Fabric PDP, and encrypted IPFS storage.',
+    detail: 'Use this step to explain the overall CAAC request path before showing any access request.'
+  },
+  {
+    page: 'index.html',
+    stage: 'Context',
+    title: '2. Context collection',
+    summary: 'Show C_S, C_E, C_R, and C_O before requesting access.',
+    detail: 'Point at the Risk inspector: it connects subject trust, device/network scores, sensitivity, threshold, and RGCA tier.'
+  },
+  {
+    page: 'index.html',
+    stage: 'Decision',
+    title: '3. Access decision',
+    summary: 'Run a request and explain DT_score, P_eff, risk margin, and PERMIT/DENY.',
+    detail: 'If Fabric is offline, turn Demo Mode on and use Scenario Demo for the visual path.'
+  },
+  {
+    page: 'scenarios.html',
+    stage: 'Walkthrough',
+    title: '4. Scenario walkthrough',
+    summary: 'Animate clean permit, deny, revocation, budget exhaustion, TOTP, and VPN/WiFi-switch cases.',
+    detail: 'This is the safest defense page because it stays presentation-ready without chaincode.'
+  },
+  {
+    page: 'admin.html',
+    stage: 'Operations',
+    title: '5. Admin evidence',
+    summary: 'Show users, registry, anomalies, audit trail, and security operations summary.',
+    detail: 'Use quick filters to jump directly to pending files, high sensitivity, low trust, deny/revoke, or anomalies.'
+  },
+  {
+    page: 'profile.html',
+    stage: 'Account',
+    title: '6. User security posture',
+    summary: 'Close with trust, role, verification, 2FA, device, network, uploaded files, and access history.',
+    detail: 'This connects the algorithm to a human account view.'
+  }
+];
+
+function currentDefensePage() {
+  const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  return page || 'index.html';
+}
+
+function defenseStepIndexForPage() {
+  const page = currentDefensePage();
+  const idx = DEFENSE_STEPS.findIndex(step => step.page === page);
+  return idx >= 0 ? idx : 0;
+}
+
+function buildDefenseStepHtml(step, idx, activeIdx) {
+  const state = idx < activeIdx ? 'done' : idx === activeIdx ? 'active' : '';
+  return `<button type="button" class="defense-step ${state}" data-defense-step="${idx}">
+    <span>${idx + 1}</span>
+    <strong>${escapeHtml(step.stage)}</strong>
+    <small>${escapeHtml(step.page)}</small>
+  </button>`;
+}
+
+function setDefenseStep(index) {
+  const safeIndex = Math.max(0, Math.min(DEFENSE_STEPS.length - 1, Number(index) || 0));
+  const step = DEFENSE_STEPS[safeIndex];
+  const shell = document.getElementById('defensePresenter');
+  if (!shell) return;
+  shell.dataset.step = String(safeIndex);
+  shell.querySelector('[data-defense-title]').textContent = step.title;
+  shell.querySelector('[data-defense-summary]').textContent = step.summary;
+  shell.querySelector('[data-defense-detail]').textContent = step.detail;
+  shell.querySelector('[data-defense-progress]').style.width = (((safeIndex + 1) / DEFENSE_STEPS.length) * 100).toFixed(0) + '%';
+  shell.querySelector('[data-defense-count]').textContent = `${safeIndex + 1} / ${DEFENSE_STEPS.length}`;
+  shell.querySelector('[data-defense-steps]').innerHTML = DEFENSE_STEPS.map((s, i) => buildDefenseStepHtml(s, i, safeIndex)).join('');
+  shell.querySelectorAll('[data-defense-step]').forEach(btn => btn.addEventListener('click', () => setDefenseStep(btn.dataset.defenseStep)));
+  const nav = shell.querySelector('[data-defense-open-page]');
+  nav.textContent = currentDefensePage() === step.page ? 'Current page' : `Open ${step.page}`;
+  nav.disabled = currentDefensePage() === step.page;
+  nav.onclick = () => { window.location.href = step.page; };
+  const prev = shell.querySelector('[data-defense-prev]');
+  const next = shell.querySelector('[data-defense-next]');
+  prev.disabled = safeIndex === 0;
+  next.disabled = safeIndex === DEFENSE_STEPS.length - 1;
+}
+
+function openDefensePresenter() {
+  const shell = document.getElementById('defensePresenter');
+  if (!shell) return;
+  shell.classList.add('open');
+  shell.setAttribute('aria-hidden', 'false');
+  setDefenseStep(defenseStepIndexForPage());
+}
+
+function closeDefensePresenter() {
+  const shell = document.getElementById('defensePresenter');
+  if (!shell) return;
+  shell.classList.remove('open');
+  shell.setAttribute('aria-hidden', 'true');
+}
+
+function installDefensePresenter() {
+  if (document.getElementById('defensePresenter')) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'defense-toggle';
+  btn.textContent = 'Defense';
+  btn.setAttribute('aria-label', 'Open defense presentation guide');
+  btn.onclick = openDefensePresenter;
+  document.body.appendChild(btn);
+
+  const shell = document.createElement('div');
+  shell.className = 'defense-presenter';
+  shell.id = 'defensePresenter';
+  shell.setAttribute('aria-hidden', 'true');
+  shell.innerHTML = `
+    <div class="defense-backdrop" data-defense-close></div>
+    <section class="defense-panel" role="dialog" aria-modal="true" aria-label="Defense presentation guide">
+      <div class="defense-panel-head">
+        <div>
+          <div class="defense-kicker">CAAC defense guide</div>
+          <h2 data-defense-title></h2>
+        </div>
+        <button type="button" class="defense-close" data-defense-close aria-label="Close defense guide">x</button>
+      </div>
+      <div class="defense-progress"><span data-defense-progress></span></div>
+      <div class="defense-body">
+        <div class="defense-step-list" data-defense-steps></div>
+        <div class="defense-card">
+          <div class="defense-count" data-defense-count></div>
+          <p class="defense-summary" data-defense-summary></p>
+          <p class="defense-detail" data-defense-detail></p>
+          <div class="defense-actions">
+            <button type="button" class="btn-sm" data-defense-prev>Previous</button>
+            <button type="button" class="btn-sm" data-defense-next>Next</button>
+            <button type="button" class="btn-sm btn-activate" data-defense-open-page>Open page</button>
+          </div>
+        </div>
+      </div>
+    </section>`;
+  document.body.appendChild(shell);
+  shell.querySelectorAll('[data-defense-close]').forEach(el => el.addEventListener('click', closeDefensePresenter));
+  shell.querySelector('[data-defense-prev]').addEventListener('click', () => setDefenseStep(Number(shell.dataset.step || '0') - 1));
+  shell.querySelector('[data-defense-next]').addEventListener('click', () => setDefenseStep(Number(shell.dataset.step || '0') + 1));
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeDefensePresenter();
+  });
+  setDefenseStep(defenseStepIndexForPage());
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  installDemoModeToggle();
+  installDefensePresenter();
+  installPageTransitions();
+});
+
+// ================================================================
+// TOKEN MANAGEMENT
+// ================================================================
+function clearAuthStorage() {
+  sessionStorage.removeItem('caac_token');
+  sessionStorage.removeItem('caac_user');
+}
+
+function setAuthSession(token, user) {
+  if (token) {
+    sessionStorage.setItem('caac_token', token);
+  }
+  if (user) {
+    sessionStorage.setItem('caac_user', JSON.stringify(user));
+  }
+}
+
+function getToken() {
+  return sessionStorage.getItem('caac_token');
+}
+
+function authHeaders(json) {
+  const h = {};
+  if (json) h['Content-Type'] = 'application/json';
+  const t = getToken();
+  if (t) h['Authorization'] = 'Bearer ' + t;
+  return h;
+}
+
+// ================================================================
+// LIVE EVENTS
+// ================================================================
+function connectCaacEvents(handler, options = {}) {
+  const token = getToken();
+  if (!token || typeof fetch !== 'function' || typeof ReadableStream === 'undefined') {
+    return { close() {} };
+  }
+
+  let closed = false;
+  let retryMs = 1000;
+  let controller = null;
+  const maxRetryMs = options.maxRetryMs || 15000;
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function dispatchEventBlock(block) {
+    const lines = block.split(/\r?\n/);
+    let eventName = 'message';
+    const dataLines = [];
+    lines.forEach(line => {
+      if (line.startsWith('event:')) eventName = line.slice(6).trim();
+      else if (line.startsWith('data:')) dataLines.push(line.slice(5).trimStart());
+    });
+    if (dataLines.length === 0) return;
+    let payload = dataLines.join('\n');
+    try { payload = JSON.parse(payload); } catch {}
+    try { handler({ event: eventName, payload }); } catch (err) { console.warn('CAAC live event handler failed', err); }
+  }
+
+  async function listen() {
+    while (!closed) {
+      controller = new AbortController();
+      try {
+        const res = await fetch(GATEWAY_URL + '/api/events/stream', {
+          headers: authHeaders(false),
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        if (!res.ok || !res.body) throw new Error('live stream HTTP ' + res.status);
+        retryMs = 1000;
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (!closed) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const blocks = buffer.split(/\r?\n\r?\n/);
+          buffer = blocks.pop() || '';
+          blocks.forEach(dispatchEventBlock);
+        }
+      } catch (err) {
+        if (closed) return;
+      }
+      await sleep(retryMs);
+      retryMs = Math.min(maxRetryMs, Math.round(retryMs * 1.8));
+    }
+  }
+
+  listen();
+  return {
+    close() {
+      closed = true;
+      if (controller) controller.abort();
+    }
+  };
+}
+
+// ================================================================
+// AUTH CHECK — redirects to login if not authenticated
+// ================================================================
+async function checkAuth() {
+  const token = getToken();
+  if (!token) {
+    window.location.href = 'login.html';
+    return false;
+  }
+
+  try {
+    const res = await fetch(GATEWAY_URL + '/api/auth/me', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) {
+      clearAuthStorage();
+      window.location.href = 'login.html';
+      return false;
+    }
+    const data = await res.json();
+    currentUser = data.user;
+    currentUser._isAdmin = data.isAdmin;
+    setAuthSession(token, data.user);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ================================================================
+// DISPLAY USER PROFILE IN HEADER
+// ================================================================
+function displayUserInHeader(user, isAdmin) {
+  const bar = document.getElementById('userBar');
+  if (!bar) return;
+  bar.style.display = 'flex';
+
+  const nameEl = document.getElementById('userName');
+  const roleEl = document.getElementById('userRole');
+  if (nameEl) nameEl.textContent = user.displayName || user.username;
+  if (roleEl) roleEl.textContent = (ROLE_LABELS[user.rSub] || 'Role ' + user.rSub);
+
+  if (isAdmin) {
+    const adminBtn = document.getElementById('btnAdminPanel');
+    if (adminBtn) adminBtn.style.display = 'inline-block';
+  }
+}
+
+// ================================================================
+// LOGOUT
+// ================================================================
+function doLogout() {
+  const token = getToken();
+  if (token) {
+    fetch(GATEWAY_URL + '/api/auth/logout', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    }).catch(() => {});
+  }
+  clearAuthStorage();
+  currentUser = null;
+  window.location.href = 'overview.html';
+}
+
+// ================================================================
+// SLIDE MENU
+// ================================================================
+function toggleMenu() {
+  const panel = document.getElementById('slidePanel');
+  const overlay = document.getElementById('panelOverlay');
+  const btn = document.getElementById('menuBtn');
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  panel.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+  if (overlay) overlay.classList.toggle('open', !isOpen);
+  if (btn) {
+    btn.classList.toggle('open', !isOpen);
+    btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+  }
+}
+
+function updateMenuBadge(count) {
+  const badge = document.getElementById('menuBadge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = count;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ================================================================
+// TOAST NOTIFICATION
+// ================================================================
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'toast show toast-' + (type || 'ok');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function caacVisibleInterval(fn, ms) {
+  return setInterval(() => {
+    if (!document.hidden) fn();
+  }, ms);
+}
+
+// ================================================================
+// UTILS
+// ================================================================
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+// ================================================================
+// TRIGRAM FUZZY SEARCH — reusable across all pages
+// ================================================================
+function trigrams(str) {
+  str = str.toLowerCase().trim();
+  if (str.length < 3) return new Set([str]);
+  const set = new Set();
+  for (let i = 0; i <= str.length - 3; i++) set.add(str.substring(i, i + 3));
+  return set;
+}
+
+function trigramScore(query, target) {
+  if (!query || !target) return 0;
+  const qTri = trigrams(query);
+  const tTri = trigrams(target);
+  let matches = 0;
+  qTri.forEach(t => { if (tTri.has(t)) matches++; });
+  return qTri.size > 0 ? matches / qTri.size : 0;
+}
+
+function fuzzyMatch(query, ...fields) {
+  if (!query || query.length < 2) return true;
+  const q = query.toLowerCase();
+  for (const f of fields) {
+    if (f && f.toLowerCase().includes(q)) return true;
+  }
+  for (const f of fields) {
+    if (f && trigramScore(q, f) >= 0.3) return true;
+  }
+  return false;
+}

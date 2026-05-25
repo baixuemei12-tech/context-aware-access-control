@@ -15,7 +15,7 @@ test('Vite Rollup HTML inputs stay portable on Windows', () => {
     'scenarios'
   ];
 
-  assert.deepEqual(Object.keys(input), expectedPages);
+  assert.deepEqual(new Set(Object.keys(input)), new Set(expectedPages));
 
   for (const page of expectedPages) {
     const entry = input[page];

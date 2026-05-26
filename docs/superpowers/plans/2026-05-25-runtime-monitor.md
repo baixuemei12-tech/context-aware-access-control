@@ -1,5 +1,7 @@
 # Runtime Monitor Implementation Plan
 
+> **Status:** Completed on 2026-05-26. The runtime monitor panel, mock scenario engine, admin integration, responsive styling, tests, build fixes, and visual-readiness polish have been implemented. The plan checkboxes below are updated to reflect the completed task state.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a mock-driven Runtime Monitor panel to the CAAC admin page that animates access paths, attack paths, denials, blocks, and revocations for demo recording.
@@ -57,7 +59,7 @@ The boss wants a new admin-page runtime monitoring canvas:
 - Test: `frontend/caac-website/test/runtime-monitor.test.js`
 - Modify: `frontend/caac-website/package.json`
 
-- [ ] **Step 1: Add a failing model test**
+- [x] **Step 1: Add a failing model test**
 
 Create `frontend/caac-website/test/runtime-monitor.test.js`:
 
@@ -99,7 +101,7 @@ test('buildPlaybackFrame returns active node and edge ids up to a step index', (
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run:
 
@@ -110,7 +112,7 @@ node --test test/runtime-monitor.test.js
 
 Expected: FAIL because `../js/runtime-monitor.js` does not exist.
 
-- [ ] **Step 3: Implement the scenario/model API**
+- [x] **Step 3: Implement the scenario/model API**
 
 Create `frontend/caac-website/js/runtime-monitor.js`:
 
@@ -251,7 +253,7 @@ Create `frontend/caac-website/js/runtime-monitor.js`:
 })();
 ```
 
-- [ ] **Step 4: Run the model test**
+- [x] **Step 4: Run the model test**
 
 Run:
 
@@ -262,7 +264,7 @@ node --test test/runtime-monitor.test.js
 
 Expected: PASS, both tests pass.
 
-- [ ] **Step 5: Add npm test script**
+- [x] **Step 5: Add npm test script**
 
 Modify `frontend/caac-website/package.json`:
 
@@ -287,7 +289,7 @@ Modify `frontend/caac-website/package.json`:
 }
 ```
 
-- [ ] **Step 6: Run package test**
+- [x] **Step 6: Run package test**
 
 Run:
 
@@ -298,7 +300,7 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add frontend/caac-website/js/runtime-monitor.js frontend/caac-website/test/runtime-monitor.test.js frontend/caac-website/package.json
@@ -312,7 +314,7 @@ git commit -m "test: add runtime monitor scenario model"
 **Files:**
 - Modify: `frontend/caac-website/admin.html:77-80`
 
-- [ ] **Step 1: Insert panel after `</div>` closing `.ops-hero`**
+- [x] **Step 1: Insert panel after `</div>` closing `.ops-hero`**
 
 In `frontend/caac-website/admin.html`, insert this block immediately after line 77 and before `<!-- ANALYTICS DASHBOARD -->`:
 
@@ -348,7 +350,7 @@ In `frontend/caac-website/admin.html`, insert this block immediately after line 
   </section>
 ```
 
-- [ ] **Step 2: Build to verify markup still compiles**
+- [x] **Step 2: Build to verify markup still compiles**
 
 Run:
 
@@ -359,7 +361,7 @@ npm run build
 
 Expected: PASS, Vite writes `dist`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/caac-website/admin.html
@@ -373,7 +375,7 @@ git commit -m "feat: add runtime monitor panel markup"
 **Files:**
 - Modify: `frontend/caac-website/css/common.css`
 
-- [ ] **Step 1: Add panel styles near the existing `.ops-hero` styles**
+- [x] **Step 1: Add panel styles near the existing `.ops-hero` styles**
 
 Append this block after the existing admin ops styles around `.ops-hero`:
 
@@ -607,7 +609,7 @@ Append this block after the existing admin ops styles around `.ops-hero`:
 }
 ```
 
-- [ ] **Step 2: Build to catch CSS syntax issues**
+- [x] **Step 2: Build to catch CSS syntax issues**
 
 Run:
 
@@ -618,7 +620,7 @@ npm run build
 
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/caac-website/css/common.css
@@ -632,7 +634,7 @@ git commit -m "style: add runtime monitor dashboard styles"
 **Files:**
 - Modify: `frontend/caac-website/js/runtime-monitor.js`
 
-- [ ] **Step 1: Extend the module with DOM rendering**
+- [x] **Step 1: Extend the module with DOM rendering**
 
 Replace the final `window.CaacRuntimeMonitor = ...` assignment in `runtime-monitor.js` with this implementation:
 
@@ -756,7 +758,7 @@ Replace the final `window.CaacRuntimeMonitor = ...` assignment in `runtime-monit
   window.CaacRuntimeMonitor = api;
 ```
 
-- [ ] **Step 2: Re-run tests**
+- [x] **Step 2: Re-run tests**
 
 Run:
 
@@ -767,7 +769,7 @@ npm test
 
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/caac-website/js/runtime-monitor.js frontend/caac-website/test/runtime-monitor.test.js
@@ -782,7 +784,7 @@ git commit -m "feat: render animated runtime monitor"
 - Modify: `frontend/caac-website/src/entries/admin.js`
 - Modify: `frontend/caac-website/js/admin.js`
 
-- [ ] **Step 1: Load `runtime-monitor.js` in the Vite entry**
+- [x] **Step 1: Load `runtime-monitor.js` in the Vite entry**
 
 Modify `frontend/caac-website/src/entries/admin.js`:
 
@@ -806,7 +808,7 @@ runLegacyStack([
 ]);
 ```
 
-- [ ] **Step 2: Initialize after admin data loads**
+- [x] **Step 2: Initialize after admin data loads**
 
 In `frontend/caac-website/js/admin.js`, modify the `DOMContentLoaded` handler:
 
@@ -830,7 +832,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 ```
 
-- [ ] **Step 3: Feed live events into the monitor**
+- [x] **Step 3: Feed live events into the monitor**
 
 At the top of `handleAdminLiveEvent(event)`, after `const data = payload.data || {};`, add:
 
@@ -840,7 +842,7 @@ At the top of `handleAdminLiveEvent(event)`, after `const data = payload.data ||
   }
 ```
 
-- [ ] **Step 4: Run tests and build**
+- [x] **Step 4: Run tests and build**
 
 Run:
 
@@ -852,7 +854,7 @@ npm run build
 
 Expected: both PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add frontend/caac-website/src/entries/admin.js frontend/caac-website/js/admin.js
@@ -866,7 +868,7 @@ git commit -m "feat: initialize runtime monitor in admin console"
 **Files:**
 - No source changes required unless verification finds a defect.
 
-- [ ] **Step 1: Start dev server**
+- [x] **Step 1: Start dev server**
 
 Run:
 
@@ -877,7 +879,7 @@ npm run dev
 
 Expected: Vite prints a local URL, usually `http://localhost:5173/`.
 
-- [ ] **Step 2: Open admin page**
+- [x] **Step 2: Open admin page**
 
 Open:
 
@@ -887,7 +889,7 @@ http://localhost:5173/admin.html
 
 Expected: existing admin authentication flow appears. If local backend is not available, use the built page only for visual verification after temporarily bypassing auth in browser dev tools or by running with the normal local CAAC backend.
 
-- [ ] **Step 3: Verify monitor behavior**
+- [x] **Step 3: Verify monitor behavior**
 
 Manual checks:
 
@@ -900,7 +902,7 @@ Manual checks:
 - `Mid-stream revocation` visibly ends in the `Revoked` node.
 - Layout remains usable at desktop width and at a narrow mobile viewport.
 
-- [ ] **Step 4: Final build**
+- [x] **Step 4: Final build**
 
 Run:
 
@@ -912,7 +914,7 @@ npm run build
 
 Expected: both PASS.
 
-- [ ] **Step 5: Commit verification fixes if needed**
+- [x] **Step 5: Commit verification fixes if needed**
 
 If any visual or build fixes were made:
 
@@ -924,6 +926,8 @@ git commit -m "fix: polish runtime monitor visual behavior"
 ---
 
 ## Self-Review
+
+**Completion update:** All implementation and verification steps are marked complete. The current git history includes runtime-monitor commits through responsive/mobile and renderer hardening fixes, and the working tree was clean before this plan-status update.
 
 **Spec coverage:** The plan covers placement, runtime canvas, graph nodes and edges, animated step playback, block/deny/revoke outcomes, mock-first frontend development, local dev/build, and recording-friendly timing.
 

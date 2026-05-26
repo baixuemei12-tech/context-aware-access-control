@@ -232,6 +232,13 @@ test('init renders scenario buttons, first frame, and playback status', () => {
   assert.deepEqual(timers.delays(), [1150]);
 });
 
+test('rendered canvas wraps graph in a transformed runtime viewport group', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('class="runtime-viewport"'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('transform="translate(0 0) scale(1)"'));
+});
+
 test('play renders the requested blocked scenario without waiting for timers', () => {
   const { monitor, elements, timers } = loadMonitorWithDom();
   monitor.play('attack-blocked', 900);

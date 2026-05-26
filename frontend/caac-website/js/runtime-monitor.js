@@ -210,6 +210,11 @@
     };
   }
 
+  function viewportTransform(value) {
+    const current = createViewport(value);
+    return 'translate(' + current.x + ' ' + current.y + ') scale(' + current.scale + ')';
+  }
+
   function edgeTone(edgeId, scenario, frame) {
     const step = scenario.steps.find(item => item.edge === edgeId && frame.activeEdgeIds.includes(edgeId));
     return step ? step.tone : '';
@@ -247,7 +252,8 @@
     canvas.innerHTML = '<defs>' +
       '<filter id="runtimeGlow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/>' +
       '<feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
-      '</defs>' + edgeMarkup + nodeMarkup;
+      '</defs><g class="runtime-viewport" transform="' + viewportTransform(viewport) + '">' +
+      edgeMarkup + nodeMarkup + '</g>';
   }
 
   function renderButtons(root, monitor) {
@@ -334,6 +340,7 @@
     zoomViewportAt,
     panViewport,
     resetViewport,
+    viewportTransform,
     init,
     play: playScenario,
     ingestLiveEvent

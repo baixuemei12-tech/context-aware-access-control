@@ -272,6 +272,7 @@
 
   function handlePointerDown(canvas, event) {
     if (event.button !== 0) return;
+    if (isDraggingViewport && event.pointerId !== activePointerId) return;
     isDraggingViewport = true;
     activePointerId = event.pointerId;
     lastDragPoint = canvasPointFromEvent(canvas, event);

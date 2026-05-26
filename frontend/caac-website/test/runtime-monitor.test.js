@@ -390,6 +390,35 @@ test('pointer drag ignores events from pointers that were not captured', () => {
   assert.equal(elements.runtimeMonitorCanvas.releasedPointerId, 7);
 });
 
+test('pointer drag ignores second pointerdown while a pointer is already captured', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  elements.runtimeMonitorCanvas.dispatch('pointerdown', {
+    pointerId: 7,
+    clientX: 200,
+    clientY: 120,
+    button: 0,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointerdown', {
+    pointerId: 8,
+    clientX: 260,
+    clientY: 150,
+    button: 0,
+    preventDefault() {}
+  });
+  assert.equal(elements.runtimeMonitorCanvas.capturedPointerId, 7);
+  elements.runtimeMonitorCanvas.dispatch('pointermove', {
+    pointerId: 7,
+    clientX: 230,
+    clientY: 135,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointerup', { pointerId: 7 });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(30 15) scale(1)'));
+  assert.equal(elements.runtimeMonitorCanvas.releasedPointerId, 7);
+});
+
 test('play renders the requested blocked scenario without waiting for timers', () => {
   const { monitor, elements, timers } = loadMonitorWithDom();
   monitor.play('attack-blocked', 900);

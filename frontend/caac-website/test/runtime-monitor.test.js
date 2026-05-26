@@ -312,6 +312,20 @@ test('wheel zoom maps rendered pixels to SVG viewBox coordinates', () => {
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(-60 -33.6)'));
 });
 
+test('wheel zoom fallback accounts for centered meet letterbox offsets', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  elements.runtimeMonitorCanvas.rect = { left: 10, top: 20, width: 500, height: 500 };
+  monitor.init();
+  elements.runtimeMonitorCanvas.dispatch('wheel', {
+    deltaY: -100,
+    clientX: 260,
+    clientY: 160,
+    preventDefault() {}
+  });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('scale(1.12)'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(-60 -7.2)'));
+});
+
 test('wheel zoom prefers SVG screen CTM coordinate conversion when available', () => {
   const { monitor, elements } = loadMonitorWithDom();
   elements.runtimeMonitorCanvas.createSVGPoint = () => ({

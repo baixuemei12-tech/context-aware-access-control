@@ -249,11 +249,16 @@
     const viewBoxY = viewBox && Number.isFinite(viewBox.y) ? viewBox.y : 0;
     const viewBoxWidth = viewBox && Number.isFinite(viewBox.width) ? viewBox.width : rect.width;
     const viewBoxHeight = viewBox && Number.isFinite(viewBox.height) ? viewBox.height : rect.height;
-    const widthRatio = rect.width ? viewBoxWidth / rect.width : 1;
-    const heightRatio = rect.height ? viewBoxHeight / rect.height : 1;
+    const scale = rect.width && rect.height && viewBoxWidth && viewBoxHeight
+      ? Math.min(rect.width / viewBoxWidth, rect.height / viewBoxHeight)
+      : 1;
+    const renderedWidth = viewBoxWidth * scale;
+    const renderedHeight = viewBoxHeight * scale;
+    const offsetX = (rect.width - renderedWidth) / 2;
+    const offsetY = (rect.height - renderedHeight) / 2;
     return {
-      x: viewBoxX + ((event.clientX - rect.left) * widthRatio),
-      y: viewBoxY + ((event.clientY - rect.top) * heightRatio)
+      x: viewBoxX + ((event.clientX - rect.left - offsetX) / scale),
+      y: viewBoxY + ((event.clientY - rect.top - offsetY) / scale)
     };
   }
 

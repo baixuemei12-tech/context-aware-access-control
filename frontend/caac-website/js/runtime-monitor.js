@@ -165,6 +165,54 @@
 
   let playbackTimer = null;
   let activeScenarioId = 'normal-permit';
+  const DEFAULT_VIEWPORT = { scale: 1, x: 0, y: 0 };
+  const MIN_VIEWPORT_SCALE = 0.65;
+  const MAX_VIEWPORT_SCALE = 2.5;
+  let viewport = resetViewport();
+
+  function createViewportRecord(source, scale, x, y) {
+    const prototypeSource = source || (typeof window === 'object' ? window : null);
+    const prototype = prototypeSource ? Object.getPrototypeOf(prototypeSource) : Object.prototype;
+    return Object.assign(Object.create(prototype), { scale, x, y });
+  }
+
+  function clampScale(value) {
+    const numericValue = typeof value === 'number' && Number.isFinite(value) ? value : 1;
+    return Math.max(MIN_VIEWPORT_SCALE, Math.min(numericValue, MAX_VIEWPORT_SCALE));
+  }
+
+  function resetViewport() {
+    return createViewportRecord(null, DEFAULT_VIEWPORT.scale, DEFAULT_VIEWPORT.x, DEFAULT_VIEWPORT.y);
+  }
+
+  function createViewport(value) {
+    if (!value) return resetViewport();
+    return createViewportRecord(
+      value,
+      clampScale(value.scale),
+      typeof value.x === 'number' && Number.isFinite(value.x) ? value.x : 0,
+      typeof value.y === 'number' && Number.isFinite(value.y) ? value.y : 0
+    );
+  }
+
+  function zoomViewportAt(currentViewport, factor, point) {
+    const current = createViewport(currentViewport);
+    const zoomFactor = typeof factor === 'number' && Number.isFinite(factor) ? factor : 1;
+    const nextScale = clampScale(current.scale * zoomFactor);
+    const ratio = nextScale / current.scale;
+    const anchor = point || { x: 0, y: 0 };
+    return createViewportRecord(
+      currentViewport,
+      nextScale,
+      anchor.x - (anchor.x - current.x) * ratio,
+      anchor.y - (anchor.y - current.y) * ratio
+    );
+  }
+
+  function panViewport(currentViewport, dx, dy) {
+    const current = createViewport(currentViewport);
+    return createViewportRecord(currentViewport, current.scale, current.x + dx, current.y + dy);
+  }
 
   function edgeTone(edgeId, scenario, frame) {
     const step = scenario.steps.find(item => item.edge === edgeId && frame.activeEdgeIds.includes(edgeId));
@@ -286,6 +334,10 @@
     getScenarios,
     getScenario,
     buildPlaybackFrame,
+    createViewport,
+    zoomViewportAt,
+    panViewport,
+    resetViewport,
     init,
     play: playScenario,
     ingestLiveEvent

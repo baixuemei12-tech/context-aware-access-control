@@ -123,6 +123,33 @@ test('buildPlaybackFrame returns active node and edge ids up to a step index', (
   assert.equal(frame.currentStep.label, 'Gateway receives burst');
 });
 
+test('zoomViewportAt keeps the pointer anchored while changing scale', () => {
+  const monitor = loadMonitor();
+  const viewport = { scale: 1, x: 0, y: 0 };
+  const next = monitor.zoomViewportAt(viewport, 2, { x: 250, y: 140 });
+  assert.equal(next.scale, 2);
+  assert.equal(next.x, -250);
+  assert.equal(next.y, -140);
+});
+
+test('zoomViewportAt clamps scale and uses the clamped scale for pointer anchoring', () => {
+  const monitor = loadMonitor();
+  const viewport = { scale: 2.4, x: -120, y: -60 };
+  const next = monitor.zoomViewportAt(viewport, 2, { x: 300, y: 180 });
+  assert.equal(next.scale, 2.5);
+  assert.equal(Math.round(next.x), -138);
+  assert.equal(Math.round(next.y), -70);
+});
+
+test('panViewport and resetViewport update viewport without mutating the original object', () => {
+  const monitor = loadMonitor();
+  const viewport = { scale: 1.4, x: -20, y: 15 };
+  const panned = monitor.panViewport(viewport, 30, -10);
+  assert.deepEqual(viewport, { scale: 1.4, x: -20, y: 15 });
+  assert.deepEqual(panned, { scale: 1.4, x: 10, y: 5 });
+  assert.deepEqual(monitor.resetViewport(), { scale: 1, x: 0, y: 0 });
+});
+
 test('production model does not use Function constructor or host realm array escape', () => {
   const code = fs.readFileSync(new URL('../js/runtime-monitor.js', import.meta.url), 'utf8');
   assert.equal(code.includes('constructor.constructor'), false);

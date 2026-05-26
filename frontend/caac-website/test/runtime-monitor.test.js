@@ -616,6 +616,12 @@ test('backend stream chunk success event activates file and IPFS node response',
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('chunk 3 delivered'));
 });
 
+test('runtime monitor CSS styles success tone like ok tone', () => {
+  const css = fs.readFileSync(new URL('../css/common.css', import.meta.url), 'utf8');
+  assert.match(css, /\.runtime-edge\.success\b[\s\S]*stroke:\s*var\(--green\)/);
+  assert.match(css, /\.runtime-node\.success rect\b[\s\S]*stroke:\s*var\(--green\)/);
+});
+
 test('ingestLiveEvent preserves mock scenario behavior for non-runtime event types', () => {
   const { monitor, elements } = loadMonitorWithDom();
   monitor.ingestLiveEvent('FILE_UPLOADED', { fileId: 'file-1' });

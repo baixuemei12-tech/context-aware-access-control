@@ -1694,7 +1694,8 @@ html[data-theme="light"] .btn-primary {
 .runtime-edge.deny,
 .runtime-edge.block,
 .runtime-edge.revoke { stroke: var(--red); }
-.runtime-edge.ok { stroke: var(--green); }
+.runtime-edge.ok,
+.runtime-edge.success { stroke: var(--green); }
 
 .runtime-edge-reject {
   stroke-width: 4;
@@ -1747,7 +1748,8 @@ html[data-theme="light"] .btn-primary {
   filter: drop-shadow(0 0 10px rgba(94, 164, 248, 0.45));
 }
 
-.runtime-node.ok rect { stroke: var(--green); }
+.runtime-node.ok rect,
+.runtime-node.success rect { stroke: var(--green); }
 .runtime-node.deny rect,
 .runtime-node.block rect,
 .runtime-node.revoke rect,

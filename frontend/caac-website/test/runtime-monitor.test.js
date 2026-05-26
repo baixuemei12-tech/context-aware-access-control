@@ -576,6 +576,28 @@ test('backend denied runtime step renders rejection flow without success ripple'
   assert.equal(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-node-wave'), false);
 });
 
+test('backend runtime step renders attacker node with backend denial tone', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  monitor.ingestLiveEvent('RUNTIME_PATH_STEP', {
+    eventType: 'ATTACKER_DENIED',
+    label: 'Attacker denied by policy',
+    nodes: ['attacker'],
+    edge: 'user-gateway',
+    tone: 'deny',
+    dataState: 'identity rejected'
+  });
+
+  assert.match(
+    elements.runtimeMonitorCanvas.innerHTML,
+    /class="runtime-node active deny[^"]*" transform="translate\(80,403\.2\)"/
+  );
+  assert.doesNotMatch(
+    elements.runtimeMonitorCanvas.innerHTML,
+    /class="runtime-node active threat[^"]*" transform="translate\(80,403\.2\)"/
+  );
+});
+
 test('backend stream chunk success event activates file and IPFS node response', () => {
   const { monitor, elements } = loadMonitorWithDom();
   monitor.init();

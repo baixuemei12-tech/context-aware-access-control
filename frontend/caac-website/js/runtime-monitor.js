@@ -402,7 +402,7 @@
   function nodeTone(nodeId, scenario, frame) {
     const steps = scenario.steps.slice().reverse();
     const step = steps.find(item => (item.nodes || []).includes(nodeId) && frame.activeNodeIds.includes(nodeId));
-    if (nodeId === 'attacker') return 'threat';
+    if (nodeId === 'attacker' && frame.scenarioId !== 'live-runtime') return 'threat';
     return step ? step.tone : '';
   }
 

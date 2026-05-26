@@ -43,6 +43,8 @@ function createElement(id) {
     scrollHeight: 0,
     style: {},
     dataset: {},
+    rect: { left: 10, top: 20, width: 1000, height: 560 },
+    viewBox: { baseVal: { x: 0, y: 0, width: 1000, height: 560 } },
     classList: {
       values: new Set(),
       add(value) { this.values.add(value); },
@@ -57,7 +59,7 @@ function createElement(id) {
       if (this.listeners[eventName]) this.listeners[eventName](event);
     },
     getBoundingClientRect() {
-      return { left: 10, top: 20, width: 1000, height: 560 };
+      return this.rect;
     },
     setPointerCapture(pointerId) {
       this.capturedPointerId = pointerId;
@@ -293,6 +295,98 @@ test('pointer drag pans the runtime viewport', () => {
   elements.runtimeMonitorCanvas.dispatch('pointerup', { pointerId: 7 });
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(30 15) scale(1)'));
   assert.equal(elements.runtimeMonitorCanvas.capturedPointerId, 7);
+  assert.equal(elements.runtimeMonitorCanvas.releasedPointerId, 7);
+});
+
+test('wheel zoom maps rendered pixels to SVG viewBox coordinates', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  elements.runtimeMonitorCanvas.rect = { left: 10, top: 20, width: 500, height: 280 };
+  monitor.init();
+  elements.runtimeMonitorCanvas.dispatch('wheel', {
+    deltaY: -100,
+    clientX: 260,
+    clientY: 160,
+    preventDefault() {}
+  });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('scale(1.12)'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(-60 -33.6)'));
+});
+
+test('wheel zoom prefers SVG screen CTM coordinate conversion when available', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  elements.runtimeMonitorCanvas.createSVGPoint = () => ({
+    x: 0,
+    y: 0,
+    matrixTransform(matrix) {
+      return {
+        x: this.x * matrix.scaleX,
+        y: this.y * matrix.scaleY
+      };
+    }
+  });
+  elements.runtimeMonitorCanvas.getScreenCTM = () => ({
+    inverse() {
+      return { scaleX: 2, scaleY: 2 };
+    }
+  });
+  monitor.init();
+  elements.runtimeMonitorCanvas.dispatch('wheel', {
+    deltaY: -100,
+    clientX: 260,
+    clientY: 160,
+    preventDefault() {}
+  });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(-62.4 -38.4)'));
+});
+
+test('pointer drag maps rendered pixel deltas to SVG viewBox coordinates', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  elements.runtimeMonitorCanvas.rect = { left: 10, top: 20, width: 500, height: 280 };
+  monitor.init();
+  elements.runtimeMonitorCanvas.dispatch('pointerdown', {
+    pointerId: 7,
+    clientX: 200,
+    clientY: 120,
+    button: 0,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointermove', {
+    pointerId: 7,
+    clientX: 230,
+    clientY: 135,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointerup', { pointerId: 7 });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(60 30) scale(1)'));
+});
+
+test('pointer drag ignores events from pointers that were not captured', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  elements.runtimeMonitorCanvas.dispatch('pointerdown', {
+    pointerId: 7,
+    clientX: 200,
+    clientY: 120,
+    button: 0,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointermove', {
+    pointerId: 8,
+    clientX: 260,
+    clientY: 150,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointerup', { pointerId: 8 });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(0 0) scale(1)'));
+  assert.equal(elements.runtimeMonitorCanvas.releasedPointerId, undefined);
+  elements.runtimeMonitorCanvas.dispatch('pointermove', {
+    pointerId: 7,
+    clientX: 230,
+    clientY: 135,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointerup', { pointerId: 7 });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(30 15) scale(1)'));
   assert.equal(elements.runtimeMonitorCanvas.releasedPointerId, 7);
 });
 

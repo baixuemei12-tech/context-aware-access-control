@@ -170,6 +170,7 @@
   let activeFrame = buildPlaybackFrame(activeScenario, 0);
   let isDraggingViewport = false;
   let lastDragPoint = null;
+  let activePointerId = null;
   const DEFAULT_VIEWPORT = { scale: 1, x: 0, y: 0 };
   const MIN_VIEWPORT_SCALE = 0.65;
   const MAX_VIEWPORT_SCALE = 2.5;
@@ -226,10 +227,33 @@
   }
 
   function canvasPointFromEvent(canvas, event) {
+    if (typeof canvas.createSVGPoint === 'function' && typeof canvas.getScreenCTM === 'function') {
+      const matrix = canvas.getScreenCTM();
+      if (matrix && typeof matrix.inverse === 'function') {
+        const point = canvas.createSVGPoint();
+        point.x = event.clientX;
+        point.y = event.clientY;
+        const transformed = point.matrixTransform(matrix.inverse());
+        if (Number.isFinite(transformed.x) && Number.isFinite(transformed.y)) {
+          return {
+            x: transformed.x,
+            y: transformed.y
+          };
+        }
+      }
+    }
+
     const rect = canvas.getBoundingClientRect();
+    const viewBox = canvas.viewBox && canvas.viewBox.baseVal;
+    const viewBoxX = viewBox && Number.isFinite(viewBox.x) ? viewBox.x : 0;
+    const viewBoxY = viewBox && Number.isFinite(viewBox.y) ? viewBox.y : 0;
+    const viewBoxWidth = viewBox && Number.isFinite(viewBox.width) ? viewBox.width : rect.width;
+    const viewBoxHeight = viewBox && Number.isFinite(viewBox.height) ? viewBox.height : rect.height;
+    const widthRatio = rect.width ? viewBoxWidth / rect.width : 1;
+    const heightRatio = rect.height ? viewBoxHeight / rect.height : 1;
     return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: viewBoxX + ((event.clientX - rect.left) * widthRatio),
+      y: viewBoxY + ((event.clientY - rect.top) * heightRatio)
     };
   }
 
@@ -249,23 +273,28 @@
   function handlePointerDown(canvas, event) {
     if (event.button !== 0) return;
     isDraggingViewport = true;
-    lastDragPoint = { x: event.clientX, y: event.clientY };
+    activePointerId = event.pointerId;
+    lastDragPoint = canvasPointFromEvent(canvas, event);
     canvas.classList.add('dragging');
     if (typeof canvas.setPointerCapture === 'function') canvas.setPointerCapture(event.pointerId);
     if (event && typeof event.preventDefault === 'function') event.preventDefault();
   }
 
-  function handlePointerMove(event) {
+  function handlePointerMove(canvas, event) {
     if (!isDraggingViewport || !lastDragPoint) return;
-    viewport = panViewport(viewport, event.clientX - lastDragPoint.x, event.clientY - lastDragPoint.y);
-    lastDragPoint = { x: event.clientX, y: event.clientY };
+    if (event.pointerId !== activePointerId) return;
+    const nextDragPoint = canvasPointFromEvent(canvas, event);
+    viewport = panViewport(viewport, nextDragPoint.x - lastDragPoint.x, nextDragPoint.y - lastDragPoint.y);
+    lastDragPoint = nextDragPoint;
     rerenderActiveFrame();
     if (event && typeof event.preventDefault === 'function') event.preventDefault();
   }
 
   function handlePointerEnd(canvas, event) {
+    if (event.pointerId !== activePointerId) return;
     isDraggingViewport = false;
     lastDragPoint = null;
+    activePointerId = null;
     canvas.classList.remove('dragging');
     if (typeof canvas.releasePointerCapture === 'function') canvas.releasePointerCapture(event.pointerId);
   }
@@ -275,7 +304,7 @@
     monitor.canvas.dataset.runtimeViewportReady = 'true';
     monitor.canvas.addEventListener('wheel', event => handleWheelZoom(monitor.canvas, event), { passive: false });
     monitor.canvas.addEventListener('pointerdown', event => handlePointerDown(monitor.canvas, event));
-    monitor.canvas.addEventListener('pointermove', handlePointerMove);
+    monitor.canvas.addEventListener('pointermove', event => handlePointerMove(monitor.canvas, event));
     monitor.canvas.addEventListener('pointerup', event => handlePointerEnd(monitor.canvas, event));
     monitor.canvas.addEventListener('pointercancel', event => handlePointerEnd(monitor.canvas, event));
   }

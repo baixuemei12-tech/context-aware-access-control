@@ -165,6 +165,11 @@
 
   let playbackTimer = null;
   let activeScenarioId = 'normal-permit';
+  let activeMonitor = null;
+  let activeScenario = getScenario(activeScenarioId);
+  let activeFrame = buildPlaybackFrame(activeScenario, 0);
+  let isDraggingViewport = false;
+  let lastDragPoint = null;
   const DEFAULT_VIEWPORT = { scale: 1, x: 0, y: 0 };
   const MIN_VIEWPORT_SCALE = 0.65;
   const MAX_VIEWPORT_SCALE = 2.5;
@@ -210,9 +215,69 @@
     };
   }
 
+  function formatViewportNumber(value) {
+    return String(Number(value.toFixed(6)));
+  }
+
   function viewportTransform(value) {
     const current = createViewport(value);
-    return 'translate(' + current.x + ' ' + current.y + ') scale(' + current.scale + ')';
+    return 'translate(' + formatViewportNumber(current.x) + ' ' + formatViewportNumber(current.y) +
+      ') scale(' + formatViewportNumber(current.scale) + ')';
+  }
+
+  function canvasPointFromEvent(canvas, event) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+  }
+
+  function rerenderActiveFrame() {
+    if (activeMonitor && activeScenario && activeFrame) {
+      renderFrame(activeMonitor, activeScenario, activeFrame);
+    }
+  }
+
+  function handleWheelZoom(canvas, event) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+    viewport = zoomViewportAt(viewport, factor, canvasPointFromEvent(canvas, event));
+    rerenderActiveFrame();
+  }
+
+  function handlePointerDown(canvas, event) {
+    if (event.button !== 0) return;
+    isDraggingViewport = true;
+    lastDragPoint = { x: event.clientX, y: event.clientY };
+    canvas.classList.add('dragging');
+    if (typeof canvas.setPointerCapture === 'function') canvas.setPointerCapture(event.pointerId);
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  }
+
+  function handlePointerMove(event) {
+    if (!isDraggingViewport || !lastDragPoint) return;
+    viewport = panViewport(viewport, event.clientX - lastDragPoint.x, event.clientY - lastDragPoint.y);
+    lastDragPoint = { x: event.clientX, y: event.clientY };
+    rerenderActiveFrame();
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  }
+
+  function handlePointerEnd(canvas, event) {
+    isDraggingViewport = false;
+    lastDragPoint = null;
+    canvas.classList.remove('dragging');
+    if (typeof canvas.releasePointerCapture === 'function') canvas.releasePointerCapture(event.pointerId);
+  }
+
+  function installViewportInteractions(monitor) {
+    if (monitor.canvas.dataset.runtimeViewportReady === 'true') return;
+    monitor.canvas.dataset.runtimeViewportReady = 'true';
+    monitor.canvas.addEventListener('wheel', event => handleWheelZoom(monitor.canvas, event), { passive: false });
+    monitor.canvas.addEventListener('pointerdown', event => handlePointerDown(monitor.canvas, event));
+    monitor.canvas.addEventListener('pointermove', handlePointerMove);
+    monitor.canvas.addEventListener('pointerup', event => handlePointerEnd(monitor.canvas, event));
+    monitor.canvas.addEventListener('pointercancel', event => handlePointerEnd(monitor.canvas, event));
   }
 
   function edgeTone(edgeId, scenario, frame) {
@@ -303,12 +368,16 @@
     const scenario = getScenario(id);
     activeScenarioId = scenario.id;
     renderButtons(monitor.buttons, api);
+    activeMonitor = monitor;
+    installViewportInteractions(monitor);
     if (playbackTimer) clearTimeout(playbackTimer);
 
     let stepIndex = 0;
     const playbackDelay = delayMs == null ? 1150 : delayMs;
     const tick = () => {
       const frame = buildPlaybackFrame(scenario, stepIndex);
+      activeScenario = scenario;
+      activeFrame = frame;
       renderFrame(monitor, scenario, frame);
       stepIndex += 1;
       if (stepIndex < scenario.steps.length) {

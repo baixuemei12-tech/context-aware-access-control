@@ -42,7 +42,29 @@ function createElement(id) {
     scrollTop: 0,
     scrollHeight: 0,
     style: {},
+    dataset: {},
+    classList: {
+      values: new Set(),
+      add(value) { this.values.add(value); },
+      remove(value) { this.values.delete(value); },
+      contains(value) { return this.values.has(value); }
+    },
     listeners: {},
+    addEventListener(eventName, listener) {
+      this.listeners[eventName] = listener;
+    },
+    dispatch(eventName, event) {
+      if (this.listeners[eventName]) this.listeners[eventName](event);
+    },
+    getBoundingClientRect() {
+      return { left: 10, top: 20, width: 1000, height: 560 };
+    },
+    setPointerCapture(pointerId) {
+      this.capturedPointerId = pointerId;
+    },
+    releasePointerCapture(pointerId) {
+      this.releasedPointerId = pointerId;
+    },
     set innerHTML(value) {
       this._innerHTML = value;
       this.scrollHeight = value.length;
@@ -237,6 +259,41 @@ test('rendered canvas wraps graph in a transformed runtime viewport group', () =
   monitor.init();
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('class="runtime-viewport"'));
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('transform="translate(0 0) scale(1)"'));
+});
+
+test('wheel zooms around the mouse position and updates rendered transform', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  elements.runtimeMonitorCanvas.dispatch('wheel', {
+    deltaY: -100,
+    clientX: 260,
+    clientY: 160,
+    preventDefault() { this.defaultPrevented = true; }
+  });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('scale(1.12)'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(-30 -16.8)'));
+});
+
+test('pointer drag pans the runtime viewport', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  elements.runtimeMonitorCanvas.dispatch('pointerdown', {
+    pointerId: 7,
+    clientX: 200,
+    clientY: 120,
+    button: 0,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointermove', {
+    pointerId: 7,
+    clientX: 230,
+    clientY: 135,
+    preventDefault() {}
+  });
+  elements.runtimeMonitorCanvas.dispatch('pointerup', { pointerId: 7 });
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(30 15) scale(1)'));
+  assert.equal(elements.runtimeMonitorCanvas.capturedPointerId, 7);
+  assert.equal(elements.runtimeMonitorCanvas.releasedPointerId, 7);
 });
 
 test('play renders the requested blocked scenario without waiting for timers', () => {

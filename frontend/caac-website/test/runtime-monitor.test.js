@@ -172,6 +172,15 @@ test('buildPlaybackFrame returns active node and edge ids up to a step index', (
   assert.equal(frame.currentStep.label, 'Gateway receives burst');
 });
 
+test('buildPlaybackFrame reports file path activity for file and ipfs steps', () => {
+  const monitor = loadMonitor();
+  const scenario = monitor.getScenario('normal-permit');
+  const fileRequestFrame = monitor.buildPlaybackFrame(scenario, 0);
+  assert.equal(fileRequestFrame.filePathActive, true);
+  const streamFrame = monitor.buildPlaybackFrame(scenario, 5);
+  assert.equal(streamFrame.filePathActive, true);
+});
+
 test('zoomViewportAt keeps the pointer anchored while changing scale', () => {
   const monitor = loadMonitor();
   const viewport = { scale: 1, x: 0, y: 0 };
@@ -270,6 +279,14 @@ test('rendered canvas wraps graph in a transformed runtime viewport group', () =
   monitor.init();
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('class="runtime-viewport"'));
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('transform="translate(0 0) scale(1)"'));
+});
+
+test('renderer adds ripple data blocks when active path touches file storage nodes', () => {
+  const { monitor, elements, timers } = loadMonitorWithDom();
+  monitor.play('normal-permit', 0);
+  timers.runAll();
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-ripple'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-block'));
 });
 
 test('wheel zooms around the mouse position and updates rendered transform', () => {

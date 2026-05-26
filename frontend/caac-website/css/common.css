@@ -1696,6 +1696,36 @@ html[data-theme="light"] .btn-primary {
 .runtime-edge.revoke { stroke: var(--red); }
 .runtime-edge.ok { stroke: var(--green); }
 
+.runtime-data-ripple {
+  pointer-events: none;
+}
+
+.runtime-ripple-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  opacity: 0.55;
+  transform-origin: center;
+  animation: runtimeRipple 1500ms ease-out infinite;
+}
+
+.runtime-ripple-ring.ring-b {
+  animation-delay: 360ms;
+  stroke: var(--green);
+}
+
+.runtime-data-block {
+  fill: color-mix(in srgb, var(--accent) 62%, white);
+  opacity: 0.88;
+  filter: drop-shadow(0 0 10px rgba(94, 164, 248, 0.48));
+  animation: runtimeDataPulse 1200ms ease-in-out infinite;
+}
+
+.runtime-data-block.block-b {
+  fill: color-mix(in srgb, var(--green) 68%, white);
+  animation-delay: 240ms;
+}
+
 .runtime-node rect {
   fill: rgba(15, 23, 42, 0.94);
   stroke: rgba(148, 163, 184, 0.28);
@@ -1846,6 +1876,26 @@ html[data-theme="light"] .runtime-log-entry {
 
 @keyframes runtimeDash {
   to { stroke-dashoffset: -20; }
+}
+
+@keyframes runtimeRipple {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.78);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+}
+
+@keyframes runtimeDataPulse {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.08);
+  }
 }
 
 @media (max-width: 900px) {

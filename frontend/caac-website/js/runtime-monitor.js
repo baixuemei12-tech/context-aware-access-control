@@ -151,6 +151,10 @@
     const visibleSteps = activeScenario.steps.slice(0, currentIndex + 1);
     const activeNodeIds = Array.from(new Set(visibleSteps.flatMap(step => step.nodes || [])));
     const activeEdgeIds = visibleSteps.map(step => step.edge).filter(Boolean);
+    const filePathActive = visibleSteps.some(step => {
+      const nodes = step.nodes || [];
+      return nodes.includes('file') || nodes.includes('ipfs') || step.edge === 'gateway-ipfs' || step.edge === 'user-file';
+    });
 
     return {
       scenarioId: activeScenario.id,
@@ -158,6 +162,7 @@
       currentStep: clone(activeScenario.steps[currentIndex]),
       activeNodeIds,
       activeEdgeIds,
+      filePathActive,
       completedStepCount: visibleSteps.length,
       totalStepCount: activeScenario.steps.length
     };
@@ -352,6 +357,18 @@
     return step ? step.tone : '';
   }
 
+  function renderFileRipples(frame) {
+    if (!frame.filePathActive) return '';
+    return [
+      '<g class="runtime-data-ripple" transform="translate(720 302)">',
+      '<circle class="runtime-ripple-ring ring-a" r="18"></circle>',
+      '<circle class="runtime-ripple-ring ring-b" r="28"></circle>',
+      '<rect class="runtime-data-block block-a" x="-20" y="-8" width="40" height="16" rx="5"></rect>',
+      '<rect class="runtime-data-block block-b" x="-12" y="12" width="26" height="10" rx="4"></rect>',
+      '</g>'
+    ].join('');
+  }
+
   function renderCanvas(canvas, scenario, frame) {
     const edgeMarkup = Object.keys(EDGES).map(id => {
       const pair = EDGES[id];
@@ -373,12 +390,13 @@
         '<text>' + escapeText(node.label) + '</text>' +
         '</g>';
     }).join('');
+    const rippleMarkup = renderFileRipples(frame);
 
     canvas.innerHTML = '<defs>' +
       '<filter id="runtimeGlow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/>' +
       '<feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
       '</defs><g class="runtime-viewport" transform="' + viewportTransform(viewport) + '">' +
-      edgeMarkup + nodeMarkup + '</g>';
+      edgeMarkup + rippleMarkup + nodeMarkup + '</g>';
   }
 
   function renderButtons(root, monitor) {

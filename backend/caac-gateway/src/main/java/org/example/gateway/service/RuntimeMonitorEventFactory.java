@@ -17,28 +17,28 @@ public final class RuntimeMonitorEventFactory {
 
     private static final Map<String, PhaseMapping> PHASES = Map.ofEntries(
             entry("REQUEST_RECEIVED", "user-gateway", List.of("user", "gateway"), "info", "Request received", "Raw request"),
-            entry("AUTH_BLOCKED", "auth-blocked", List.of("gateway", "auth"), "block", "Authentication blocked", "Blocked"),
+            entry("AUTH_BLOCKED", "user-gateway", List.of("user", "gateway", "deny"), "block", "Authentication blocked", "Blocked"),
             entry("ANOMALY_BLOCKED", "anomaly-blocked", List.of("gateway", "anomaly"), "block", "Anomaly blocked", "Blocked"),
-            entry("FILE_NOT_FOUND", "file-missing", List.of("gateway", "registry"), "warn", "File not found", "Missing file"),
-            entry("CLUSTER_BLOCKED", "cluster-blocked", List.of("gateway", "cluster"), "block", "Cluster blocked", "Blocked"),
+            entry("FILE_NOT_FOUND", "user-file", List.of("user", "file", "deny"), "warn", "File not found", "Missing file"),
+            entry("CLUSTER_BLOCKED", "anomaly-blocked", List.of("gateway", "anomaly", "blocked"), "block", "Cluster blocked", "Blocked"),
             entry("CONTEXT_RESOLVED", "gateway-context", List.of("gateway", "context"), "info", "Context resolved", "Context ready"),
-            entry("CONTEXT_DEGRADED", "context-degraded", List.of("context", "policy"), "warn", "Context degraded", "Degraded context"),
-            entry("POLICY_EVALUATING", "context-policy", List.of("context", "policy"), "info", "Policy evaluating", "Policy input"),
-            entry("POLICY_DECIDED", "policy-fabric", List.of("policy", "fabric"), "info", "Policy decided", "Decision ready"),
-            entry("POLICY_EVALUATED", "policy-fabric", List.of("policy", "fabric"), "info", "Policy evaluated", "Decision ready"),
+            entry("CONTEXT_DEGRADED", "gateway-context", List.of("gateway", "context"), "warn", "Context degraded", "Degraded context"),
+            entry("POLICY_EVALUATING", "context-oracle", List.of("context", "oracle", "fabric"), "info", "Policy evaluating", "Policy input"),
+            entry("POLICY_DECIDED", "oracle-fabric", List.of("oracle", "fabric"), "info", "Policy decided", "Decision ready"),
+            entry("POLICY_EVALUATED", "oracle-fabric", List.of("oracle", "fabric"), "info", "Policy evaluated", "Decision ready"),
             entry("ACCESS_DENIED", "fabric-deny", List.of("fabric", "deny"), "deny", "Access denied", "Denied"),
-            entry("ACCESS_PERMITTED", "fabric-permit", List.of("fabric", "gateway"), "success", "Access permitted", "Permitted"),
-            entry("RULE_DENIED", "rule-deny", List.of("policy", "deny"), "deny", "Rule denied", "Denied"),
-            entry("BUDGET_DENIED", "budget-deny", List.of("budget", "deny"), "deny", "Budget denied", "Denied"),
-            entry("BUDGET_RECHECK_DENIED", "budget-deny", List.of("budget", "deny"), "deny", "Budget recheck denied", "Denied"),
-            entry("NETWORK_BLOCKED", "network-blocked", List.of("gateway", "network"), "block", "Network blocked", "Blocked"),
-            entry("SESSION_CREATED", "gateway-session", List.of("gateway", "session"), "ok", "Session created", "Session ready"),
+            entry("ACCESS_PERMITTED", "fabric-permit", List.of("fabric", "permit"), "success", "Access permitted", "Permitted"),
+            entry("RULE_DENIED", "fabric-deny", List.of("fabric", "deny"), "deny", "Rule denied", "Denied"),
+            entry("BUDGET_DENIED", "fabric-deny", List.of("fabric", "deny"), "deny", "Budget denied", "Denied"),
+            entry("BUDGET_RECHECK_DENIED", "fabric-deny", List.of("fabric", "deny"), "deny", "Budget recheck denied", "Denied"),
+            entry("NETWORK_BLOCKED", "anomaly-blocked", List.of("gateway", "anomaly", "blocked"), "block", "Network blocked", "Blocked"),
+            entry("SESSION_CREATED", "fabric-permit", List.of("fabric", "permit"), "ok", "Session created", "Session ready"),
             entry("STREAM_STARTED", "gateway-ipfs", List.of("gateway", "ipfs"), "ok", "Stream started", "Plaintext stream"),
             entry("STREAM_CHUNK", "gateway-ipfs", List.of("gateway", "ipfs"), "ok", "Stream chunk", "Plaintext stream"),
             entry("STREAM_CHUNK_DELIVERED", "gateway-ipfs", List.of("gateway", "ipfs"), "ok", "Stream chunk delivered", "Plaintext stream"),
-            entry("STREAM_COMPLETED", "gateway-client", List.of("gateway", "user"), "success", "Stream completed", "Complete"),
-            entry("STREAM_REVOKED", "stream-revoked", List.of("gateway", "session"), "revoke", "Stream revoked", "Revoked"),
-            entry("SESSION_REVOKED", "stream-revoked", List.of("gateway", "session"), "revoke", "Session revoked", "Revoked")
+            entry("STREAM_COMPLETED", "gateway-permit", List.of("gateway", "permit"), "success", "Stream completed", "Complete"),
+            entry("STREAM_REVOKED", "fabric-revoked", List.of("fabric", "revoked"), "revoke", "Stream revoked", "Revoked"),
+            entry("SESSION_REVOKED", "fabric-revoked", List.of("fabric", "revoked"), "revoke", "Session revoked", "Revoked")
     );
 
     private RuntimeMonitorEventFactory() {
@@ -52,8 +52,8 @@ public final class RuntimeMonitorEventFactory {
             String sessionId,
             Map<String, Object> extra) {
         PhaseMapping mapping = PHASES.getOrDefault(phase, new PhaseMapping(
-                "runtime-gateway",
-                List.of("runtime", "gateway"),
+                "user-gateway",
+                List.of("user", "gateway"),
                 "info",
                 phase != null ? phase : "Runtime step",
                 "Runtime event"));

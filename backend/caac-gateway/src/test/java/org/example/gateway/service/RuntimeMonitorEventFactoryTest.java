@@ -5,10 +5,28 @@ import org.junit.jupiter.api.Test;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RuntimeMonitorEventFactoryTest {
+
+    private static final List<String> PHASES_AND_ALIASES = List.of(
+            "REQUEST_RECEIVED", "AUTH_BLOCKED", "ANOMALY_BLOCKED", "FILE_NOT_FOUND",
+            "CLUSTER_BLOCKED", "CONTEXT_RESOLVED", "POLICY_EVALUATING", "POLICY_DECIDED",
+            "ACCESS_DENIED", "ACCESS_PERMITTED", "RULE_DENIED", "BUDGET_DENIED",
+            "STREAM_STARTED", "STREAM_CHUNK", "STREAM_COMPLETED", "STREAM_REVOKED",
+            "CONTEXT_DEGRADED", "NETWORK_BLOCKED", "POLICY_EVALUATED", "SESSION_CREATED",
+            "STREAM_CHUNK_DELIVERED", "BUDGET_RECHECK_DENIED", "SESSION_REVOKED"
+    );
+    private static final Set<String> FRONTEND_NODES = Set.of(
+            "user", "attacker", "gateway", "context", "anomaly", "oracle", "fabric",
+            "ipfs", "file", "permit", "deny", "blocked", "revoked");
+    private static final Set<String> FRONTEND_EDGES = Set.of(
+            "user-file", "user-gateway", "attacker-gateway", "gateway-context",
+            "gateway-anomaly", "context-oracle", "oracle-fabric", "fabric-permit",
+            "fabric-deny", "fabric-revoked", "gateway-ipfs", "gateway-permit",
+            "anomaly-blocked", "blocked-ipfs");
 
     @Test
     void requestReceivedUsesStableTopologyAndEnvelopeFields() {
@@ -55,16 +73,7 @@ class RuntimeMonitorEventFactoryTest {
 
     @Test
     void supportsRequiredControllerAndStreamPhases() {
-        List<String> phases = List.of(
-                "REQUEST_RECEIVED", "AUTH_BLOCKED", "ANOMALY_BLOCKED", "FILE_NOT_FOUND",
-                "CLUSTER_BLOCKED", "CONTEXT_RESOLVED", "POLICY_EVALUATING", "POLICY_DECIDED",
-                "ACCESS_DENIED", "ACCESS_PERMITTED", "RULE_DENIED", "BUDGET_DENIED",
-                "STREAM_STARTED", "STREAM_CHUNK", "STREAM_COMPLETED", "STREAM_REVOKED",
-                "CONTEXT_DEGRADED", "NETWORK_BLOCKED", "POLICY_EVALUATED", "SESSION_CREATED",
-                "STREAM_CHUNK_DELIVERED", "BUDGET_RECHECK_DENIED", "SESSION_REVOKED"
-        );
-
-        for (String phase : phases) {
+        for (String phase : PHASES_AND_ALIASES) {
             Map<String, Object> event = RuntimeMonitorEventFactory.step("flow", phase, "user", "file", null, Map.of());
 
             assertThat(event).containsKeys("edge", "nodes", "tone", "label", "dataState");
@@ -74,13 +83,27 @@ class RuntimeMonitorEventFactoryTest {
     }
 
     @Test
+    void allMappedPhasesUseKnownFrontendGraphIds() {
+        for (String phase : PHASES_AND_ALIASES) {
+            Map<String, Object> event = RuntimeMonitorEventFactory.step("flow", phase, "user", "file", null, Map.of());
+
+            assertThat(event.get("edge"))
+                    .as("edge for %s", phase)
+                    .isIn(FRONTEND_EDGES);
+            assertThat((List<?>) event.get("nodes"))
+                    .as("nodes for %s", phase)
+                    .allSatisfy(node -> assertThat(node).isIn(FRONTEND_NODES));
+        }
+    }
+
+    @Test
     void aliasPhasesUseConcreteExpectedMappings() {
-        assertMapping("NETWORK_BLOCKED", "network-blocked", "block", "Blocked");
-        assertMapping("POLICY_EVALUATED", "policy-fabric", "info", "Decision ready");
-        assertMapping("SESSION_CREATED", "gateway-session", "ok", "Session ready");
+        assertMapping("NETWORK_BLOCKED", "anomaly-blocked", "block", "Blocked");
+        assertMapping("POLICY_EVALUATED", "oracle-fabric", "info", "Decision ready");
+        assertMapping("SESSION_CREATED", "fabric-permit", "ok", "Session ready");
         assertMapping("STREAM_CHUNK_DELIVERED", "gateway-ipfs", "ok", "Plaintext stream");
-        assertMapping("BUDGET_RECHECK_DENIED", "budget-deny", "deny", "Denied");
-        assertMapping("SESSION_REVOKED", "stream-revoked", "revoke", "Revoked");
+        assertMapping("BUDGET_RECHECK_DENIED", "fabric-deny", "deny", "Denied");
+        assertMapping("SESSION_REVOKED", "fabric-revoked", "revoke", "Revoked");
     }
 
     @Test
@@ -105,8 +128,8 @@ class RuntimeMonitorEventFactoryTest {
                 .containsEntry("username", "user")
                 .containsEntry("fileId", "file")
                 .containsEntry("sessionId", "sess-1")
-                .containsEntry("edge", "policy-fabric")
-                .containsEntry("nodes", List.of("policy", "fabric"))
+                .containsEntry("edge", "oracle-fabric")
+                .containsEntry("nodes", List.of("oracle", "fabric"))
                 .containsEntry("tone", "info")
                 .containsEntry("label", "Policy decided")
                 .containsEntry("dataState", "Decision ready");

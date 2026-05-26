@@ -1696,6 +1696,15 @@ html[data-theme="light"] .btn-primary {
 .runtime-edge.revoke { stroke: var(--red); }
 .runtime-edge.ok { stroke: var(--green); }
 
+.runtime-edge-reject {
+  stroke-width: 4;
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.55));
+}
+
+.runtime-reject-flow {
+  animation: runtimeRejectPulse 720ms ease-in-out infinite;
+}
+
 .runtime-data-ripple {
   pointer-events: none;
 }
@@ -1744,6 +1753,10 @@ html[data-theme="light"] .btn-primary {
 .runtime-node.revoke rect,
 .runtime-node.threat rect { stroke: var(--red); }
 
+.runtime-node-wave rect {
+  animation: runtimeNodeWave 1200ms ease-out infinite;
+}
+
 .runtime-node text {
   fill: var(--text2);
   font-family: var(--mono);
@@ -1751,6 +1764,20 @@ html[data-theme="light"] .btn-primary {
   text-anchor: middle;
   dominant-baseline: middle;
   pointer-events: none;
+}
+
+.runtime-transform-label rect {
+  fill: rgba(8, 14, 26, 0.86);
+  stroke: rgba(94, 164, 248, 0.48);
+  stroke-width: 1;
+}
+
+.runtime-info-state {
+  fill: var(--text2);
+  font-family: var(--mono);
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .runtime-side {
@@ -1895,6 +1922,29 @@ html[data-theme="light"] .runtime-log-entry {
   }
   50% {
     transform: translateY(-4px) scale(1.08);
+  }
+}
+
+@keyframes runtimeRejectPulse {
+  0%, 100% {
+    opacity: 0.86;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    opacity: 1;
+    stroke-dashoffset: -12;
+  }
+}
+
+@keyframes runtimeNodeWave {
+  0% {
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.36));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.68));
+  }
+  100% {
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.36));
   }
 }
 

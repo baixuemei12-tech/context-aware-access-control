@@ -80,3 +80,17 @@ test('admin live event monitor ingest is optional and non-blocking', () => {
   assert.equal(sandbox.__warnings.length, 1);
   assert.match(String(sandbox.__warnings[0][0]), /Runtime monitor event ingest failed/);
 });
+
+test('admin live event handler forwards runtime path step through existing monitor ingest', () => {
+  const forwarded = [];
+  const sandbox = loadAdminSandbox({
+    ingestLiveEvent(type, data) {
+      forwarded.push({ type, data });
+    }
+  });
+  const data = { eventType: 'CONTEXT_RESOLVED', edge: 'gateway-context' };
+
+  sandbox.handleAdminLiveEvent({ payload: { type: 'RUNTIME_PATH_STEP', data } });
+
+  assert.deepEqual(forwarded, [{ type: 'RUNTIME_PATH_STEP', data }]);
+});

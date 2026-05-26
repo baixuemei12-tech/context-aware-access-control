@@ -167,6 +167,56 @@
     };
   }
 
+  function normalizeList(value) {
+    if (Array.isArray(value)) return value.filter(Boolean).map(String);
+    if (value == null || value === '') return [];
+    return [String(value)];
+  }
+
+  function isBlockingTone(tone) {
+    return tone === 'deny' || tone === 'block' || tone === 'revoke';
+  }
+
+  function isSuccessTone(tone) {
+    return tone === 'ok' || tone === 'success';
+  }
+
+  function buildLiveRuntimeFrame(data) {
+    const payload = data || {};
+    const eventType = String(payload.eventType || payload.type || payload.phase || 'PATH_STEP');
+    const tone = String(payload.tone || '').toLowerCase();
+    const nodes = normalizeList(payload.nodes);
+    const edge = payload.edge ? String(payload.edge) : null;
+    const label = String(payload.label || eventType);
+    const dataState = payload.dataState == null ? '' : String(payload.dataState);
+    const step = { label, nodes, edge, tone, dataState, eventType };
+    const successStorageNode = isSuccessTone(tone) && (nodes.includes('file') || nodes.includes('ipfs'));
+    const filePathActive = successStorageNode || (isSuccessTone(tone) && (edge === 'user-file' || edge === 'gateway-ipfs'));
+
+    return {
+      scenario: {
+        id: 'live-runtime',
+        title: 'Live runtime',
+        outcome: eventType,
+        summary: dataState || label,
+        steps: [step]
+      },
+      frame: {
+        scenarioId: 'live-runtime',
+        outcome: eventType,
+        currentStep: clone(step),
+        activeNodeIds: nodes,
+        activeEdgeIds: edge ? [edge] : [],
+        filePathActive,
+        dataState,
+        isBlocking: isBlockingTone(tone),
+        isSuccess: isSuccessTone(tone),
+        completedStepCount: 1,
+        totalStepCount: 1
+      }
+    };
+  }
+
   let playbackTimer = null;
   let activeScenarioId = 'normal-permit';
   let activeMonitor = null;
@@ -368,6 +418,15 @@
     ].join('');
   }
 
+  function renderDataState(frame) {
+    const state = frame && (frame.dataState || (frame.currentStep && frame.currentStep.dataState));
+    if (!state) return '';
+    return '<g class="runtime-transform-label" transform="translate(500 520)">' +
+      '<rect x="-150" y="-18" width="300" height="36" rx="7"></rect>' +
+      '<text class="runtime-info-state">' + escapeText(state) + '</text>' +
+      '</g>';
+  }
+
   function renderCanvas(canvas, scenario, frame) {
     const edgeMarkup = Object.keys(EDGES).map(id => {
       const pair = EDGES[id];
@@ -375,7 +434,9 @@
       const to = NODES.find(node => node.id === pair[1]);
       const active = frame.activeEdgeIds.includes(id);
       const tone = active ? sanitizeClassToken(edgeTone(id, scenario, frame)) : '';
-      return '<line class="runtime-edge ' + (active ? 'active' : '') + ' ' + tone + '" x1="' +
+      const rejectClass = active && isBlockingTone(tone) ? ' runtime-edge-reject runtime-reject-flow' : '';
+      return '<line data-runtime-edge="' + escapeText(id) + '" class="runtime-edge ' +
+        (active ? 'active' : '') + ' ' + tone + rejectClass + '" x1="' +
         (from.x * 10) + '" y1="' + (from.y * 5.6) + '" x2="' + (to.x * 10) + '" y2="' +
         (to.y * 5.6) + '"></line>';
     }).join('');
@@ -383,19 +444,21 @@
     const nodeMarkup = NODES.map(node => {
       const active = frame.activeNodeIds.includes(node.id);
       const tone = sanitizeClassToken(active ? nodeTone(node.id, scenario, frame) : node.kind);
+      const waveClass = active && frame.isSuccess && (node.id === 'file' || node.id === 'ipfs') ? ' runtime-node-wave' : '';
       return '<g class="runtime-node ' + (active ? 'active' : '') + ' ' + tone +
-        '" transform="translate(' + (node.x * 10) + ',' + (node.y * 5.6) + ')">' +
+        waveClass + '" transform="translate(' + (node.x * 10) + ',' + (node.y * 5.6) + ')">' +
         '<rect x="-58" y="-20" width="116" height="40"></rect>' +
         '<text>' + escapeText(node.label) + '</text>' +
         '</g>';
     }).join('');
     const rippleMarkup = renderFileRipples(frame);
+    const stateMarkup = renderDataState(frame);
 
     canvas.innerHTML = '<defs>' +
       '<filter id="runtimeGlow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/>' +
       '<feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
       '</defs><g class="runtime-viewport" transform="' + viewportTransform(viewport) + '">' +
-      edgeMarkup + rippleMarkup + nodeMarkup + '</g>';
+      edgeMarkup + rippleMarkup + nodeMarkup + stateMarkup + '</g>';
   }
 
   function renderButtons(root, monitor) {
@@ -477,6 +540,24 @@
   }
 
   function ingestLiveEvent(type) {
+    if (type === 'RUNTIME_PATH_STEP') {
+      const monitor = createMonitor();
+      if (!monitor) return;
+      const live = buildLiveRuntimeFrame(arguments[1] || {});
+      activeScenarioId = live.scenario.id;
+      activeScenario = live.scenario;
+      activeFrame = live.frame;
+      activeMonitor = monitor;
+      installViewportInteractions(monitor);
+      installViewportControls(monitor);
+      renderButtons(monitor.buttons, api);
+      if (playbackTimer) {
+        clearTimeout(playbackTimer);
+        playbackTimer = null;
+      }
+      renderFrame(monitor, live.scenario, live.frame);
+      return;
+    }
     if (type === 'FILE_UPLOADED') playScenario('normal-permit', 900);
     if (type === 'USER_STATUS_CHANGED') playScenario('role-denied', 900);
     if (type && type.indexOf('ANOMALY') >= 0) playScenario('attack-blocked', 900);
@@ -486,6 +567,7 @@
     getScenarios,
     getScenario,
     buildPlaybackFrame,
+    buildLiveRuntimeFrame,
     createViewport,
     zoomViewportAt,
     panViewport,

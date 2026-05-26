@@ -538,6 +538,71 @@ test('ingestLiveEvent maps anomaly events to the attack-blocked scenario', () =>
   assert.equal(elements.runtimeScenarioTitle.textContent, 'Attack path blocked - BLOCKED');
 });
 
+test('ingestLiveEvent renders backend runtime path steps', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  monitor.ingestLiveEvent('RUNTIME_PATH_STEP', {
+    eventType: 'CONTEXT_RESOLVED',
+    label: 'Context vector resolved by gateway',
+    nodes: ['gateway', 'context'],
+    edge: 'gateway-context',
+    tone: 'info',
+    dataState: 'scores normalized'
+  });
+
+  assert.equal(elements.runtimeScenarioTitle.textContent, 'Live runtime - CONTEXT_RESOLVED');
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('data-runtime-edge="gateway-context"'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-info-state'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('scores normalized'));
+  assert.ok(elements.runtimeMonitorLog.innerHTML.includes('Context vector resolved by gateway'));
+});
+
+test('backend denied runtime step renders rejection flow without success ripple', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  monitor.ingestLiveEvent('RUNTIME_PATH_STEP', {
+    eventType: 'ACCESS_DENIED',
+    label: 'Fabric denied request',
+    nodes: ['fabric', 'deny'],
+    edge: 'fabric-deny',
+    tone: 'deny',
+    dataState: 'policy mismatch'
+  });
+
+  assert.equal(elements.runtimeScenarioTitle.textContent, 'Live runtime - ACCESS_DENIED');
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-edge-reject'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-reject-flow'));
+  assert.equal(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-ripple'), false);
+  assert.equal(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-node-wave'), false);
+});
+
+test('backend stream chunk success event activates file and IPFS node response', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  monitor.ingestLiveEvent('RUNTIME_PATH_STEP', {
+    eventType: 'STREAM_CHUNK_OK',
+    label: 'Gateway streamed ciphertext chunk',
+    nodes: ['gateway', 'ipfs', 'file'],
+    edge: 'gateway-ipfs',
+    tone: 'ok',
+    dataState: 'chunk 3 delivered'
+  });
+
+  assert.equal(elements.runtimeScenarioTitle.textContent, 'Live runtime - STREAM_CHUNK_OK');
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-node-wave'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-ripple'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('chunk 3 delivered'));
+});
+
+test('ingestLiveEvent preserves mock scenario behavior for non-runtime event types', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.ingestLiveEvent('FILE_UPLOADED', { fileId: 'file-1' });
+  assert.equal(elements.runtimeScenarioTitle.textContent, 'Normal file access - PERMIT');
+
+  monitor.ingestLiveEvent('ANOMALY_DETECTED', {});
+  assert.equal(elements.runtimeScenarioTitle.textContent, 'Attack path blocked - BLOCKED');
+});
+
 test('renderer escapes scenario text before inserting markup', () => {
   const baseCode = fs.readFileSync(new URL('../js/runtime-monitor.js', import.meta.url), 'utf8');
   const hostileCode = baseCode

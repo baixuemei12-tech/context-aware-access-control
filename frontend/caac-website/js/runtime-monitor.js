@@ -316,22 +316,23 @@
   }
 
   function installViewportControls(monitor) {
-    if (monitor.controlsReady) return;
-    monitor.controlsReady = true;
     const centerPoint = { x: 500, y: 280 };
-    if (monitor.zoomIn) {
+    if (monitor.zoomIn && monitor.zoomIn.dataset.runtimeViewportControlsReady !== 'true') {
+      monitor.zoomIn.dataset.runtimeViewportControlsReady = 'true';
       monitor.zoomIn.addEventListener('click', () => {
         viewport = zoomViewportAt(viewport, 1.18, centerPoint);
         rerenderActiveFrame();
       });
     }
-    if (monitor.zoomOut) {
+    if (monitor.zoomOut && monitor.zoomOut.dataset.runtimeViewportControlsReady !== 'true') {
+      monitor.zoomOut.dataset.runtimeViewportControlsReady = 'true';
       monitor.zoomOut.addEventListener('click', () => {
         viewport = zoomViewportAt(viewport, 1 / 1.18, centerPoint);
         rerenderActiveFrame();
       });
     }
-    if (monitor.zoomReset) {
+    if (monitor.zoomReset && monitor.zoomReset.dataset.runtimeViewportControlsReady !== 'true') {
+      monitor.zoomReset.dataset.runtimeViewportControlsReady = 'true';
       monitor.zoomReset.addEventListener('click', () => {
         viewport = resetViewport();
         rerenderActiveFrame();

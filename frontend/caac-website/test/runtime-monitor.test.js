@@ -53,10 +53,14 @@ function createElement(id) {
     },
     listeners: {},
     addEventListener(eventName, listener) {
-      this.listeners[eventName] = listener;
+      if (!this.listeners[eventName]) this.listeners[eventName] = [];
+      this.listeners[eventName].push(listener);
     },
     dispatch(eventName, event) {
-      if (this.listeners[eventName]) this.listeners[eventName](event);
+      (this.listeners[eventName] || []).forEach(listener => listener(event));
+    },
+    listenerCount(eventName) {
+      return (this.listeners[eventName] || []).length;
     },
     getBoundingClientRect() {
       return this.rect;
@@ -80,7 +84,9 @@ function createElement(id) {
       return ids.map(runtimeScenario => ({
         dataset: { runtimeScenario },
         addEventListener: (eventName, listener) => {
-          this.listeners[runtimeScenario + ':' + eventName] = listener;
+          const listenerKey = runtimeScenario + ':' + eventName;
+          if (!this.listeners[listenerKey]) this.listeners[listenerKey] = [];
+          this.listeners[listenerKey].push(listener);
         }
       }));
     }
@@ -448,6 +454,18 @@ test('zoom controls zoom and reset the viewport', () => {
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(0 0) scale(1)'));
 });
 
+test('zoom controls are not registered more than once across repeated playback', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  monitor.play('attack-blocked', 0);
+  monitor.init();
+  assert.equal(elements.runtimeZoomIn.listenerCount('click'), 1);
+  assert.equal(elements.runtimeZoomOut.listenerCount('click'), 1);
+  assert.equal(elements.runtimeZoomReset.listenerCount('click'), 1);
+  elements.runtimeZoomIn.dispatch('click', {});
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('scale(1.18)'));
+});
+
 test('play renders the requested blocked scenario without waiting for timers', () => {
   const { monitor, elements, timers } = loadMonitorWithDom();
   monitor.play('attack-blocked', 900);
@@ -504,7 +522,7 @@ test('replay clears stale playback timer before starting another scenario', () =
 test('scenario buttons trigger playback by click handler', () => {
   const { monitor, elements } = loadMonitorWithDom();
   monitor.init();
-  elements.runtimeScenarioButtons.listeners['midstream-revoked:click']();
+  elements.runtimeScenarioButtons.dispatch('midstream-revoked:click', {});
   assert.equal(elements.runtimeScenarioTitle.textContent, 'Mid-stream revocation - REVOKED');
 });
 

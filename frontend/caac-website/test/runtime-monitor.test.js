@@ -181,6 +181,24 @@ test('buildPlaybackFrame reports file path activity for file and ipfs steps', ()
   assert.equal(streamFrame.filePathActive, true);
 });
 
+test('buildPlaybackFrame does not keep file path activity active for final denied or blocked frames', () => {
+  const monitor = loadMonitor();
+  const deniedScenario = monitor.getScenario('role-denied');
+  const deniedFrame = monitor.buildPlaybackFrame(deniedScenario, deniedScenario.steps.length - 1);
+  assert.equal(deniedFrame.filePathActive, false);
+
+  const blockedScenario = monitor.getScenario('attack-blocked');
+  const blockedFrame = monitor.buildPlaybackFrame(blockedScenario, blockedScenario.steps.length - 1);
+  assert.equal(blockedFrame.filePathActive, false);
+});
+
+test('buildPlaybackFrame reports file path activity during midstream transfer', () => {
+  const monitor = loadMonitor();
+  const scenario = monitor.getScenario('midstream-revoked');
+  const streamFrame = monitor.buildPlaybackFrame(scenario, 1);
+  assert.equal(streamFrame.filePathActive, true);
+});
+
 test('zoomViewportAt keeps the pointer anchored while changing scale', () => {
   const monitor = loadMonitor();
   const viewport = { scale: 1, x: 0, y: 0 };
@@ -287,6 +305,28 @@ test('renderer adds ripple data blocks when active path touches file storage nod
   timers.runAll();
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-ripple'));
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-block'));
+});
+
+test('renderer adds ripple data blocks during midstream transfer', () => {
+  const { monitor, elements, timers } = loadMonitorWithDom();
+  monitor.play('midstream-revoked', 0);
+  timers.runNext();
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-ripple'));
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-block'));
+});
+
+test('renderer omits ripple data blocks for final denied and blocked frames', () => {
+  const denied = loadMonitorWithDom();
+  denied.monitor.play('role-denied', 0);
+  denied.timers.runAll();
+  assert.equal(denied.elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-ripple'), false);
+  assert.equal(denied.elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-block'), false);
+
+  const blocked = loadMonitorWithDom();
+  blocked.monitor.play('attack-blocked', 0);
+  blocked.timers.runAll();
+  assert.equal(blocked.elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-ripple'), false);
+  assert.equal(blocked.elements.runtimeMonitorCanvas.innerHTML.includes('runtime-data-block'), false);
 });
 
 test('wheel zooms around the mouse position and updates rendered transform', () => {

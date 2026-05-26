@@ -151,15 +151,14 @@
     const visibleSteps = activeScenario.steps.slice(0, currentIndex + 1);
     const activeNodeIds = Array.from(new Set(visibleSteps.flatMap(step => step.nodes || [])));
     const activeEdgeIds = visibleSteps.map(step => step.edge).filter(Boolean);
-    const filePathActive = visibleSteps.some(step => {
-      const nodes = step.nodes || [];
-      return nodes.includes('file') || nodes.includes('ipfs') || step.edge === 'gateway-ipfs' || step.edge === 'user-file';
-    });
+    const currentStep = activeScenario.steps[currentIndex];
+    const blockingTone = currentStep.tone === 'deny' || currentStep.tone === 'block' || currentStep.tone === 'revoke';
+    const filePathActive = !blockingTone && (currentStep.edge === 'user-file' || currentStep.edge === 'gateway-ipfs');
 
     return {
       scenarioId: activeScenario.id,
       outcome: activeScenario.outcome,
-      currentStep: clone(activeScenario.steps[currentIndex]),
+      currentStep: clone(currentStep),
       activeNodeIds,
       activeEdgeIds,
       filePathActive,

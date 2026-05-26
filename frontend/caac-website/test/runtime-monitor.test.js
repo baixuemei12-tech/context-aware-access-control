@@ -131,7 +131,10 @@ function loadMonitorWithDom(codeOverride) {
     runtimeScenarioSummary: createElement('runtimeScenarioSummary'),
     runtimeProgressBar: createElement('runtimeProgressBar'),
     runtimeProgressText: createElement('runtimeProgressText'),
-    runtimeMonitorLog: createElement('runtimeMonitorLog')
+    runtimeMonitorLog: createElement('runtimeMonitorLog'),
+    runtimeZoomIn: createElement('runtimeZoomIn'),
+    runtimeZoomOut: createElement('runtimeZoomOut'),
+    runtimeZoomReset: createElement('runtimeZoomReset')
   };
   const timers = createFakeTimers();
   const sandbox = {
@@ -431,6 +434,18 @@ test('pointer drag ignores second pointerdown while a pointer is already capture
   elements.runtimeMonitorCanvas.dispatch('pointerup', { pointerId: 7 });
   assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(30 15) scale(1)'));
   assert.equal(elements.runtimeMonitorCanvas.releasedPointerId, 7);
+});
+
+test('zoom controls zoom and reset the viewport', () => {
+  const { monitor, elements } = loadMonitorWithDom();
+  monitor.init();
+  elements.runtimeZoomIn.dispatch('click', {});
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('scale(1.18)'));
+  elements.runtimeZoomOut.dispatch('click', {});
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('scale(1)'));
+  elements.runtimeZoomIn.dispatch('click', {});
+  elements.runtimeZoomReset.dispatch('click', {});
+  assert.ok(elements.runtimeMonitorCanvas.innerHTML.includes('translate(0 0) scale(1)'));
 });
 
 test('play renders the requested blocked scenario without waiting for timers', () => {

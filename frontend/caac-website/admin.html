@@ -88,6 +88,11 @@
     </div>
     <div class="runtime-monitor-grid">
       <div class="runtime-canvas-shell">
+        <div class="runtime-map-controls" aria-label="Runtime monitor map controls">
+          <button type="button" id="runtimeZoomIn" class="runtime-map-btn" title="Zoom in" aria-label="Zoom in">+</button>
+          <button type="button" id="runtimeZoomOut" class="runtime-map-btn" title="Zoom out" aria-label="Zoom out">-</button>
+          <button type="button" id="runtimeZoomReset" class="runtime-map-btn" title="Reset view" aria-label="Reset view">Reset</button>
+        </div>
         <svg id="runtimeMonitorCanvas" class="runtime-canvas" viewBox="0 0 1000 560" role="img" aria-label="Animated CAAC runtime access path"></svg>
       </div>
       <aside class="runtime-side">

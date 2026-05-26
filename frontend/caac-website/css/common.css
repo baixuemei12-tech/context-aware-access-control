@@ -1623,6 +1623,7 @@ html[data-theme="light"] .btn-primary {
 }
 
 .runtime-canvas-shell {
+  position: relative;
   min-height: 360px;
   min-width: 0;
   border: 1px solid rgba(94, 164, 248, 0.18);
@@ -1640,6 +1641,40 @@ html[data-theme="light"] .btn-primary {
   max-width: 100%;
   height: 360px;
   display: block;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.runtime-canvas.dragging {
+  cursor: grabbing;
+}
+
+.runtime-map-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.runtime-map-btn {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(8, 14, 26, 0.82);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.runtime-map-btn:hover {
+  border-color: var(--border-hi);
+  color: var(--accent);
+  background: var(--bg3);
 }
 
 .runtime-edge {
@@ -1770,6 +1805,12 @@ html[data-theme="light"] .runtime-canvas-shell {
     linear-gradient(color-mix(in srgb, var(--accent) 8%, transparent) 1px, transparent 1px),
     linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent) 1px, transparent 1px),
     color-mix(in srgb, var(--bg2) 96%, var(--bg));
+}
+
+html[data-theme="light"] .runtime-map-btn {
+  background: color-mix(in srgb, var(--bg2) 92%, white);
+  border-color: color-mix(in srgb, var(--border-hi) 58%, transparent);
+  color: var(--text2);
 }
 
 html[data-theme="light"] .runtime-node rect {

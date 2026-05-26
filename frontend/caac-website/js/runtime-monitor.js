@@ -315,6 +315,30 @@
     monitor.canvas.addEventListener('pointercancel', event => handlePointerEnd(monitor.canvas, event));
   }
 
+  function installViewportControls(monitor) {
+    if (monitor.controlsReady) return;
+    monitor.controlsReady = true;
+    const centerPoint = { x: 500, y: 280 };
+    if (monitor.zoomIn) {
+      monitor.zoomIn.addEventListener('click', () => {
+        viewport = zoomViewportAt(viewport, 1.18, centerPoint);
+        rerenderActiveFrame();
+      });
+    }
+    if (monitor.zoomOut) {
+      monitor.zoomOut.addEventListener('click', () => {
+        viewport = zoomViewportAt(viewport, 1 / 1.18, centerPoint);
+        rerenderActiveFrame();
+      });
+    }
+    if (monitor.zoomReset) {
+      monitor.zoomReset.addEventListener('click', () => {
+        viewport = resetViewport();
+        rerenderActiveFrame();
+      });
+    }
+  }
+
   function edgeTone(edgeId, scenario, frame) {
     const step = scenario.steps.find(item => item.edge === edgeId && frame.activeEdgeIds.includes(edgeId));
     return step ? step.tone : '';
@@ -388,7 +412,10 @@
       summary: document.getElementById('runtimeScenarioSummary'),
       progressBar: document.getElementById('runtimeProgressBar'),
       progressText: document.getElementById('runtimeProgressText'),
-      log: document.getElementById('runtimeMonitorLog')
+      log: document.getElementById('runtimeMonitorLog'),
+      zoomIn: document.getElementById('runtimeZoomIn'),
+      zoomOut: document.getElementById('runtimeZoomOut'),
+      zoomReset: document.getElementById('runtimeZoomReset')
     };
     if (!monitor.canvas || !monitor.buttons || !monitor.title || !monitor.summary ||
         !monitor.progressBar || !monitor.progressText || !monitor.log) {
@@ -405,6 +432,7 @@
     renderButtons(monitor.buttons, api);
     activeMonitor = monitor;
     installViewportInteractions(monitor);
+    installViewportControls(monitor);
     if (playbackTimer) clearTimeout(playbackTimer);
 
     let stepIndex = 0;

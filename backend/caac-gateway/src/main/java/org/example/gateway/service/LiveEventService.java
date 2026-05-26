@@ -85,6 +85,15 @@ public class LiveEventService {
         publishToUser(username, "USER_DELETED", data);
     }
 
+    public void publishRuntimeStep(Map<String, Object> data) {
+        publishRuntimePathStep(data);
+    }
+
+    public void publishRuntimePathStep(Map<String, Object> data) {
+        if (data == null || data.isEmpty()) return;
+        publishToAdmins("RUNTIME_PATH_STEP", new LinkedHashMap<>(data));
+    }
+
     private void publishToAll(String type, Map<String, Object> data) {
         clients.values().forEach(client -> send(client, type, data));
     }

@@ -1,0 +1,174 @@
+/* ============================================================
+   CAAC 运行时监控 - 拓扑画布样式
+   保持与现有 cyberpunk / 默认主题的 CSS 变量一致
+   ============================================================ */
+.runtime-monitor {
+  margin: 16px 0;
+  background:
+    linear-gradient(180deg, rgba(79,141,247,.04), transparent 30%),
+    rgba(255,255,255,.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
+}
+
+/* 标题区 */
+.runtime-monitor .runtime-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.runtime-monitor .runtime-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.runtime-monitor h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  color: var(--text);
+}
+.runtime-monitor .runtime-sub {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+
+/* 状态指示徽章 */
+.runtime-monitor .runtime-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.runtime-monitor .runtime-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.runtime-monitor .runtime-status::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+}
+.runtime-monitor .runtime-status[data-kind="ok"] { color: var(--green); border-color: var(--green); }
+.runtime-monitor .runtime-status[data-kind="ok"]::before {
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: rt-pulse 1.4s infinite ease-in-out;
+}
+.runtime-monitor .runtime-status[data-kind="pending"] { color: var(--amber); border-color: var(--amber); }
+.runtime-monitor .runtime-status[data-kind="pending"]::before { background: var(--amber); }
+@keyframes rt-pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+
+.runtime-monitor .btn-rt {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.runtime-monitor .btn-rt:hover { color: var(--accent); border-color: var(--accent); }
+
+/* 主体：左侧画布 + 右侧侧栏 */
+.runtime-monitor .runtime-body {
+  display: grid;
+  grid-template-columns: 1fr 250px;
+  gap: 12px;
+}
+
+.runtime-monitor .runtime-canvas-wrap {
+  position: relative;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(79,141,247,.05) 0%, transparent 60%),
+    rgba(0,0,0,.20);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  height: 460px;
+  overflow: hidden;
+}
+.runtime-monitor canvas.runtime-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 侧栏 */
+.runtime-monitor .runtime-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.runtime-monitor .runtime-legend {
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+}
+.runtime-monitor .runtime-legend .lg-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+.runtime-monitor .runtime-legend .lg-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  background: rgba(255,255,255,.05);
+}
+
+.runtime-monitor .runtime-log {
+  flex: 1;
+  background: rgba(0,0,0,.22);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  overflow-y: auto;
+  max-height: 380px;
+}
+.runtime-monitor .runtime-log .log-row {
+  display: flex;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px dashed rgba(255,255,255,.04);
+}
+.runtime-monitor .runtime-log .log-row:last-child { border-bottom: 0; }
+.runtime-monitor .runtime-log .log-time { color: var(--text3); flex: 0 0 56px; }
+.runtime-monitor .runtime-log .log-text { color: var(--text); flex: 1; word-break: break-all; }
+.runtime-monitor .runtime-log .log-denied  .log-text,
+.runtime-monitor .runtime-log .log-blocked .log-text,
+.runtime-monitor .runtime-log .log-alert   .log-text { color: var(--red); }
+.runtime-monitor .runtime-log .log-ok      .log-text { color: var(--green); }
+.runtime-monitor .runtime-log .log-pending .log-text { color: var(--amber); }
+
+/* 响应式：窄屏堆叠 */
+@media (max-width: 900px) {
+  .runtime-monitor .runtime-body { grid-template-columns: 1fr; }
+  .runtime-monitor .runtime-canvas-wrap { height: 360px; }
+  .runtime-monitor .runtime-log { max-height: 220px; }
+}

@@ -68,3 +68,13 @@ venv/
 *.seed
 *.lock-wscript
 .npm
+
+# === Runtime state — never commit ===
+backend/caac-gateway/data/*.dat
+backend/caac-gateway/data/*.dat.bak*
+data/
+.local/
+nul
+
+# === Project-level npm registry override ===
+frontend/caac-website/.npmrc

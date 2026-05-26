@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/cyberpunk.css">
 <link rel="stylesheet" href="css/perf.css">
+<link rel="stylesheet" href="css/runtime-monitor.css">
 </head>
 <body class="space-page admin-space">
 <canvas class="caac-space-bg" data-caac-stars data-density="36" data-link="120" data-speed="0.12" data-packets="4" aria-hidden="true"></canvas>
@@ -75,6 +76,39 @@
       </div>
     </section>
   </div>
+
+  <!-- ============================================================
+       RUN TIME MONITOR — 实时拓扑画布
+       数据来源：dev 模式下走 Vite 插件 /bench/stream (SSE Mock)
+       生产模式可改为后端真实 SSE 端点（同名同 schema）
+       ============================================================ -->
+  <section id="runtimeMonitor" class="runtime-monitor">
+    <div class="runtime-header">
+      <div class="runtime-title">
+        <h2>Run time monitor</h2>
+        <span class="runtime-sub">live topology · benchmark stream</span>
+      </div>
+      <div class="runtime-actions">
+        <span class="runtime-status" data-kind="idle">offline</span>
+        <button class="btn-rt" data-action="reset-zoom" type="button" title="Reset view (or double-click canvas)">Reset view</button>
+        <button class="btn-rt" data-action="clear" type="button">Clear</button>
+      </div>
+    </div>
+    <div class="runtime-body">
+      <div class="runtime-canvas-wrap">
+        <canvas class="runtime-canvas" aria-label="CAAC live access decision topology"></canvas>
+      </div>
+      <aside class="runtime-side">
+        <div class="runtime-legend">
+          <div class="lg-row" style="color:var(--green)"><span class="lg-dot"></span>OK / PERMIT</div>
+          <div class="lg-row" style="color:var(--amber)"><span class="lg-dot"></span>Pending / Evaluating</div>
+          <div class="lg-row" style="color:var(--red)"><span class="lg-dot"></span>DENY / Blocked</div>
+          <div class="lg-row" style="color:var(--accent)"><span class="lg-dot"></span>Info / Register</div>
+        </div>
+        <div class="runtime-log" aria-live="polite"></div>
+      </aside>
+    </div>
+  </section>
 
   <!-- ANALYTICS DASHBOARD -->
   <div class="card">

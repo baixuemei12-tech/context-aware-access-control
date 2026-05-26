@@ -158,6 +158,45 @@ function updateRiskInspectorFromSelection() {
   setRiskText('ri-status', entry ? 'selected' : 'selection');
 }
 
+// ====================================================================
+// RUNTIME TOPOLOGY BRIDGE
+// Push subject_context + environment_context to the runtime canvas so
+// hovering the user's node on the topology map shows live context values.
+// No-op if runtime-monitor isn't on this page.
+// ====================================================================
+function publishContextToRuntime(data) {
+  if (!window.CAAC_RUNTIME || typeof window.CAAC_RUNTIME.setUserContext !== 'function') return;
+  const u = currentUser || {};
+  const username = u.username || u.id || (data && data.username);
+  if (!username) return;
+  const userId = String(username).indexOf('subj-') === 0 ? username : ('subj-' + username);
+  const scores = (data && data.resolvedScores) || {};
+  const raw    = (data && data.rawContext)     || (typeof rawContext === 'object' ? rawContext : {});
+  const screenStr = (raw.screenWidth && raw.screenHeight)
+    ? raw.screenWidth + 'x' + raw.screenHeight
+    : null;
+  try {
+    window.CAAC_RUNTIME.setUserContext(userId, {
+      subject: {
+        R:        u.rSub != null ? u.rSub : (u.role || u.R),
+        T:        data && data.tSub != null ? data.tSub : u.tSub,
+        L_trust:  scores.L_trust,
+        D_sec:    scores.D_sec,
+        DT_score: data && data.dtScore,
+        N_status: scores.N_status
+      },
+      environment: {
+        networkType: raw.networkType,
+        ip:          raw.ip || raw.clientIp,
+        platform:    raw.platform,
+        timezone:    raw.timezone,
+        screen:      screenStr,
+        language:    raw.language
+      }
+    });
+  } catch (_) { /* ignore — runtime canvas not loaded */ }
+}
+
 function updateRiskInspectorFromResult(data) {
   const scores = data.resolvedScores || {};
   const tier = tierFromMargin(data.riskMargin);
@@ -426,6 +465,7 @@ async function requestAccess() {
 
     renderResult(data, elapsedMs);
     updateRiskInspectorFromResult(data);
+    publishContextToRuntime(data);
 
     if (data.decision === 'PERMIT' && data.sessionId) {
       log('info', 'Phase 2 - Starting file stream');
@@ -644,6 +684,17 @@ async function degradeContext() {
 
   log('warn', 'Simulating context degradation - public Wi-Fi + outside hours...');
   log('warn', 'L_trust -> 0.1, N_status -> 0.1, D_sec -> 0.1, T_req -> false');
+
+  // 把降级后的关键字段同步到运行时拓扑图（hover tooltip 即时反映新值）
+  if (window.CAAC_RUNTIME && typeof window.CAAC_RUNTIME.setUserContext === 'function') {
+    const uname = (currentUser && (currentUser.username || currentUser.id)) || 'user';
+    const uid = String(uname).indexOf('subj-') === 0 ? uname : ('subj-' + uname);
+    try {
+      window.CAAC_RUNTIME.setUserContext(uid, {
+        subject: { L_trust: 0.10, N_status: 0.10, D_sec: 0.10 }
+      });
+    } catch (_) {}
+  }
 
   try {
     const res = await fetch(GATEWAY_URL + '/api/files/sessions/' + currentSessionId + '/degrade', {

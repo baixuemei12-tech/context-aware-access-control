@@ -18,6 +18,22 @@ function loadMonitor(codeOverride) {
   return sandbox.window.CaacRuntimeMonitor;
 }
 
+function loadMonitorWithWindowPrototypeMarker() {
+  const code = fs.readFileSync(new URL('../js/runtime-monitor.js', import.meta.url), 'utf8');
+  const windowPrototype = { runtimeWindowPrototypeMarker: true };
+  const sandbox = {
+    window: Object.create(windowPrototype),
+    document: { getElementById: () => null },
+    setTimeout,
+    clearTimeout,
+    console
+  };
+  sandbox.window.window = sandbox.window;
+  vm.createContext(sandbox);
+  vm.runInContext(code, sandbox);
+  return sandbox.window.CaacRuntimeMonitor;
+}
+
 function createElement(id) {
   return {
     id,
@@ -146,8 +162,18 @@ test('panViewport and resetViewport update viewport without mutating the origina
   const viewport = { scale: 1.4, x: -20, y: 15 };
   const panned = monitor.panViewport(viewport, 30, -10);
   assert.deepEqual(viewport, { scale: 1.4, x: -20, y: 15 });
-  assert.deepEqual(panned, { scale: 1.4, x: 10, y: 5 });
-  assert.deepEqual(monitor.resetViewport(), { scale: 1, x: 0, y: 0 });
+  assert.deepEqual({ ...panned }, { scale: 1.4, x: 10, y: 5 });
+  assert.deepEqual({ ...monitor.resetViewport() }, { scale: 1, x: 0, y: 0 });
+});
+
+test('viewport helpers return plain objects without inheriting from window or input prototypes', () => {
+  const monitor = loadMonitorWithWindowPrototypeMarker();
+  const customPrototype = { inheritedViewportMarker: true };
+  const viewport = Object.assign(Object.create(customPrototype), { scale: 1.4, x: -20, y: 15 });
+  assert.equal('runtimeWindowPrototypeMarker' in monitor.resetViewport(), false);
+  assert.equal('inheritedViewportMarker' in monitor.createViewport(viewport), false);
+  assert.equal('inheritedViewportMarker' in monitor.panViewport(viewport, 30, -10), false);
+  assert.equal('inheritedViewportMarker' in monitor.zoomViewportAt(viewport, 2, { x: 0, y: 0 }), false);
 });
 
 test('production model does not use Function constructor or host realm array escape', () => {

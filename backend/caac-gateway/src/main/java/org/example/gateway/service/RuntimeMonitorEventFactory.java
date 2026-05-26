@@ -2,9 +2,18 @@ package org.example.gateway.service;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public final class RuntimeMonitorEventFactory {
+
+    private static final Set<String> RESERVED_EXTRA_KEYS = Set.of(
+            "flowid", "phase", "username", "fileid", "sessionid",
+            "edge", "nodes", "tone", "label", "datastate");
+    private static final List<String> SECRET_KEY_PARTS = List.of(
+            "token", "password", "secret");
+    private static final Set<String> SECRET_EXTRA_KEYS = Set.of("authheader", "authorization");
 
     private static final Map<String, PhaseMapping> PHASES = Map.ofEntries(
             entry("REQUEST_RECEIVED", "user-gateway", List.of("user", "gateway"), "info", "Request received", "Raw request"),
@@ -62,7 +71,7 @@ public final class RuntimeMonitorEventFactory {
         event.put("dataState", mapping.dataState());
         if (extra != null) {
             extra.forEach((key, value) -> {
-                if (value != null) {
+                if (value != null && isSafeExtraKey(key)) {
                     event.put(key, value);
                 }
             });
@@ -84,6 +93,15 @@ public final class RuntimeMonitorEventFactory {
         if (value != null && !value.isBlank()) {
             event.put(key, value);
         }
+    }
+
+    private static boolean isSafeExtraKey(String key) {
+        if (key == null || key.isBlank()) return false;
+        String normalized = key.toLowerCase(Locale.ROOT);
+        if (RESERVED_EXTRA_KEYS.contains(normalized)) return false;
+        String compact = normalized.replaceAll("[^a-z0-9]", "");
+        return !SECRET_EXTRA_KEYS.contains(compact)
+                && SECRET_KEY_PARTS.stream().noneMatch(compact::contains);
     }
 
     private record PhaseMapping(String edge, List<String> nodes, String tone, String label, String dataState) {

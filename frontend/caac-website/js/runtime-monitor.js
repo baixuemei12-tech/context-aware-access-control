@@ -1,0 +1,582 @@
+(function () {
+  'use strict';
+
+  const NODE_POSITIONS = {
+    user: [8, 46],
+    attacker: [8, 72],
+    gateway: [26, 46],
+    context: [44, 30],
+    anomaly: [44, 64],
+    oracle: [62, 30],
+    fabric: [80, 30],
+    ipfs: [80, 54],
+    file: [62, 54],
+    permit: [94, 46],
+    deny: [94, 66],
+    blocked: [94, 82],
+    revoked: [94, 18]
+  };
+
+  const NODES = [
+    { id: 'user', label: 'User', kind: 'subject' },
+    { id: 'attacker', label: 'Attacker', kind: 'threat' },
+    { id: 'gateway', label: 'Gateway', kind: 'pep' },
+    { id: 'context', label: 'Context Resolver', kind: 'score' },
+    { id: 'anomaly', label: 'Anomaly Detector', kind: 'guard' },
+    { id: 'oracle', label: 'Oracle', kind: 'bridge' },
+    { id: 'fabric', label: 'Fabric PDP', kind: 'chain' },
+    { id: 'ipfs', label: 'IPFS Ciphertext', kind: 'storage' },
+    { id: 'file', label: 'File Registry', kind: 'resource' },
+    { id: 'permit', label: 'Permit', kind: 'ok' },
+    { id: 'deny', label: 'Deny', kind: 'deny' },
+    { id: 'blocked', label: 'Blocked', kind: 'block' },
+    { id: 'revoked', label: 'Revoked', kind: 'revoke' }
+  ].map(node => ({
+    ...node,
+    x: NODE_POSITIONS[node.id][0],
+    y: NODE_POSITIONS[node.id][1]
+  }));
+
+  const EDGES = {
+    'user-file': ['user', 'file'],
+    'user-gateway': ['user', 'gateway'],
+    'attacker-gateway': ['attacker', 'gateway'],
+    'gateway-context': ['gateway', 'context'],
+    'gateway-anomaly': ['gateway', 'anomaly'],
+    'context-oracle': ['context', 'oracle'],
+    'oracle-fabric': ['oracle', 'fabric'],
+    'fabric-permit': ['fabric', 'permit'],
+    'fabric-deny': ['fabric', 'deny'],
+    'fabric-revoked': ['fabric', 'revoked'],
+    'gateway-ipfs': ['gateway', 'ipfs'],
+    'gateway-permit': ['gateway', 'permit'],
+    'anomaly-blocked': ['anomaly', 'blocked'],
+    'blocked-ipfs': ['blocked', 'ipfs']
+  };
+
+  const SCENARIOS = [
+    {
+      id: 'normal-permit',
+      title: 'Normal file access',
+      outcome: 'PERMIT',
+      summary: 'Trusted user accesses an approved file and receives a risk-budgeted stream.',
+      steps: [
+        { label: 'User requests file', nodes: ['user', 'file'], edge: 'user-file', tone: 'info' },
+        { label: 'Gateway authenticates token', nodes: ['user', 'gateway'], edge: 'user-gateway', tone: 'ok' },
+        { label: 'Context scores resolved', nodes: ['gateway', 'context'], edge: 'gateway-context', tone: 'info' },
+        { label: 'Oracle relays evaluateAccess', nodes: ['context', 'oracle', 'fabric'], edge: 'context-oracle', tone: 'info' },
+        { label: 'Fabric returns PERMIT', nodes: ['fabric', 'permit'], edge: 'fabric-permit', tone: 'ok' },
+        { label: 'Gateway streams from IPFS', nodes: ['gateway', 'ipfs', 'permit'], edge: 'gateway-ipfs', tone: 'ok' }
+      ]
+    },
+    {
+      id: 'role-denied',
+      title: 'Sensitivity mismatch',
+      outcome: 'DENIED',
+      summary: 'A low-role user requests a high-sensitivity object and is denied by the PDP.',
+      steps: [
+        { label: 'User requests S5 file', nodes: ['user', 'file'], edge: 'user-file', tone: 'info' },
+        { label: 'Gateway builds access request', nodes: ['user', 'gateway', 'file'], edge: 'user-gateway', tone: 'info' },
+        { label: 'Fabric checks R_sub < S_level', nodes: ['gateway', 'oracle', 'fabric'], edge: 'oracle-fabric', tone: 'warn' },
+        { label: 'Decision DENY returned', nodes: ['fabric', 'deny'], edge: 'fabric-deny', tone: 'deny' }
+      ]
+    },
+    {
+      id: 'attack-blocked',
+      title: 'Attack path blocked',
+      outcome: 'BLOCKED',
+      summary: 'Burst access and suspicious context trigger anomaly blocking before data delivery.',
+      steps: [
+        { label: 'Suspicious client connects', nodes: ['attacker'], edge: null, tone: 'warn' },
+        { label: 'Burst begins', nodes: ['attacker'], edge: null, tone: 'warn' },
+        { label: 'Gateway receives burst', nodes: ['attacker', 'gateway'], edge: 'attacker-gateway', tone: 'warn' },
+        { label: 'Anomaly detector scores behavior', nodes: ['gateway', 'anomaly'], edge: 'gateway-anomaly', tone: 'warn' },
+        { label: 'Runtime monitor marks path', nodes: ['anomaly', 'blocked'], edge: 'anomaly-blocked', tone: 'block' },
+        { label: 'Access blocked before IPFS', nodes: ['blocked', 'ipfs'], edge: 'blocked-ipfs', tone: 'block' }
+      ]
+    },
+    {
+      id: 'midstream-revoked',
+      title: 'Mid-stream revocation',
+      outcome: 'REVOKED',
+      summary: 'A permitted session degrades during streaming and Algorithm 2 revokes it.',
+      steps: [
+        { label: 'Session starts as PERMIT', nodes: ['user', 'gateway', 'permit'], edge: 'gateway-permit', tone: 'ok' },
+        { label: 'Windowed stream begins', nodes: ['gateway', 'ipfs'], edge: 'gateway-ipfs', tone: 'ok' },
+        { label: 'Context degrades', nodes: ['gateway', 'context'], edge: 'gateway-context', tone: 'warn' },
+        { label: 'Scheduler re-evaluates', nodes: ['context', 'oracle', 'fabric'], edge: 'context-oracle', tone: 'warn' },
+        { label: 'Session revoked', nodes: ['fabric', 'revoked'], edge: 'fabric-revoked', tone: 'revoke' }
+      ]
+    }
+  ];
+
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function escapeText(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function sanitizeClassToken(value) {
+    const token = String(value == null ? '' : value);
+    return /^[a-z0-9_-]+$/i.test(token) ? token : '';
+  }
+
+  function getScenarios() {
+    return SCENARIOS.map(clone);
+  }
+
+  function getScenario(id) {
+    const scenario = SCENARIOS.find(item => item.id === id) || SCENARIOS[0];
+    return clone(scenario);
+  }
+
+  function clampStepIndex(stepIndex, lastIndex) {
+    const numericIndex = typeof stepIndex === 'number' && Number.isFinite(stepIndex)
+      ? Math.floor(stepIndex)
+      : 0;
+    return Math.max(0, Math.min(numericIndex, lastIndex));
+  }
+
+  function buildPlaybackFrame(scenario, stepIndex) {
+    const activeScenario = scenario || getScenario();
+    const lastIndex = activeScenario.steps.length - 1;
+    const currentIndex = clampStepIndex(stepIndex, lastIndex);
+    const visibleSteps = activeScenario.steps.slice(0, currentIndex + 1);
+    const activeNodeIds = Array.from(new Set(visibleSteps.flatMap(step => step.nodes || [])));
+    const activeEdgeIds = visibleSteps.map(step => step.edge).filter(Boolean);
+    const currentStep = activeScenario.steps[currentIndex];
+    const blockingTone = currentStep.tone === 'deny' || currentStep.tone === 'block' || currentStep.tone === 'revoke';
+    const filePathActive = !blockingTone && (currentStep.edge === 'user-file' || currentStep.edge === 'gateway-ipfs');
+
+    return {
+      scenarioId: activeScenario.id,
+      outcome: activeScenario.outcome,
+      currentStep: clone(currentStep),
+      activeNodeIds,
+      activeEdgeIds,
+      filePathActive,
+      completedStepCount: visibleSteps.length,
+      totalStepCount: activeScenario.steps.length
+    };
+  }
+
+  function normalizeList(value) {
+    if (Array.isArray(value)) return value.filter(Boolean).map(String);
+    if (value == null || value === '') return [];
+    return [String(value)];
+  }
+
+  function isBlockingTone(tone) {
+    return tone === 'deny' || tone === 'block' || tone === 'revoke';
+  }
+
+  function isSuccessTone(tone) {
+    return tone === 'ok' || tone === 'success';
+  }
+
+  function buildLiveRuntimeFrame(data) {
+    const payload = data || {};
+    const eventType = String(payload.eventType || payload.type || payload.phase || 'PATH_STEP');
+    const tone = String(payload.tone || '').toLowerCase();
+    const nodes = normalizeList(payload.nodes);
+    const edge = payload.edge ? String(payload.edge) : null;
+    const label = String(payload.label || eventType);
+    const dataState = payload.dataState == null ? '' : String(payload.dataState);
+    const step = { label, nodes, edge, tone, dataState, eventType };
+    const successStorageNode = isSuccessTone(tone) && (nodes.includes('file') || nodes.includes('ipfs'));
+    const filePathActive = successStorageNode || (isSuccessTone(tone) && (edge === 'user-file' || edge === 'gateway-ipfs'));
+
+    return {
+      scenario: {
+        id: 'live-runtime',
+        title: 'Live runtime',
+        outcome: eventType,
+        summary: dataState || label,
+        steps: [step]
+      },
+      frame: {
+        scenarioId: 'live-runtime',
+        outcome: eventType,
+        currentStep: clone(step),
+        activeNodeIds: nodes,
+        activeEdgeIds: edge ? [edge] : [],
+        filePathActive,
+        dataState,
+        isBlocking: isBlockingTone(tone),
+        isSuccess: isSuccessTone(tone),
+        completedStepCount: 1,
+        totalStepCount: 1
+      }
+    };
+  }
+
+  let playbackTimer = null;
+  let activeScenarioId = 'normal-permit';
+  let activeMonitor = null;
+  let activeScenario = getScenario(activeScenarioId);
+  let activeFrame = buildPlaybackFrame(activeScenario, 0);
+  let isDraggingViewport = false;
+  let lastDragPoint = null;
+  let activePointerId = null;
+  const DEFAULT_VIEWPORT = { scale: 1, x: 0, y: 0 };
+  const MIN_VIEWPORT_SCALE = 0.65;
+  const MAX_VIEWPORT_SCALE = 2.5;
+  let viewport = resetViewport();
+
+  function clampScale(value) {
+    const numericValue = typeof value === 'number' && Number.isFinite(value) ? value : 1;
+    return Math.max(MIN_VIEWPORT_SCALE, Math.min(numericValue, MAX_VIEWPORT_SCALE));
+  }
+
+  function resetViewport() {
+    return { ...DEFAULT_VIEWPORT };
+  }
+
+  function createViewport(value) {
+    if (!value) return resetViewport();
+    return {
+      scale: clampScale(value.scale),
+      x: typeof value.x === 'number' && Number.isFinite(value.x) ? value.x : 0,
+      y: typeof value.y === 'number' && Number.isFinite(value.y) ? value.y : 0
+    };
+  }
+
+  function zoomViewportAt(currentViewport, factor, point) {
+    const current = createViewport(currentViewport);
+    const zoomFactor = typeof factor === 'number' && Number.isFinite(factor) ? factor : 1;
+    const nextScale = clampScale(current.scale * zoomFactor);
+    const ratio = nextScale / current.scale;
+    const anchor = point || { x: 0, y: 0 };
+    return {
+      scale: nextScale,
+      x: anchor.x - (anchor.x - current.x) * ratio,
+      y: anchor.y - (anchor.y - current.y) * ratio
+    };
+  }
+
+  function panViewport(currentViewport, dx, dy) {
+    const current = createViewport(currentViewport);
+    return {
+      scale: current.scale,
+      x: current.x + dx,
+      y: current.y + dy
+    };
+  }
+
+  function formatViewportNumber(value) {
+    return String(Number(value.toFixed(6)));
+  }
+
+  function viewportTransform(value) {
+    const current = createViewport(value);
+    return 'translate(' + formatViewportNumber(current.x) + ' ' + formatViewportNumber(current.y) +
+      ') scale(' + formatViewportNumber(current.scale) + ')';
+  }
+
+  function canvasPointFromEvent(canvas, event) {
+    if (typeof canvas.createSVGPoint === 'function' && typeof canvas.getScreenCTM === 'function') {
+      const matrix = canvas.getScreenCTM();
+      if (matrix && typeof matrix.inverse === 'function') {
+        const point = canvas.createSVGPoint();
+        point.x = event.clientX;
+        point.y = event.clientY;
+        const transformed = point.matrixTransform(matrix.inverse());
+        if (Number.isFinite(transformed.x) && Number.isFinite(transformed.y)) {
+          return {
+            x: transformed.x,
+            y: transformed.y
+          };
+        }
+      }
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const viewBox = canvas.viewBox && canvas.viewBox.baseVal;
+    const viewBoxX = viewBox && Number.isFinite(viewBox.x) ? viewBox.x : 0;
+    const viewBoxY = viewBox && Number.isFinite(viewBox.y) ? viewBox.y : 0;
+    const viewBoxWidth = viewBox && Number.isFinite(viewBox.width) ? viewBox.width : rect.width;
+    const viewBoxHeight = viewBox && Number.isFinite(viewBox.height) ? viewBox.height : rect.height;
+    const scale = rect.width && rect.height && viewBoxWidth && viewBoxHeight
+      ? Math.min(rect.width / viewBoxWidth, rect.height / viewBoxHeight)
+      : 1;
+    const renderedWidth = viewBoxWidth * scale;
+    const renderedHeight = viewBoxHeight * scale;
+    const offsetX = (rect.width - renderedWidth) / 2;
+    const offsetY = (rect.height - renderedHeight) / 2;
+    return {
+      x: viewBoxX + ((event.clientX - rect.left - offsetX) / scale),
+      y: viewBoxY + ((event.clientY - rect.top - offsetY) / scale)
+    };
+  }
+
+  function rerenderActiveFrame() {
+    if (activeMonitor && activeScenario && activeFrame) {
+      renderFrame(activeMonitor, activeScenario, activeFrame);
+    }
+  }
+
+  function handleWheelZoom(canvas, event) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+    viewport = zoomViewportAt(viewport, factor, canvasPointFromEvent(canvas, event));
+    rerenderActiveFrame();
+  }
+
+  function handlePointerDown(canvas, event) {
+    if (event.button !== 0) return;
+    if (isDraggingViewport && event.pointerId !== activePointerId) return;
+    isDraggingViewport = true;
+    activePointerId = event.pointerId;
+    lastDragPoint = canvasPointFromEvent(canvas, event);
+    canvas.classList.add('dragging');
+    if (typeof canvas.setPointerCapture === 'function') canvas.setPointerCapture(event.pointerId);
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  }
+
+  function handlePointerMove(canvas, event) {
+    if (!isDraggingViewport || !lastDragPoint) return;
+    if (event.pointerId !== activePointerId) return;
+    const nextDragPoint = canvasPointFromEvent(canvas, event);
+    viewport = panViewport(viewport, nextDragPoint.x - lastDragPoint.x, nextDragPoint.y - lastDragPoint.y);
+    lastDragPoint = nextDragPoint;
+    rerenderActiveFrame();
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  }
+
+  function handlePointerEnd(canvas, event) {
+    if (event.pointerId !== activePointerId) return;
+    isDraggingViewport = false;
+    lastDragPoint = null;
+    activePointerId = null;
+    canvas.classList.remove('dragging');
+    if (typeof canvas.releasePointerCapture === 'function') canvas.releasePointerCapture(event.pointerId);
+  }
+
+  function installViewportInteractions(monitor) {
+    if (monitor.canvas.dataset.runtimeViewportReady === 'true') return;
+    monitor.canvas.dataset.runtimeViewportReady = 'true';
+    monitor.canvas.addEventListener('wheel', event => handleWheelZoom(monitor.canvas, event), { passive: false });
+    monitor.canvas.addEventListener('pointerdown', event => handlePointerDown(monitor.canvas, event));
+    monitor.canvas.addEventListener('pointermove', event => handlePointerMove(monitor.canvas, event));
+    monitor.canvas.addEventListener('pointerup', event => handlePointerEnd(monitor.canvas, event));
+    monitor.canvas.addEventListener('pointercancel', event => handlePointerEnd(monitor.canvas, event));
+  }
+
+  function installViewportControls(monitor) {
+    const centerPoint = { x: 500, y: 280 };
+    if (monitor.zoomIn && monitor.zoomIn.dataset.runtimeViewportControlsReady !== 'true') {
+      monitor.zoomIn.dataset.runtimeViewportControlsReady = 'true';
+      monitor.zoomIn.addEventListener('click', () => {
+        viewport = zoomViewportAt(viewport, 1.18, centerPoint);
+        rerenderActiveFrame();
+      });
+    }
+    if (monitor.zoomOut && monitor.zoomOut.dataset.runtimeViewportControlsReady !== 'true') {
+      monitor.zoomOut.dataset.runtimeViewportControlsReady = 'true';
+      monitor.zoomOut.addEventListener('click', () => {
+        viewport = zoomViewportAt(viewport, 1 / 1.18, centerPoint);
+        rerenderActiveFrame();
+      });
+    }
+    if (monitor.zoomReset && monitor.zoomReset.dataset.runtimeViewportControlsReady !== 'true') {
+      monitor.zoomReset.dataset.runtimeViewportControlsReady = 'true';
+      monitor.zoomReset.addEventListener('click', () => {
+        viewport = resetViewport();
+        rerenderActiveFrame();
+      });
+    }
+  }
+
+  function edgeTone(edgeId, scenario, frame) {
+    const step = scenario.steps.find(item => item.edge === edgeId && frame.activeEdgeIds.includes(edgeId));
+    return step ? step.tone : '';
+  }
+
+  function nodeTone(nodeId, scenario, frame) {
+    const steps = scenario.steps.slice().reverse();
+    const step = steps.find(item => (item.nodes || []).includes(nodeId) && frame.activeNodeIds.includes(nodeId));
+    if (nodeId === 'attacker' && frame.scenarioId !== 'live-runtime') return 'threat';
+    return step ? step.tone : '';
+  }
+
+  function renderFileRipples(frame) {
+    if (!frame.filePathActive) return '';
+    return [
+      '<g class="runtime-data-ripple" transform="translate(720 302)">',
+      '<circle class="runtime-ripple-ring ring-a" r="18"></circle>',
+      '<circle class="runtime-ripple-ring ring-b" r="28"></circle>',
+      '<rect class="runtime-data-block block-a" x="-20" y="-8" width="40" height="16" rx="5"></rect>',
+      '<rect class="runtime-data-block block-b" x="-12" y="12" width="26" height="10" rx="4"></rect>',
+      '</g>'
+    ].join('');
+  }
+
+  function renderDataState(frame) {
+    const state = frame && (frame.dataState || (frame.currentStep && frame.currentStep.dataState));
+    if (!state) return '';
+    return '<g class="runtime-transform-label" transform="translate(500 520)">' +
+      '<rect x="-150" y="-18" width="300" height="36" rx="7"></rect>' +
+      '<text class="runtime-info-state">' + escapeText(state) + '</text>' +
+      '</g>';
+  }
+
+  function renderCanvas(canvas, scenario, frame) {
+    const edgeMarkup = Object.keys(EDGES).map(id => {
+      const pair = EDGES[id];
+      const from = NODES.find(node => node.id === pair[0]);
+      const to = NODES.find(node => node.id === pair[1]);
+      const active = frame.activeEdgeIds.includes(id);
+      const tone = active ? sanitizeClassToken(edgeTone(id, scenario, frame)) : '';
+      const rejectClass = active && isBlockingTone(tone) ? ' runtime-edge-reject runtime-reject-flow' : '';
+      return '<line data-runtime-edge="' + escapeText(id) + '" class="runtime-edge ' +
+        (active ? 'active' : '') + ' ' + tone + rejectClass + '" x1="' +
+        (from.x * 10) + '" y1="' + (from.y * 5.6) + '" x2="' + (to.x * 10) + '" y2="' +
+        (to.y * 5.6) + '"></line>';
+    }).join('');
+
+    const nodeMarkup = NODES.map(node => {
+      const active = frame.activeNodeIds.includes(node.id);
+      const tone = sanitizeClassToken(active ? nodeTone(node.id, scenario, frame) : node.kind);
+      const waveClass = active && frame.isSuccess && (node.id === 'file' || node.id === 'ipfs') ? ' runtime-node-wave' : '';
+      return '<g class="runtime-node ' + (active ? 'active' : '') + ' ' + tone +
+        waveClass + '" transform="translate(' + (node.x * 10) + ',' + (node.y * 5.6) + ')">' +
+        '<rect x="-58" y="-20" width="116" height="40"></rect>' +
+        '<text>' + escapeText(node.label) + '</text>' +
+        '</g>';
+    }).join('');
+    const rippleMarkup = renderFileRipples(frame);
+    const stateMarkup = renderDataState(frame);
+
+    canvas.innerHTML = '<defs>' +
+      '<filter id="runtimeGlow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/>' +
+      '<feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+      '</defs><g class="runtime-viewport" transform="' + viewportTransform(viewport) + '">' +
+      edgeMarkup + rippleMarkup + nodeMarkup + stateMarkup + '</g>';
+  }
+
+  function renderButtons(root, monitor) {
+    root.innerHTML = getScenarios().map(scenario =>
+      '<button type="button" class="runtime-scenario-btn ' +
+      (scenario.id === activeScenarioId ? 'active' : '') +
+      '" data-runtime-scenario="' + escapeText(scenario.id) + '">' + escapeText(scenario.title) + '</button>'
+    ).join('');
+    root.querySelectorAll('[data-runtime-scenario]').forEach(button => {
+      button.addEventListener('click', () => monitor.play(button.dataset.runtimeScenario));
+    });
+  }
+
+  function renderFrame(monitor, scenario, frame) {
+    renderCanvas(monitor.canvas, scenario, frame);
+    monitor.title.textContent = scenario.title + ' - ' + scenario.outcome;
+    monitor.summary.textContent = scenario.summary;
+    monitor.progressText.textContent = frame.completedStepCount + '/' + frame.totalStepCount;
+    monitor.progressBar.style.width = Math.round((frame.completedStepCount / frame.totalStepCount) * 100) + '%';
+    monitor.log.innerHTML = scenario.steps.slice(0, frame.completedStepCount).map((step, index) =>
+      '<div class="runtime-log-entry ' + sanitizeClassToken(step.tone) + '">T+' +
+      String(index + 1).padStart(2, '0') + ' ' + escapeText(step.label) + '</div>'
+    ).join('');
+    monitor.log.scrollTop = monitor.log.scrollHeight;
+  }
+
+  function createMonitor() {
+    const monitor = {
+      canvas: document.getElementById('runtimeMonitorCanvas'),
+      buttons: document.getElementById('runtimeScenarioButtons'),
+      title: document.getElementById('runtimeScenarioTitle'),
+      summary: document.getElementById('runtimeScenarioSummary'),
+      progressBar: document.getElementById('runtimeProgressBar'),
+      progressText: document.getElementById('runtimeProgressText'),
+      log: document.getElementById('runtimeMonitorLog'),
+      zoomIn: document.getElementById('runtimeZoomIn'),
+      zoomOut: document.getElementById('runtimeZoomOut'),
+      zoomReset: document.getElementById('runtimeZoomReset')
+    };
+    if (!monitor.canvas || !monitor.buttons || !monitor.title || !monitor.summary ||
+        !monitor.progressBar || !monitor.progressText || !monitor.log) {
+      return null;
+    }
+    return monitor;
+  }
+
+  function playScenario(id, delayMs) {
+    const monitor = createMonitor();
+    if (!monitor) return;
+    const scenario = getScenario(id);
+    activeScenarioId = scenario.id;
+    renderButtons(monitor.buttons, api);
+    activeMonitor = monitor;
+    installViewportInteractions(monitor);
+    installViewportControls(monitor);
+    if (playbackTimer) clearTimeout(playbackTimer);
+
+    let stepIndex = 0;
+    const playbackDelay = delayMs == null ? 1150 : delayMs;
+    const tick = () => {
+      const frame = buildPlaybackFrame(scenario, stepIndex);
+      activeScenario = scenario;
+      activeFrame = frame;
+      renderFrame(monitor, scenario, frame);
+      stepIndex += 1;
+      if (stepIndex < scenario.steps.length) {
+        playbackTimer = setTimeout(tick, playbackDelay);
+      } else {
+        playbackTimer = null;
+      }
+    };
+    tick();
+  }
+
+  function init() {
+    const monitor = createMonitor();
+    if (!monitor) return;
+    playScenario(activeScenarioId, 1150);
+  }
+
+  function ingestLiveEvent(type) {
+    if (type === 'RUNTIME_PATH_STEP') {
+      const monitor = createMonitor();
+      if (!monitor) return;
+      const live = buildLiveRuntimeFrame(arguments[1] || {});
+      activeScenarioId = live.scenario.id;
+      activeScenario = live.scenario;
+      activeFrame = live.frame;
+      activeMonitor = monitor;
+      installViewportInteractions(monitor);
+      installViewportControls(monitor);
+      renderButtons(monitor.buttons, api);
+      if (playbackTimer) {
+        clearTimeout(playbackTimer);
+        playbackTimer = null;
+      }
+      renderFrame(monitor, live.scenario, live.frame);
+      return;
+    }
+    if (type === 'FILE_UPLOADED') playScenario('normal-permit', 900);
+    if (type === 'USER_STATUS_CHANGED') playScenario('role-denied', 900);
+    if (type && type.indexOf('ANOMALY') >= 0) playScenario('attack-blocked', 900);
+  }
+
+  const api = {
+    getScenarios,
+    getScenario,
+    buildPlaybackFrame,
+    buildLiveRuntimeFrame,
+    createViewport,
+    zoomViewportAt,
+    panViewport,
+    resetViewport,
+    viewportTransform,
+    init,
+    play: playScenario,
+    ingestLiveEvent
+  };
+
+  window.CaacRuntimeMonitor = api;
+}());

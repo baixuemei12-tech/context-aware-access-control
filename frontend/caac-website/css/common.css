@@ -440,10 +440,10 @@ header {
 .trust-input:focus { border-color: var(--accent); }
 
 /* ===== STATS ROW ===== */
-.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; }
+.stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; min-width: 0; }
 .stat-label { font-size: 11px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .5px; }
-.stat-value { font-size: 24px; font-weight: 600; margin-top: 4px; }
+.stat-value { font-size: 24px; font-weight: 600; margin-top: 4px; overflow-wrap: anywhere; }
 
 /* ===== MISC ===== */
 .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
@@ -993,6 +993,8 @@ html[data-theme="light"] .btn-primary {
   .app { padding: 10px 12px 30px; }
   .app-narrow, .app-profile { max-width: 100%; }
 
+  .stats-row { grid-template-columns: 1fr; }
+
   /* Header: compact row */
   header {
     padding: 10px 0 14px; margin-bottom: 14px;
@@ -1043,8 +1045,8 @@ html[data-theme="light"] .btn-primary {
   .btn-primary, .btn-secondary { padding: 10px 14px; font-size: 12px; border-radius: 6px; }
   .btn-sm { font-size: 10px; padding: 3px 8px; }
 
-  /* Stats: horizontal on phone */
-  .stats-row { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  /* Stats: stack on phone so the admin summary does not widen the page. */
+  .stats-row { grid-template-columns: 1fr; gap: 8px; }
   .stat-card { padding: 8px 10px; text-align: center; }
   .stat-label { font-size: 8px; letter-spacing: 0.3px; }
   .stat-value { font-size: 16px; margin-top: 2px; }
@@ -1538,6 +1540,457 @@ html[data-theme="light"] .btn-primary {
   box-shadow: 0 0 12px currentColor;
 }
 .ops-event small { color: var(--text3); }
+
+.runtime-monitor-panel {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid var(--border-hi);
+  border-radius: var(--r);
+  background:
+    linear-gradient(180deg, rgba(94, 164, 248, 0.08), rgba(8, 14, 26, 0.18)),
+    color-mix(in srgb, var(--bg2) 88%, transparent);
+  box-shadow: var(--soft-shadow);
+  position: relative;
+  overflow: hidden;
+  max-width: 100%;
+  backdrop-filter: blur(14px);
+}
+
+.runtime-monitor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.runtime-kicker,
+.runtime-status-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+
+.runtime-monitor-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.runtime-monitor-header p {
+  margin: 6px 0 0;
+  max-width: 720px;
+  color: var(--text3);
+  font-size: 13px;
+}
+
+.runtime-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.runtime-scenario-btn {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text2);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  cursor: pointer;
+  white-space: normal;
+}
+
+.runtime-scenario-btn.active,
+.runtime-scenario-btn:hover {
+  border-color: var(--border-hi);
+  color: var(--accent);
+  background: var(--bg3);
+}
+
+.runtime-monitor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 14px;
+  min-width: 0;
+}
+
+.runtime-canvas-shell {
+  position: relative;
+  min-height: 360px;
+  min-width: 0;
+  border: 1px solid rgba(94, 164, 248, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(94, 164, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(94, 164, 248, 0.05) 1px, transparent 1px),
+    rgba(4, 9, 18, 0.72);
+  background-size: 32px 32px;
+  overflow: hidden;
+}
+
+.runtime-canvas {
+  width: 100%;
+  max-width: 100%;
+  height: 360px;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.runtime-canvas.dragging {
+  cursor: grabbing;
+}
+
+.runtime-map-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.runtime-map-btn {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(8, 14, 26, 0.82);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.runtime-map-btn:hover {
+  border-color: var(--border-hi);
+  color: var(--accent);
+  background: var(--bg3);
+}
+
+.runtime-edge {
+  stroke: rgba(148, 163, 184, 0.26);
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.runtime-edge.active {
+  stroke: var(--accent);
+  stroke-dasharray: 10 10;
+  animation: runtimeDash 900ms linear infinite;
+}
+
+.runtime-edge.warn { stroke: var(--amber); }
+.runtime-edge.deny,
+.runtime-edge.block,
+.runtime-edge.revoke { stroke: var(--red); }
+.runtime-edge.ok,
+.runtime-edge.success { stroke: var(--green); }
+
+.runtime-edge-reject {
+  stroke-width: 4;
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.55));
+}
+
+.runtime-reject-flow {
+  animation: runtimeRejectPulse 720ms ease-in-out infinite;
+}
+
+.runtime-data-ripple {
+  pointer-events: none;
+}
+
+.runtime-ripple-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  opacity: 0.55;
+  transform-origin: center;
+  animation: runtimeRipple 1500ms ease-out infinite;
+}
+
+.runtime-ripple-ring.ring-b {
+  animation-delay: 360ms;
+  stroke: var(--green);
+}
+
+.runtime-data-block {
+  fill: color-mix(in srgb, var(--accent) 62%, white);
+  opacity: 0.88;
+  filter: drop-shadow(0 0 10px rgba(94, 164, 248, 0.48));
+  animation: runtimeDataPulse 1200ms ease-in-out infinite;
+}
+
+.runtime-data-block.block-b {
+  fill: color-mix(in srgb, var(--green) 68%, white);
+  animation-delay: 240ms;
+}
+
+.runtime-node rect {
+  fill: rgba(15, 23, 42, 0.94);
+  stroke: rgba(148, 163, 184, 0.28);
+  stroke-width: 1.5;
+  rx: 8;
+}
+
+.runtime-node.active rect {
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 10px rgba(94, 164, 248, 0.45));
+}
+
+.runtime-node.ok rect,
+.runtime-node.success rect { stroke: var(--green); }
+.runtime-node.deny rect,
+.runtime-node.block rect,
+.runtime-node.revoke rect,
+.runtime-node.threat rect { stroke: var(--red); }
+
+.runtime-node-wave rect {
+  animation: runtimeNodeWave 1200ms ease-out infinite;
+}
+
+.runtime-node text {
+  fill: var(--text2);
+  font-family: var(--mono);
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.runtime-transform-label rect {
+  fill: rgba(8, 14, 26, 0.86);
+  stroke: rgba(94, 164, 248, 0.48);
+  stroke-width: 1;
+}
+
+.runtime-info-state {
+  fill: var(--text2);
+  font-family: var(--mono);
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.runtime-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.runtime-status-card,
+.runtime-meter,
+.runtime-log {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(8, 14, 26, 0.62);
+  padding: 12px;
+}
+
+.runtime-status-card strong {
+  display: block;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.runtime-status-card small {
+  color: var(--text3);
+  line-height: 1.5;
+}
+
+.runtime-meter span,
+.runtime-meter b {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+}
+
+.runtime-meter div {
+  height: 7px;
+  margin: 8px 0;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.14);
+  overflow: hidden;
+}
+
+.runtime-meter i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width 240ms ease;
+}
+
+.runtime-log {
+  min-height: 190px;
+  max-height: 190px;
+  overflow: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+}
+
+.runtime-log-entry {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.runtime-log-entry.ok { color: var(--green); }
+.runtime-log-entry.warn { color: var(--amber); }
+.runtime-log-entry.deny,
+.runtime-log-entry.block,
+.runtime-log-entry.revoke { color: var(--red); }
+
+html[data-theme="light"] .runtime-monitor-panel {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent),
+    color-mix(in srgb, var(--bg2) 94%, transparent);
+}
+
+html[data-theme="light"] .runtime-canvas-shell {
+  border-color: color-mix(in srgb, var(--accent) 20%, var(--border));
+  background:
+    linear-gradient(color-mix(in srgb, var(--accent) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent) 1px, transparent 1px),
+    color-mix(in srgb, var(--bg2) 96%, var(--bg));
+}
+
+html[data-theme="light"] .runtime-map-btn {
+  background: color-mix(in srgb, var(--bg2) 92%, white);
+  border-color: color-mix(in srgb, var(--border-hi) 58%, transparent);
+  color: var(--text2);
+}
+
+html[data-theme="light"] .runtime-node rect {
+  fill: color-mix(in srgb, var(--bg2) 96%, white);
+  stroke: color-mix(in srgb, var(--accent) 20%, var(--border-hi));
+}
+
+html[data-theme="light"] .runtime-node text {
+  fill: var(--text);
+}
+
+html[data-theme="light"] .runtime-status-card,
+html[data-theme="light"] .runtime-meter,
+html[data-theme="light"] .runtime-log {
+  background: color-mix(in srgb, var(--bg2) 94%, transparent);
+  border-color: color-mix(in srgb, var(--border-hi) 64%, transparent);
+}
+
+html[data-theme="light"] .runtime-status-card small,
+html[data-theme="light"] .runtime-meter span,
+html[data-theme="light"] .runtime-meter b,
+html[data-theme="light"] .runtime-log {
+  color: var(--text2);
+}
+
+html[data-theme="light"] .runtime-meter div {
+  background: color-mix(in srgb, var(--border-hi) 34%, transparent);
+}
+
+html[data-theme="light"] .runtime-log-entry {
+  border-bottom-color: color-mix(in srgb, var(--border-hi) 42%, transparent);
+}
+
+@keyframes runtimeDash {
+  to { stroke-dashoffset: -20; }
+}
+
+@keyframes runtimeRipple {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.78);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+}
+
+@keyframes runtimeDataPulse {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
+@keyframes runtimeRejectPulse {
+  0%, 100% {
+    opacity: 0.86;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    opacity: 1;
+    stroke-dashoffset: -12;
+  }
+}
+
+@keyframes runtimeNodeWave {
+  0% {
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.36));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.68));
+  }
+  100% {
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.36));
+  }
+}
+
+@media (max-width: 900px) {
+  .runtime-monitor-panel {
+    padding: 14px;
+  }
+
+  .runtime-monitor-grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .runtime-monitor-header {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .runtime-canvas-shell {
+    min-height: 300px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .runtime-canvas {
+    height: 300px;
+    width: 100%;
+    min-width: 760px;
+    max-width: none;
+  }
+
+  .runtime-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .runtime-scenario-btn {
+    flex: 1 1 140px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
 
 .profile-command {
   display: grid;
@@ -2095,6 +2548,22 @@ button, a, .panel-link, .menu-btn, .theme-toggle, .demo-toggle,
   .scenario-node.n4 { right: 8px; bottom: 18px; }
   .scenario-node.n5 { left: 8px; bottom: 18px; }
   .scenario-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .runtime-monitor-panel,
+  .runtime-monitor-header > * {
+    min-width: 0;
+  }
+
+  .runtime-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+
+  .runtime-scenario-btn {
+    width: 100%;
+    max-width: 100%;
+  }
 
   /* Scrollable file list stays usable at one-handed scroll. */
   .file-list-scroll { max-height: 220px; }

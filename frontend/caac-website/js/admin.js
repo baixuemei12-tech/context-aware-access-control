@@ -964,10 +964,32 @@ async function deleteAllAnomalies() {
   }
 }
 
+function safeInitRuntimeMonitor() {
+  try {
+    if (window.CaacRuntimeMonitor && typeof window.CaacRuntimeMonitor.init === 'function') {
+      window.CaacRuntimeMonitor.init();
+    }
+  } catch (err) {
+    console.warn('Runtime monitor init failed', err);
+  }
+}
+
+function safeIngestRuntimeMonitor(type, data) {
+  try {
+    if (window.CaacRuntimeMonitor && typeof window.CaacRuntimeMonitor.ingestLiveEvent === 'function') {
+      window.CaacRuntimeMonitor.ingestLiveEvent(type, data);
+    }
+  } catch (err) {
+    console.warn('Runtime monitor event ingest failed', err);
+  }
+}
+
 function handleAdminLiveEvent(event) {
   const payload = event && event.payload ? event.payload : {};
   const type = payload.type || '';
   const data = payload.data || {};
+
+  safeIngestRuntimeMonitor(type, data);
 
   if (type === 'FILE_UPLOADED' || type === 'FILE_APPROVED' || type === 'FILE_REJECTED' || type === 'FILE_DELETED') {
     loadFiles();
@@ -999,6 +1021,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   const ok = await checkAdmin();
   if (!ok) return;
   await Promise.all([loadUsers(), loadFiles(), loadConversations(), loadAudit(), loadStats(), loadAnalytics(), loadAnomalies()]);
+  safeInitRuntimeMonitor();
   installAdminLiveEvents();
   caacVisibleInterval(loadUsers, 10000);
   caacVisibleInterval(loadFiles, 15000);

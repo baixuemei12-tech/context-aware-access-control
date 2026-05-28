@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'node:path';
 
 const root = process.cwd();
 const gatewayTarget = (process.env.CAAC_GATEWAY_TARGET || process.env.CAAC_GATEWAY_URL || 'http://10.216.217.146:5051')
@@ -30,13 +29,13 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        index: resolve(root, 'index.html'),
-        admin: resolve(root, 'admin.html'),
-        login: resolve(root, 'login.html'),
-        messages: resolve(root, 'messages.html'),
-        overview: resolve(root, 'overview.html'),
-        profile: resolve(root, 'profile.html'),
-        scenarios: resolve(root, 'scenarios.html')
+        index: 'index.html',
+        admin: 'admin.html',
+        login: 'login.html',
+        messages: 'messages.html',
+        overview: 'overview.html',
+        profile: 'profile.html',
+        scenarios: 'scenarios.html'
       }
     }
   }

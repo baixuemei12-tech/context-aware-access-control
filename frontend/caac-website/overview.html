@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CAAC — Context-Aware Access Control</title>
+<title>情境自适应的人因数据使用控制系统 — 系统概览</title>
+<link rel="preload" href="js/i18n.js" as="script">
 <link rel="preconnect" href="http://172.25.204.218:5051" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="stylesheet" href="css/common.css">
@@ -15,19 +16,19 @@
 <canvas class="caac-space-bg" data-caac-stars data-density="88" data-link="150" data-speed="0.24" data-packets="10" aria-hidden="true"></canvas>
 <div class="scroll-progress" id="scrollProgress"></div>
 <nav class="ov-nav" aria-label="Overview sections">
-  <a href="#flow">Trust Flow</a>
-  <a href="#architecture">Architecture</a>
-  <a href="#algorithms">Algorithms</a>
-  <a href="#framework">BV-GCA</a>
-  <a href="#context-model">Context</a>
-  <a href="#evaluation">Metrics</a>
-  <a href="scenarios.html">Scenarios</a>
+  <a href="#flow" data-i18n="ov.nav.trustFlow">Trust Flow</a>
+  <a href="#architecture" data-i18n="ov.nav.architecture">Architecture</a>
+  <a href="#algorithms" data-i18n="ov.nav.algorithms">Algorithms</a>
+  <a href="#framework" data-i18n="ov.nav.bvgca">BV-GCA</a>
+  <a href="#context-model" data-i18n="ov.nav.context">Context</a>
+  <a href="#evaluation" data-i18n="ov.nav.metrics">Metrics</a>
+  <a href="scenarios.html" data-i18n="nav.scenarios">Scenarios</a>
 </nav>
 <div class="ov">
   <div class="hero">
     <div class="hero-logo reveal">CA</div>
     <div class="hero-constellation reveal d1" aria-hidden="true">
-      <div class="hero-node core">CAAC</div>
+      <div class="hero-node core">CAAC<sup style="font-size:9px;opacity:0.6">System</sup></div>
       <div class="hero-node browser">Browser</div>
       <div class="hero-node gateway">Gateway</div>
       <div class="hero-node oracle">Oracle</div>
@@ -35,11 +36,11 @@
       <div class="hero-node ipfs">IPFS</div>
       <span class="signal-dot"></span><span class="signal-dot s2"></span><span class="signal-dot s3"></span>
     </div>
-    <h1 class="reveal d1">CAAC / BV-GCA Access Control</h1>
-    <p class="subtitle reveal d2">A deployed prototype for blockchain-backed authorization, encrypted IPFS file delivery, risk-budgeted streaming, continuous revocation, anomaly blocking, and auditable session receipts.</p>
-    <div class="meta reveal d3">Gateway · Oracle · Hyperledger Fabric · Kubo IPFS · Static web console<br>Matvei Prikhozhdenko · Supervisor: 陈亚兴 · Northwestern Polytechnical University</div>
+    <h1 class="reveal d1" data-i18n="ov.hero.title">CAAC / BV-GCA Access Control</h1>
+    <p class="subtitle reveal d2" data-i18n="ov.hero.subtitle">A deployed prototype for blockchain-backed authorization, encrypted IPFS file delivery, risk-budgeted streaming, continuous revocation, anomaly blocking, and auditable session receipts.</p>
+    <div class="meta reveal d3"><span data-i18n="ov.hero.meta">Gateway · Oracle · Hyperledger Fabric · Kubo IPFS · Static web console</span><br><span data-i18n="ov.hero.metaAuthor">Matvei Prikhozhdenko · Supervisor: 陈亚兴 · Northwestern Polytechnical University</span></div>
     <div class="cap-row reveal d4">
-      <span class="cap-pill">TRT-BL</span><span class="cap-pill">RGCA</span><span class="cap-pill">CSRP</span><span class="cap-pill">CAAR</span><span class="cap-pill">Encrypted IPFS</span><span class="cap-pill">TOTP</span><span class="cap-pill">Math CAPTCHA</span><span class="cap-pill">Anomaly blocking</span>
+      <span class="cap-pill">TRT-BL</span><span class="cap-pill">RGCA</span><span class="cap-pill">CSRP</span><span class="cap-pill">CAAR</span><span class="cap-pill" data-i18n="ov.hero.encryptedIPFS">Encrypted IPFS</span><span class="cap-pill">TOTP</span><span class="cap-pill" data-i18n="ov.hero.mathCaptcha">Math CAPTCHA</span><span class="cap-pill" data-i18n="ov.hero.anomalyBlocking">Anomaly blocking</span>
     </div>
     <div class="tech-marquee reveal d4" aria-hidden="true">
       <div class="tech-track">
@@ -47,57 +48,57 @@
         <span>Spring Boot Gateway</span><span>Hyperledger Fabric</span><span>Kubo IPFS</span><span>AES-256-GCM</span><span>HMAC Oracle</span><span>RiskBudgetService</span><span>RevocationScheduler</span><span>TOTP</span><span>CAAR Receipts</span>
       </div>
     </div>
-    <div class="hero-actions reveal d4"><a href="login.html" class="ha-primary">Access the system →</a><a href="scenarios.html" class="ha-secondary">Scenario demo</a><a href="#flow" class="ha-secondary">Trust flow ↓</a></div>
-    <div class="scroll-hint">scroll to explore ↓</div>
+    <div class="hero-actions reveal d4"><a href="login.html" class="ha-primary" data-i18n="ov.hero.accessSystem">Access the system →</a><a href="scenarios.html" class="ha-secondary" data-i18n="ov.hero.scenarioDemo">Scenario demo</a><a href="#flow" class="ha-secondary" data-i18n="ov.hero.trustFlow">Trust flow ↓</a></div>
+    <div class="scroll-hint" data-i18n="ov.hero.scrollHint">scroll to explore ↓</div>
   </div>
 
   <div id="flow">
-    <div class="stitle reveal">Live trust flow</div>
-    <div class="sdesc reveal">A visual path for the deployed request lifecycle. Demo mode keeps this presentation-friendly when Fabric or chaincode is intentionally offline.</div>
+    <div class="stitle reveal" data-i18n="ov.flow.title">Live trust flow</div>
+    <div class="sdesc reveal" data-i18n="ov.flow.desc">A visual path for the deployed request lifecycle. Demo mode keeps this presentation-friendly when Fabric or chaincode is intentionally offline.</div>
     <div class="trust-flow-panel reveal">
       <div class="trust-flow-grid">
         <div class="trust-node-card">
-          <span class="flow-status">ready</span>
-          <h3>Browser</h3>
-          <p>Collects environment context and submits a token-authenticated request through the static console.</p>
+          <span class="flow-status" data-i18n="ov.flow.ready">ready</span>
+          <h3 data-i18n="ov.flow.browser.title">Browser</h3>
+          <p data-i18n="ov.flow.browser.desc">Collects environment context and submits a token-authenticated request through the static console.</p>
         </div>
         <div class="trust-node-card">
-          <span class="flow-status warn" id="flowGatewayStatus">checking</span>
-          <h3>Gateway</h3>
-          <p>Authenticates users, resolves context, checks file rules, opens sessions, and streams data.</p>
+          <span class="flow-status warn" id="flowGatewayStatus" data-i18n="ov.flow.checking">checking</span>
+          <h3 data-i18n="ov.flow.gateway.title">Gateway</h3>
+          <p data-i18n="ov.flow.gateway.desc">Authenticates users, resolves context, checks file rules, opens sessions, and streams data.</p>
         </div>
         <div class="trust-node-card">
-          <span class="flow-status warn" id="flowOracleStatus">local</span>
-          <h3>Oracle</h3>
-          <p>Signs and relays evaluateAccess and CAAR receipt calls to Fabric when the chain is available.</p>
+          <span class="flow-status warn" id="flowOracleStatus" data-i18n="ov.flow.local">local</span>
+          <h3 data-i18n="ov.flow.oracle.title">Oracle</h3>
+          <p data-i18n="ov.flow.oracle.desc">Signs and relays evaluateAccess and CAAR receipt calls to Fabric when the chain is available.</p>
         </div>
         <div class="trust-node-card">
-          <span class="flow-status warn" id="flowFabricStatus">optional</span>
-          <h3>Fabric</h3>
-          <p>Executes the deterministic PDP path. In visual checks, this layer can remain offline.</p>
+          <span class="flow-status warn" id="flowFabricStatus" data-i18n="ov.flow.optional">optional</span>
+          <h3 data-i18n="ov.flow.fabric.title">Fabric</h3>
+          <p data-i18n="ov.flow.fabric.desc">Executes the deterministic PDP path. In visual checks, this layer can remain offline.</p>
         </div>
         <div class="trust-node-card">
-          <span class="flow-status" id="flowIpfsStatus">encrypted</span>
-          <h3>IPFS</h3>
-          <p>Stores ciphertext by CID while the gateway enforces authorization before plaintext delivery.</p>
+          <span class="flow-status" id="flowIpfsStatus" data-i18n="ov.flow.encrypted">encrypted</span>
+          <h3 data-i18n="ov.flow.ipfs.title">IPFS</h3>
+          <p data-i18n="ov.flow.ipfs.desc">Stores ciphertext by CID while the gateway enforces authorization before plaintext delivery.</p>
         </div>
       </div>
     </div>
   </div>
 
   <div id="architecture">
-    <div class="stitle reveal">System architecture</div>
-    <div class="sdesc reveal">Current deployed codebase: browser console, Spring Boot gateway, HMAC-protected oracle, Fabric chaincode, and encrypted IPFS storage</div>
+    <div class="stitle reveal" data-i18n="ov.arch.title">System architecture</div>
+    <div class="sdesc reveal" data-i18n="ov.arch.desc">Current deployed codebase: browser console, Spring Boot gateway, HMAC-protected oracle, Fabric chaincode, and encrypted IPFS storage</div>
     <div class="arch-stack">
-      <div class="arch-layer reveal"><div class="layer-badge" style="background:rgba(251,191,36,.15);color:var(--amber)">Layer 1<br>PEP</div><div class="layer-info"><h3>CAAC Gateway</h3><p>Public enforcement point. Authenticates users, resolves browser context, checks file rules, applies object risk, manages sessions, risk budgets, anomaly blocking, streaming, admin workflows, and CAAR receipt queries.</p><div class="layer-tech">Spring Boot · REST API · TOTP · Math CAPTCHA · RiskBudgetService · RevocationScheduler</div></div></div>
-      <div class="arch-layer reveal d1"><div class="layer-badge" style="background:rgba(52,211,153,.15);color:var(--green)">Layer 2<br>Oracle</div><div class="layer-info"><h3>CAAC Oracle</h3><p>Trusted chaincode bridge. It rejects unsigned calls, verifies HMAC-SHA256 signatures with timestamp and nonce, submits access evaluations, and writes/queries CAAR session receipts.</p><div class="layer-tech">Spring Boot · Fabric Gateway SDK · HMAC-SHA256 · Replay protection</div></div></div>
+      <div class="arch-layer reveal"><div class="layer-badge" style="background:rgba(251,191,36,.15);color:var(--amber)">Layer 1<br>PEP</div><div class="layer-info"><h3>Context Aware Access Control Gateway</h3><p>Public enforcement point. Authenticates users, resolves browser context, checks file rules, applies object risk, manages sessions, risk budgets, anomaly blocking, streaming, admin workflows, and CAAR receipt queries.</p><div class="layer-tech">Spring Boot · REST API · TOTP · Math CAPTCHA · RiskBudgetService · RevocationScheduler</div></div></div>
+      <div class="arch-layer reveal d1"><div class="layer-badge" style="background:rgba(52,211,153,.15);color:var(--green)">Layer 2<br>Oracle</div><div class="layer-info"><h3>Context Aware Access Control Oracle</h3><p>Trusted chaincode bridge. It rejects unsigned calls, verifies HMAC-SHA256 signatures with timestamp and nonce, submits access evaluations, and writes/queries CAAR session receipts.</p><div class="layer-tech">Spring Boot · Fabric Gateway SDK · HMAC-SHA256 · Replay protection</div></div></div>
       <div class="arch-layer reveal d2"><div class="layer-badge" style="background:rgba(94,164,248,.15);color:var(--accent)">Layer 3<br>PDP</div><div class="layer-info"><h3>Hyperledger Fabric Chaincode</h3><p>Deterministic policy decision point. Executes evaluateAccess for DT_score/F_auth decisions and recordSessionReceipt for CAAR compliance evidence.</p><div class="layer-tech">Java chaincode · evaluateAccess · recordSessionReceipt · O(1) evaluation path</div></div></div>
       <div class="arch-layer reveal d3"><div class="layer-badge" style="background:rgba(45,212,191,.15);color:var(--teal)">Layer 4<br>Storage</div><div class="layer-info"><h3>Encrypted IPFS Storage</h3><p>Files are encrypted before IPFS upload. Approved registry entries map file IDs to CIDs, and the gateway decrypts only after authorization and session ownership checks.</p><div class="layer-tech">Kubo · AES-256-GCM · Per-file keys · Approval queue · Preview endpoint</div></div></div>
     </div>
   </div>
 
-  <div class="stitle reveal" style="margin-top:50px">Data flow architecture</div>
-  <div class="sdesc reveal">Request lifecycle through all four layers with HMAC-signed channels</div>
+  <div class="stitle reveal" style="margin-top:50px" data-i18n="ov.arch.dataFlow">Data flow architecture</div>
+  <div class="sdesc reveal" data-i18n="ov.arch.dataFlowDesc">Request lifecycle through all four layers with HMAC-signed channels</div>
   <div class="diagram-wrap reveal">
     <svg viewBox="0 0 600 600" width="100%" style="max-width:600px">
       <defs><marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="inherit" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
@@ -149,11 +150,11 @@
     </svg>
   </div>
 
-  <div id="algorithms" class="stitle reveal" style="margin-top:70px">Authorization algorithms</div>
-  <div class="sdesc reveal">Implemented request path: on-chain evaluation, rule checks, risk budget admission, windowed streaming, and continuous revocation</div>
+  <div id="algorithms" class="stitle reveal" style="margin-top:70px" data-i18n="ov.algo.title">Authorization algorithms</div>
+  <div class="sdesc reveal" data-i18n="ov.algo.desc">Implemented request path: on-chain evaluation, rule checks, risk budget admission, windowed streaming, and continuous revocation</div>
   <div class="algo-grid four">
     <div class="algo-card reveal">
-      <h3 style="color:var(--accent)">Phase 1 — Access Evaluation</h3>
+      <h3 style="color:var(--accent)" data-i18n="ov.algo.phase1">Phase 1 — Access Evaluation</h3>
       <div class="formula-box" style="margin:0 0 14px">
         <div class="formula-line"><span class="hl">CE(t)</span> = [w₁·L + w₂·N + w₃·D - <span class="am">δ·R_int</span>] × <span class="am">T_req(t)</span></div>
         <div class="formula-line"><span class="hl">DT(t)</span> = (α·T_sub + β·CE) × Φ(B_freq)</div>
@@ -166,7 +167,7 @@
       <div class="algo-step"><div class="algo-num" style="background:var(--accent2);color:var(--accent)">4</div><p>Gateway checks uploader rules, risk-budget admission, anomaly blocks, then opens a session if all gates pass.</p></div>
     </div>
     <div class="algo-card reveal d1">
-      <h3 style="color:var(--green)">Phase 2 — BV-GCA Streaming</h3>
+      <h3 style="color:var(--green)" data-i18n="ov.algo.phase2">Phase 2 — BV-GCA Streaming</h3>
       <div style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;font-size:11px;font-family:var(--mono);color:var(--text2);line-height:1.7">while session active:<br>&nbsp;&nbsp;stream encrypted-file plaintext through gateway<br>&nbsp;&nbsp;enforce L(m,S,T_sub,n) window budget<br>&nbsp;&nbsp;on budget exhaustion → immediate chaincode re-eval<br>&nbsp;&nbsp;scheduler polls at 2s / 3s / 4s by adjusted margin<br>&nbsp;&nbsp;on DENY or CSRP escalation → revoke and close receipt</div>
       <div class="algo-step"><div class="algo-num" style="background:var(--green2);color:var(--green)">1</div><p>Session owner or admin requests the stream; gateway verifies session ownership before any bytes are delivered.</p></div>
       <div class="algo-step"><div class="algo-num" style="background:var(--green2);color:var(--green)">2</div><p>RGCA selects HIGH, MEDIUM, or LOW tier from risk margin and sends bytes under a bounded window budget.</p></div>
@@ -174,7 +175,7 @@
       <div class="algo-step"><div class="algo-num" style="background:var(--green2);color:var(--green)">4</div><p>On close, SessionManager records delivered bytes and submits a CAAR receipt asynchronously through the oracle.</p></div>
     </div>
     <div class="algo-card reveal d2">
-      <h3 style="color:var(--amber)">Phase 3 — TRT-BL Budget Control</h3>
+      <h3 style="color:var(--amber)" data-i18n="ov.algo.phase3">Phase 3 — TRT-BL Budget Control</h3>
       <div class="formula-box" style="margin:0 0 14px">
         <div class="formula-line"><span class="hl">L</span>(m,S,T,n) = min(B_max, μ·(1+κT)·S^θ·(1+ψn))</div>
         <div class="formula-line"><span class="hl">G</span> = min(512 KB, S_remaining, 0.5B)</div>
@@ -185,7 +186,7 @@
       <div class="algo-step"><div class="algo-num" style="background:var(--amber2);color:var(--amber)">3</div><p>After B + G is consumed, new access is denied until reset or a new period.</p></div>
     </div>
     <div class="algo-card reveal d3">
-      <h3 style="color:#a78bfa">Phase 4 — CAAR Evidence</h3>
+      <h3 style="color:#a78bfa" data-i18n="ov.algo.phase4">Phase 4 — CAAR Evidence</h3>
       <div style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;font-size:11px;font-family:var(--mono);color:var(--text2);line-height:1.7">on session close:<br>&nbsp;&nbsp;hash session ID with full SHA-256<br>&nbsp;&nbsp;record bytes delivered, tier, risk, bound<br>&nbsp;&nbsp;submit receipt via HMAC-signed oracle call<br>&nbsp;&nbsp;admin can query receipt by session ID</div>
       <div class="algo-step"><div class="algo-num" style="background:rgba(167,139,250,.15);color:#a78bfa">1</div><p>Gateway logs local receipt data even if on-chain submission is non-fatal.</p></div>
       <div class="algo-step"><div class="algo-num" style="background:rgba(167,139,250,.15);color:#a78bfa">2</div><p>Oracle writes CAAR evidence through Fabric using recordSessionReceipt.</p></div>
@@ -193,14 +194,14 @@
     </div>
   </div>
 
-  <div id="framework" class="stitle reveal" style="margin-top:70px;border-left-color:#7F77DD">BV-GCA framework</div>
-  <div class="sdesc reveal">Blockchain-Verified Graduated Continuous Authorization — proposed framework architecture with RGCA, risk budget, cluster risk, and CAAR components</div>
+  <div id="framework" class="stitle reveal" style="margin-top:70px;border-left-color:#7F77DD" data-i18n="ov.bvgca.title">BV-GCA framework</div>
+  <div class="sdesc reveal" data-i18n="ov.bvgca.desc">Blockchain-Verified Graduated Continuous Authorization — proposed framework architecture with RGCA, risk budget, cluster risk, and CAAR components</div>
   <div class="reveal bvgca-scroll" style="margin:20px -28px;overflow-x:auto">
     <img src="bvgca-framework.svg" alt="BV-GCA Framework Architecture" style="width:115%;min-width:900px;max-height:115vh;object-fit:contain;object-position:left;display:block">
   </div>
 
-  <div class="stitle reveal" style="margin-top:50px">Access decision flow</div>
-  <div class="sdesc reveal">From raw browser context to risk-graduated data delivery</div>
+  <div class="stitle reveal" style="margin-top:50px" data-i18n="ov.bvgca.flowTitle">Access decision flow</div>
+  <div class="sdesc reveal" data-i18n="ov.bvgca.flowDesc">From raw browser context to risk-graduated data delivery</div>
   <div class="diagram-wrap reveal">
     <svg viewBox="0 0 500 700" width="100%" style="max-width:500px">
       <defs><marker id="fb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="inherit" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
@@ -228,8 +229,8 @@
     </svg>
   </div>
 
-  <div class="stitle reveal" style="margin-top:70px;border-left-color:var(--amber)">TRT-BL Bounded Streaming</div>
-  <div class="sdesc reveal">Trust-Rewarded Throughput Allocation under Bounded Leakage: the implemented formula that turns margin, file size, trust, and stable checks into a byte window</div>
+  <div class="stitle reveal" style="margin-top:70px;border-left-color:var(--amber)" data-i18n="ov.bvgca.trtblTitle">TRT-BL Bounded Streaming</div>
+  <div class="sdesc reveal" data-i18n="ov.bvgca.trtblDesc">Trust-Rewarded Throughput Allocation under Bounded Leakage: the implemented formula that turns margin, file size, trust, and stable checks into a byte window</div>
   <div class="trtbl-panel reveal">
     <div class="trtbl-grid">
       <div class="formula-box">
@@ -266,8 +267,8 @@
     <div class="rgca-tier" style="background:rgba(52,211,153,.04);border:1px solid rgba(52,211,153,.2)"><h4 style="color:var(--green)">LOW-RISK (m ≥ 0.3)</h4><div class="tp">Polling every 4 seconds<br>B_max = 4 MB<br>θ=0.766 · μ=4.300 · ψ=0.2392</div><div class="tb" style="color:var(--green)">Largest window for high-margin sessions</div></div>
   </div>
 
-  <div id="context-model" class="stitle reveal" style="margin-top:70px">Context model</div>
-  <div class="sdesc reveal">C = (C_S, C_E, C_R, C_O) — four-dimensional context representation</div>
+  <div id="context-model" class="stitle reveal" style="margin-top:70px" data-i18n="ov.context.title">Context model</div>
+  <div class="sdesc reveal" data-i18n="ov.context.desc">C = (C_S, C_E, C_R, C_O) — four-dimensional context representation</div>
   <div class="ctx-model">
     <div class="ctx-card reveal"><h4 style="color:var(--accent)">C_S — Subject</h4><p style="font-size:11px;color:var(--text3);margin-bottom:10px">User identity &amp; history</p><div class="ctx-params"><div class="ctx-param">R_sub — Role level (1-5)</div><div class="ctx-param">T_sub — Dynamic trust (0-1)</div><div class="ctx-param">B_freq — Access frequency</div></div></div>
     <div class="ctx-card reveal d1"><h4 style="color:var(--green)">C_E — Environment</h4><p style="font-size:11px;color:var(--text3);margin-bottom:10px">Auto-collected from browser</p><div class="ctx-params"><div class="ctx-param">L_trust — Location / IP trust</div><div class="ctx-param">N_status — Network security</div><div class="ctx-param">D_sec — Device security</div><div class="ctx-param">T_req — Temporal factor</div></div></div>
@@ -275,8 +276,8 @@
     <div class="ctx-card reveal d3"><h4 style="color:var(--teal)">C_O — Object</h4><p style="font-size:11px;color:var(--text3);margin-bottom:10px">Resource properties &amp; risk</p><div class="ctx-params"><div class="ctx-param">Access count — Usage history</div><div class="ctx-param">File size — Data volume</div><div class="ctx-param">O_risk — Computed risk factor</div></div></div>
   </div>
 
-  <div class="stitle reveal" style="margin-top:70px">Implemented runtime improvements</div>
-  <div class="sdesc reveal">Gateway-side controls added around the O(1) chaincode decision path</div>
+  <div class="stitle reveal" style="margin-top:70px" data-i18n="ov.improve.title">Implemented runtime improvements</div>
+  <div class="sdesc reveal" data-i18n="ov.improve.desc">Gateway-side controls added around the O(1) chaincode decision path</div>
   <div class="imp-list">
     <div class="imp-item reveal"><div class="imp-num">1</div><div><h4>Continuous T_req</h4><p>Smooth cos² temporal decay replacing binary on/off. Working hours with gradual falloff — no abrupt cliff at boundaries.</p></div></div>
     <div class="imp-item reveal d1"><div class="imp-num">2</div><div><h4>T_sub Evolution (EMA)</h4><p>Trust evolves dynamically: T_sub(n+1) = T_sub(n) + γ×(outcome - T_sub(n)). Good sessions build trust, revocations erode it.</p></div></div>
@@ -285,8 +286,8 @@
     <div class="imp-item reveal d4"><div class="imp-num">5</div><div><h4>Budgeted Delivery</h4><p>RiskBudgetService enforces daily per-user/file exposure. Soft limit forces HIGH-RISK streaming; hard limit denies access until reset.</p></div></div>
   </div>
 
-  <div id="security-hardening" class="stitle reveal" style="margin-top:70px;border-left-color:var(--red)">Security hardening</div>
-  <div class="sdesc reveal">Defense-in-depth currently present in the gateway, oracle, frontend, storage, and deployment configuration</div>
+  <div id="security-hardening" class="stitle reveal" style="margin-top:70px;border-left-color:var(--red)" data-i18n="ov.sec.title">Security hardening</div>
+  <div class="sdesc reveal" data-i18n="ov.sec.desc">Defense-in-depth currently present in the gateway, oracle, frontend, storage, and deployment configuration</div>
   <div class="sec-grid">
     <div class="sec-category reveal">Identity and Account Protection</div>
     <div class="sec-card reveal"><div class="sec-icon">BC</div><h4>BCrypt Authentication</h4><p>GPU-resistant password hashing with cost factor 12. Transparent migration from legacy hashes on login.</p></div>
@@ -310,8 +311,8 @@
   </div>
   <div class="imp-list" style="margin-top:20px"><div class="imp-item reveal"><div class="imp-num sec">Z</div><div><h4>Zero-Trust Architecture</h4><p>Every layer defaults to DENY on any verification failure. No component trusts input from another without cryptographic verification. The gateway is the only public entry point.</p></div></div></div>
 
-  <div id="evaluation" class="stitle reveal" style="margin-top:70px;border-left-color:var(--green)">Performance evaluation</div>
-  <div class="sdesc reveal">Hyperledger Caliper stress benchmark — 13 rounds, evaluateAccess plus CAAR receipt submission</div>
+  <div id="evaluation" class="stitle reveal" style="margin-top:70px;border-left-color:var(--green)" data-i18n="ov.eval.title">Performance evaluation</div>
+  <div class="sdesc reveal" data-i18n="ov.eval.desc">Hyperledger Caliper stress benchmark — 13 rounds, evaluateAccess plus CAAR receipt submission</div>
   <div class="chart-row">
     <div class="chart-box reveal"><h4>Chaincode throughput (TPS)</h4><canvas id="ov-tps"></canvas></div>
     <div class="chart-box reveal d1"><h4>Max latency by round (ms)</h4><canvas id="ov-lat"></canvas></div>
@@ -330,8 +331,8 @@
     </div>
   </div>
 
-  <div class="reveal" style="text-align:center;margin-top:70px"><a href="login.html" class="ha-primary" style="display:inline-block;padding:14px 36px;border-radius:10px;font-size:15px;text-decoration:none">Access the system →</a></div>
-  <div class="footer reveal">CAAC System v3.0 · Hyperledger Fabric · IPFS · Spring Boot · AES-256-GCM · BCrypt<br>Northwestern Polytechnical University · 2026</div>
+  <div class="reveal" style="text-align:center;margin-top:70px"><a href="login.html" class="ha-primary" style="display:inline-block;padding:14px 36px;border-radius:10px;font-size:15px;text-decoration:none" data-i18n="ov.eval.accessSystem">Access the system →</a></div>
+  <div class="footer reveal" data-i18n="ov.footer">Context Aware Access Control System v3.0 · Hyperledger Fabric · IPFS · Spring Boot · AES-256-GCM · BCrypt<br>Northwestern Polytechnical University · 2026</div>
 </div>
 
 <script type="module" src="/src/entries/overview.js"></script>

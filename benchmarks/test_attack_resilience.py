@@ -131,5 +131,34 @@ class TestAttackSessionReplayTransportErrors(unittest.TestCase):
         self.assertEqual(replay[0]["status"], "PASS")
 
 
+class TestInterAttackPacing(unittest.TestCase):
+    """Between attacks the script must pause briefly so cascades don't
+    overlap on the topology, but the gap shouldn't drag — the operator is
+    watching a live demo. Cap at 2 seconds.
+    """
+
+    def test_inter_attack_sleep_constant_is_at_module_scope(self):
+        # The constant must live on the module (not buried inside main())
+        # so tuning + testing it doesn't require running the whole suite.
+        self.assertTrue(
+            hasattr(sim, "INTER_ATTACK_SLEEP"),
+            "bvgca_attack_sim must expose INTER_ATTACK_SLEEP at module scope",
+        )
+
+    def test_inter_attack_sleep_is_capped_at_two_seconds(self):
+        self.assertLessEqual(
+            sim.INTER_ATTACK_SLEEP, 2,
+            f"INTER_ATTACK_SLEEP={sim.INTER_ATTACK_SLEEP} exceeds the 2s "
+            "demo-pacing cap",
+        )
+
+    def test_inter_attack_sleep_is_positive(self):
+        # 0 would let cascades overlap visually; require a small gap.
+        self.assertGreater(
+            sim.INTER_ATTACK_SLEEP, 0,
+            "INTER_ATTACK_SLEEP must be > 0 so cascades don't overlap",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

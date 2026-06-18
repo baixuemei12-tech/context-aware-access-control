@@ -13,14 +13,14 @@ async function checkHealth() {
     const res = await fetch(GATEWAY_URL + '/api/files/health', { signal: AbortSignal.timeout(3000) });
     if (res.ok) {
       pill.classList.remove('offline');
-      text.textContent = 'connected';
+      text.textContent = t('dash.gatewayStatus');
       pill.querySelector('.dot').classList.add('live');
       log('ok', 'Gateway connected');
       return true;
     }
   } catch {}
   pill.classList.add('offline');
-  text.textContent = 'offline';
+  text.textContent = t('dash.gatewayOffline');
   pill.querySelector('.dot').classList.remove('live');
   log('err', 'Gateway unreachable');
   return false;
@@ -110,7 +110,7 @@ function updateRiskMeter(margin) {
       fill.style.width = '0%';
       fill.style.background = '';
     }
-    if (label) label.textContent = 'waiting';
+    if (label) label.textContent = t('ri.waiting');
     return;
   }
   const m = Number(margin);
@@ -431,13 +431,13 @@ function onFileSelect() {
 async function requestAccess() {
   const btn = document.getElementById('btnAccess');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Evaluating...';
+  btn.innerHTML = '<span class="spinner"></span> ' + (typeof t === 'function' ? t('dash.processing') : 'Evaluating...');
 
   collectContext();
   log('info', 'Auto-collecting environmental context...');
 
   const fileId = document.getElementById('in-file').value;
-  if (!fileId) { log('warn', 'No file selected'); btn.disabled = false; btn.textContent = 'Request access'; return; }
+  if (!fileId) { log('warn', 'No file selected'); btn.disabled = false; btn.textContent = typeof t === 'function' ? t('dash.requestAccess') : 'Request access'; return; }
   if (!currentUser) { window.location.href = 'overview.html'; return; }
 
   const payload = {
@@ -478,7 +478,7 @@ async function requestAccess() {
   }
 
   btn.disabled = false;
-  btn.textContent = 'Request access';
+  btn.textContent = typeof t === 'function' ? t('dash.requestAccess') : 'Request access';
 }
 
 // ====================================================================
@@ -500,7 +500,7 @@ async function streamFile(sessionId, fileType, fileName) {
 
   preview.style.display = 'block';
   if (degradeBtn) degradeBtn.style.display = 'block';
-  statusEl.textContent = 'Streaming...';
+  statusEl.textContent = typeof t === 'function' ? t('dash.processing') : 'Streaming...';
   statusEl.style.color = 'var(--green)';
 
   const isText = ['txt', 'csv', 'json', 'xml', 'html', 'log', 'md'].includes(fileType);
@@ -518,9 +518,9 @@ async function streamFile(sessionId, fileType, fileName) {
 
   // Helper to show revocation animation
   function showRevocation(bytes) {
-    if (statusEl) { statusEl.textContent = 'REVOKED'; statusEl.style.color = 'var(--red)'; }
+    if (statusEl) { statusEl.textContent = typeof t === 'function' ? t('status.revoked') : 'REVOKED'; statusEl.style.color = 'var(--red)'; }
     if (trustBar) { trustBar.style.width = '0%'; trustBar.style.background = 'var(--red)'; }
-    if (trustValue) { trustValue.textContent = 'REVOKED'; trustValue.style.color = 'var(--red)'; }
+    if (trustValue) { trustValue.textContent = typeof t === 'function' ? t('status.revoked') : 'REVOKED'; trustValue.style.color = 'var(--red)'; }
     if (progressBar) progressBar.style.background = 'var(--red)';
     if (degradeBtn) degradeBtn.style.display = 'none';
     log('err', 'Algorithm 2 REVOKED stream at ' + bytes + ' bytes');
@@ -531,7 +531,7 @@ async function streamFile(sessionId, fileType, fileName) {
   }
 
   function showComplete(bytes) {
-    if (statusEl) { statusEl.textContent = 'Complete'; statusEl.style.color = 'var(--teal)'; }
+    if (statusEl) { statusEl.textContent = typeof t === 'function' ? t('status.approved') : 'Complete'; statusEl.style.color = 'var(--teal)'; }
     if (progressBar) { progressBar.style.width = '100%'; progressBar.style.background = 'var(--teal)'; }
     if (degradeBtn) degradeBtn.style.display = 'none';
     log('ok', 'Stream completed: ' + bytes + ' bytes');
@@ -565,7 +565,7 @@ async function streamFile(sessionId, fileType, fileName) {
       if (res.status === 500) detail += ' - Internal server error';
       else if (res.status === 404) detail += ' - Session not found';
       else if (res.status === 403) detail += ' - Access denied';
-      statusEl.textContent = 'Error';
+      statusEl.textContent = typeof t === 'function' ? t('status.error') : 'Error';
       statusEl.style.color = 'var(--red)';
       if (degradeBtn) degradeBtn.style.display = 'none';
       currentSessionId = null;

@@ -30,6 +30,7 @@ public class RevocationScheduler {
 
     private final SessionManager sessionManager;
     private final OracleClient oracleClient;
+    private final LiveEventService liveEventService;
 
     private final Map<String, Long> lastPollMillis = new ConcurrentHashMap<>();
     private static final long BASE_TICK_MS = 1000L;
@@ -57,9 +58,11 @@ public class RevocationScheduler {
     private static final long SUBNET_BLOCK_SUSTAIN_MS = 5L * 60_000L;
     private static final long SUBNET_BLOCK_DURATION_MS = 15L * 60_000L;
 
-    public RevocationScheduler(SessionManager sessionManager, OracleClient oracleClient) {
+    public RevocationScheduler(SessionManager sessionManager, OracleClient oracleClient,
+                               LiveEventService liveEventService) {
         this.sessionManager = sessionManager;
         this.oracleClient = oracleClient;
+        this.liveEventService = liveEventService;
     }
 
     public double getClusterRisk(String networkFingerprint) {
@@ -114,6 +117,7 @@ public class RevocationScheduler {
             System.out.println("[BV-GCA CSRP] Cluster risk updated for network: " + fp
                     + " | R_N=" + round4(rN)
                     + " | revocations=" + clusterRevocationTimes.getOrDefault(fp, List.of()).size());
+            emitClusterRiskUpdated(fp, rN);
             for (SessionManager.ActiveSession other : sessionManager.getActiveSessions()) {
                 if (other.isActive() && !other.getSessionId().equals(session.getSessionId())
                         && fp.equals(other.getNetworkFingerprint())) {
@@ -173,6 +177,7 @@ public class RevocationScheduler {
                             + " | R_N=" + round4(rN)
                             + " | sustained=" + (sinceMs / 1000) + "s"
                             + " | blocked_until=" + new java.util.Date(until));
+                    emitClusterRiskBlocked(fp, rN, until);
                 }
             } else {
                 subnetHighRiskSince.remove(fp);
@@ -277,6 +282,7 @@ public class RevocationScheduler {
                 System.out.println("[BV-GCA] File     : " + session.getFileId());
                 System.out.println("[BV-GCA] DT_score : " + result.getDtScore());
                 System.out.println("[BV-GCA] Bytes    : " + session.getBytesDelivered());
+                emitSessionRevoked(session, result, adjustedMargin, clusterRisk);
             } else {
                 double currentDtScore = result.getDtScore();
                 boolean contextChanged = shouldResetAcceleration(session, currentDtScore, currentTier);
@@ -315,8 +321,66 @@ public class RevocationScheduler {
                         + " | tier=" + currentTier + " | Δt=" + (baseDt / 1000) + "s"
                         + " | m'=" + round4(adjustedMargin) + " | DT=" + round4(currentDtScore)
                         + " | n=" + session.getStableCheckCount());
+                emitSessionScoreUpdated(session, result, adjustedMargin, currentTier, baseDt);
             }
         }
+    }
+
+    private void emitSessionScoreUpdated(SessionManager.ActiveSession session,
+                                         OracleResult result,
+                                         double adjustedMargin,
+                                         String currentTier,
+                                         long baseDt) {
+        if (liveEventService == null) return;
+        Map<String, Object> data = new java.util.LinkedHashMap<>();
+        data.put("sessionId", session.getSessionId());
+        data.put("fileId", session.getFileId());
+        data.put("dtScore", result.getDtScore());
+        data.put("ceScore", result.getCeScore());
+        data.put("margin", round4(adjustedMargin));
+        data.put("tier", currentTier);
+        data.put("deltaT", (int) (baseDt / 1000L));
+        data.put("stableCheckCount", session.getStableCheckCount());
+        data.put("accelerationActive", session.isAccelerationActive());
+        liveEventService.publishSessionScoreUpdated(session.getOwnerUsername(), data);
+    }
+
+    private void emitSessionRevoked(SessionManager.ActiveSession session,
+                                    OracleResult result,
+                                    double adjustedMargin,
+                                    double clusterRisk) {
+        if (liveEventService == null) return;
+        Map<String, Object> data = new java.util.LinkedHashMap<>();
+        data.put("sessionId", session.getSessionId());
+        data.put("fileId", session.getFileId());
+        data.put("dtScore", result.getDtScore());
+        data.put("ceScore", result.getCeScore());
+        data.put("margin", round4(adjustedMargin));
+        data.put("bytesDelivered", session.getBytesDelivered());
+        String reason = result.isDeny() ? "RULE"
+                : (adjustedMargin < 0 ? "CLUSTER_RISK" : "TIMEOUT");
+        data.put("reason", reason);
+        if (clusterRisk > 0) data.put("clusterRisk", round4(clusterRisk));
+        liveEventService.publishSessionRevoked(session.getOwnerUsername(), data);
+    }
+
+    private void emitClusterRiskUpdated(String subnet, double rN) {
+        if (liveEventService == null) return;
+        Map<String, Object> data = new java.util.LinkedHashMap<>();
+        data.put("subnet", subnet);
+        data.put("rN", round4(rN));
+        data.put("blocked", subnetBlockUntil.containsKey(subnet));
+        liveEventService.publishClusterRiskUpdated(data);
+    }
+
+    private void emitClusterRiskBlocked(String subnet, double rN, long expiresAt) {
+        if (liveEventService == null) return;
+        Map<String, Object> data = new java.util.LinkedHashMap<>();
+        data.put("subnet", subnet);
+        data.put("rN", round4(rN));
+        data.put("blocked", true);
+        data.put("expiresAt", expiresAt);
+        liveEventService.publishClusterRiskUpdated(data);
     }
 
     private double round4(double v) {

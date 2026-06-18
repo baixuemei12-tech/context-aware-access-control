@@ -163,7 +163,7 @@ function encodeForInlineDecode(value) {
 function makeCollapsible(containerId, rows, renderFn, columns) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  if (rows.length === 0) { container.innerHTML = '<div class="empty">No data</div>'; return; }
+  if (rows.length === 0) { container.innerHTML = '<div class="empty">' + (typeof t === 'function' ? t('waiting') : 'No data') + '</div>'; return; }
   const expanded = container.dataset.expanded === 'true';
   const visible = expanded ? rows : rows.slice(0, TABLE_LIMIT);
   let html = `<table class="data-table"><thead><tr>${columns.map(c => '<th>' + c + '</th>').join('')}</tr></thead><tbody>`;

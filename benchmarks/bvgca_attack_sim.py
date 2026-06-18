@@ -70,6 +70,13 @@ TOPOLOGY_BASE = DEFAULT_TOPOLOGY              # mutated by --topology-url in mai
 results_log = []
 AUTO_UNBLOCK_USER = None
 
+# Gap between consecutive attacks. A single cascade still takes ~5-6s to
+# fully render on the topology (default _STEP_MS=700 per hop + 1500ms final
+# pause), but the operator doesn't need the full cascade to finish before
+# the next attack starts — overlapping tails are fine and the demo stays
+# brisk. Keep this small (≤ 2s) so the suite stays watchable end-to-end.
+INTER_ATTACK_SLEEP = 2
+
 
 def log_result(test, metric, value, unit="", status="PASS", detail=""):
     entry = {
@@ -1252,10 +1259,10 @@ def main():
         emit_meta('── PHASE 1: SINGLE-USER ATTACKS ──', TOPOLOGY_BASE,
                   status='alert', phase='live-attack')
 
-    # Cascades take ~5-6s to render (default _STEP_MS=700, final pause 1500).
-    # Sleep 7s between attacks so cascades don't overlap and the operator
-    # gets a moment of quiet before the next one fires.
-    INTER_ATTACK_SLEEP = 7
+    # Cascades take ~5-6s to render (default _STEP_MS=700, final pause 1500),
+    # but consecutive attacks may overlap visually — the inter-attack pause
+    # (module-level INTER_ATTACK_SLEEP, default 2s) just keeps the demo
+    # moving without flooding the operator's view.
 
     try:
         # Phase 1 — single-user attacks (each emits one cascade)

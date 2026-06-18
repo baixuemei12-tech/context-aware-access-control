@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CAAC — Context-Aware Access Control System</title>
+<title>情境自适应的人因数据使用控制系统</title>
+<link rel="preload" href="js/i18n.js" as="script">
 <link rel="preconnect" href="http://172.25.204.218:5051" crossorigin>
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/cyberpunk.css">
@@ -18,17 +19,17 @@
     <div class="logo">
       <div class="logo-mark">CA</div>
       <div>
-        <h1>CAAC System</h1>
-        <p>Blockchain-enabled Context-Aware Access Control</p>
+        <h1 data-i18n="app.title">Context Aware Access Control System</h1>
+        <p data-i18n="app.subtitle">Context Aware Access Control System</p>
       </div>
     </div>
     <div class="hdr-right">
       <div class="status-pill" id="statusPill">
         <span class="dot live"></span>
-        <span id="statusText">checking...</span>
+        <span id="statusText" data-i18n="dash.checking">checking...</span>
       </div>
       <div id="userBar" style="display:none;align-items:center;gap:10px">
-        <a href="admin.html" class="btn-admin" id="btnAdminPanel" style="display:none">Admin</a>
+        <a href="admin.html" class="btn-admin" id="btnAdminPanel" style="display:none" data-i18n="nav.admin">Admin</a>
         <div class="user-info" style="text-align:right">
           <div class="user-name" id="userName">—</div>
           <div class="user-role" id="userRole">—</div>
@@ -54,12 +55,12 @@
       </div>
     </div>
     <div class="panel-nav">
-      <a href="profile.html" class="panel-link"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg></span><span>My Profile</span></a>
-      <a href="messages.html" class="panel-link" id="panelMsgLink" style="display:none"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v11H7l-3 3z"/><path d="M8 10h8"/><path d="M8 14h5"/></svg></span><span>Messages</span> <span class="pl-badge" id="panelMsgBadge" style="display:none">0</span></a>
-      <a href="overview.html" class="panel-link"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8"/><path d="M8 13h5"/><path d="M8 17h7"/></svg></span><span>System Overview</span></a>
-      <a href="scenarios.html" class="panel-link"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 17V7h5"/><path d="M13 7h5v10"/><circle cx="6" cy="17" r="2"/><circle cx="11" cy="7" r="2"/><circle cx="18" cy="17" r="2"/></svg></span><span>Scenario Demo</span></a>
-      <a href="admin.html" class="panel-link" id="panelAdminLink" style="display:none"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.2 8.1-7 10-3.8-1.9-7-5-7-10V6z"/><path d="M9.5 12l1.7 1.7 3.8-4"/></svg></span><span>Admin Panel</span></a>
-      <button class="panel-link danger" onclick="doLogout()"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 8V5a2 2 0 0 0-2-2H5v18h7a2 2 0 0 0 2-2v-3"/><path d="M9 12h12"/><path d="M17 8l4 4-4 4"/></svg></span><span>Logout</span></button>
+      <a href="profile.html" class="panel-link"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg></span><span data-i18n="nav.myProfile">My Profile</span></a>
+      <a href="messages.html" class="panel-link" id="panelMsgLink" style="display:none"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v11H7l-3 3z"/><path d="M8 10h8"/><path d="M8 14h5"/></svg></span><span data-i18n="nav.messages">Messages</span> <span class="pl-badge" id="panelMsgBadge" style="display:none">0</span></a>
+      <a href="overview.html" class="panel-link"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8"/><path d="M8 13h5"/><path d="M8 17h7"/></svg></span><span data-i18n="nav.systemOverview">System Overview</span></a>
+      <a href="scenarios.html" class="panel-link"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 17V7h5"/><path d="M13 7h5v10"/><circle cx="6" cy="17" r="2"/><circle cx="11" cy="7" r="2"/><circle cx="18" cy="17" r="2"/></svg></span><span data-i18n="nav.scenarioDemo">Scenario Demo</span></a>
+      <a href="admin.html" class="panel-link" id="panelAdminLink" style="display:none"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.2 8.1-7 10-3.8-1.9-7-5-7-10V6z"/><path d="M9.5 12l1.7 1.7 3.8-4"/></svg></span><span data-i18n="nav.adminPanel">Admin Panel</span></a>
+      <button class="panel-link danger" onclick="doLogout()"><span class="pl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 8V5a2 2 0 0 0-2-2H5v18h7a2 2 0 0 0 2-2v-3"/><path d="M9 12h12"/><path d="M17 8l4 4-4 4"/></svg></span><span data-i18n="nav.logout">Logout</span></button>
     </div>
   </div>
 
@@ -72,38 +73,38 @@
       <!-- Auto-collected context -->
       <div class="card">
         <div class="card-hdr">
-          <span class="card-title">Environmental context (C_E)</span>
-          <span class="badge badge-auto">auto-collected</span>
+          <span class="card-title" data-i18n="dash.envContext">Environmental context (C_E)</span>
+          <span class="badge badge-auto" data-i18n="dash.autoCollected">auto-collected</span>
         </div>
         <div class="ctx-list" id="ctxList">
-          <div class="ctx-row"><span class="ctx-k">ip</span><span class="ctx-v" id="ctx-ip">detecting...</span></div>
-          <div class="ctx-row"><span class="ctx-k">timestamp</span><span class="ctx-v" id="ctx-time">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">timezone</span><span class="ctx-v" id="ctx-tz">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">network</span><span class="ctx-v" id="ctx-net">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">platform</span><span class="ctx-v" id="ctx-plat">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">user-agent</span><span class="ctx-v" id="ctx-ua">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">screen</span><span class="ctx-v" id="ctx-screen">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">language</span><span class="ctx-v" id="ctx-lang">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">color depth</span><span class="ctx-v" id="ctx-color">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">touch</span><span class="ctx-v" id="ctx-touch">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.ip">ip</span><span class="ctx-v" id="ctx-ip">detecting...</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.timestamp">timestamp</span><span class="ctx-v" id="ctx-time">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.timezone">timezone</span><span class="ctx-v" id="ctx-tz">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.network">network</span><span class="ctx-v" id="ctx-net">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.platform">platform</span><span class="ctx-v" id="ctx-plat">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.userAgent">user-agent</span><span class="ctx-v" id="ctx-ua">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.screen">screen</span><span class="ctx-v" id="ctx-screen">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.language">language</span><span class="ctx-v" id="ctx-lang">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.colorDepth">color depth</span><span class="ctx-v" id="ctx-color">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.touch">touch</span><span class="ctx-v" id="ctx-touch">—</span></div>
         </div>
-        <button class="btn-secondary" onclick="collectContext()">Refresh context</button>
+        <button class="btn-secondary" onclick="collectContext()" data-i18n="dash.refreshContext">Refresh context</button>
       </div>
 
       <!-- Subject Context -->
       <div class="card">
         <div class="card-hdr">
-          <span class="card-title">Subject context (C_S)</span>
-          <span class="badge badge-auto">from login</span>
+          <span class="card-title" data-i18n="dash.subjContext">Subject context (C_S)</span>
+          <span class="badge badge-auto" data-i18n="dash.fromLogin">from login</span>
         </div>
         <div class="ctx-list">
-          <div class="ctx-row"><span class="ctx-k">user</span><span class="ctx-v" id="prof-user">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="ctx.user">user</span><span class="ctx-v" id="prof-user">—</span></div>
           <div class="ctx-row"><span class="ctx-k">R_sub</span><span class="ctx-v" id="prof-rsub">—</span></div>
           <div class="ctx-row"><span class="ctx-k">T_sub</span><span class="ctx-v" id="prof-tsub">—</span></div>
           <div class="ctx-row"><span class="ctx-k">B_freq</span><span class="ctx-v" id="prof-bfreq">1.0</span></div>
-          <div class="ctx-row"><span class="ctx-k">status</span><span class="ctx-v" id="prof-status">—</span></div>
+          <div class="ctx-row"><span class="ctx-k" data-i18n="status.pending">status</span><span class="ctx-v" id="prof-status">—</span></div>
         </div>
-        <div style="font-size:10px;color:var(--text3);margin-top:8px;font-family:var(--mono);text-align:center">
+        <div style="font-size:10px;color:var(--text3);margin-top:8px;font-family:var(--mono);text-align:center" data-i18n="dash.roleTrustDesc">
           Role and trust assigned by administrator
         </div>
       </div>
@@ -111,51 +112,51 @@
       <!-- Resource Context -->
       <div class="card">
         <div class="card-hdr">
-          <span class="card-title">Resource context (C_R)</span>
-          <span class="badge badge-user">from server registry</span>
+          <span class="card-title" data-i18n="dash.resContext">Resource context (C_R)</span>
+          <span class="badge badge-user" data-i18n="dash.fromServer">from server registry</span>
         </div>
         <div class="input-group">
           <div class="field">
-            <label>File to access</label>
+            <label data-i18n="dash.fileToAccess">File to access</label>
             <div class="file-list-header">
-              <input type="text" id="file-search" class="file-search-input" placeholder="Search files..." oninput="onFileSearch(this.value)">
+              <input type="text" id="file-search" class="file-search-input" data-i18n-placeholder="dash.searchFiles" placeholder="Search files..." oninput="onFileSearch(this.value)">
               <span class="file-count" id="file-count"></span>
             </div>
             <div id="file-list" class="file-list-scroll">
-              <div class="file-list-empty">Loading files...</div>
+              <div class="file-list-empty" data-i18n="dash.loadingFiles">Loading files...</div>
             </div>
             <input type="hidden" id="in-file" value="">
           </div>
           <div>
             <div class="input-row">
                 <div class="field">
-                <label>S_level (server-set)</label>
+                <label data-i18n="dash.sLevel">S_level (server-set)</label>
                 <div class="ctx-row" style="padding:7px 10px;margin:0">
-                  <span class="ctx-k">level</span>
+                  <span class="ctx-k" data-i18n="ctx.level">level</span>
                   <span class="ctx-v" id="display-slevel">—</span>
                 </div>
               </div>
               <div class="field">
-                <label>P_req (server-set)</label>
+                <label data-i18n="dash.pReq">P_req (server-set)</label>
                 <div class="ctx-row" style="padding:7px 10px;margin:0">
-                  <span class="ctx-k">threshold</span>
+                  <span class="ctx-k" data-i18n="ctx.threshold">threshold</span>
                   <span class="ctx-v" id="display-preq">—</span>
                 </div>
               </div>
             </div>
           <div class="input-row" style="margin-top:8px;grid-template-columns:1fr">
             <div class="field">
-              <label style="color:var(--teal)">C_O — Object context (auto)</label>
+              <label style="color:var(--teal)" data-i18n="dash.objContext">C_O — Object context (auto)</label>
               <div class="ctx-list" style="margin-top:4px">
-                <div class="info_row"><span class="ctx-k">accesses</span><span class="ctx-v" id="display-accesscount">—</span></div>
-                <div class="info_row"><span class="ctx-k">file size</span><span class="ctx-v" id="display-filesize">—</span></div>
-                <div class="info_row"><span class="ctx-k">rules</span><span class="ctx-v" id="display-rules">none</span></div>
+                <div class="info_row"><span class="ctx-k" data-i18n="dash.accesses">accesses</span><span class="ctx-v" id="display-accesscount">—</span></div>
+                <div class="info_row"><span class="ctx-k" data-i18n="dash.fileSize">file size</span><span class="ctx-v" id="display-filesize">—</span></div>
+                <div class="info_row"><span class="ctx-k" data-i18n="dash.rules">rules</span><span class="ctx-v" id="display-rules">none</span></div>
               </div>
             </div>
           </div>
           </div>
         </div>
-        <button class="btn-primary" id="btnAccess" onclick="requestAccess()">
+        <button class="btn-primary" id="btnAccess" onclick="requestAccess()" data-i18n="dash.requestAccess">
           Request access
         </button>
       </div>
@@ -163,20 +164,20 @@
       <!-- File Upload -->
       <div class="card">
         <div class="card-hdr">
-          <span class="card-title">Publish a file</span>
-          <span class="badge badge-user">requires approval</span>
+          <span class="card-title" data-i18n="dash.publishFile">Publish a file</span>
+          <span class="badge badge-user" data-i18n="dash.requiresApproval">requires approval</span>
         </div>
         <div class="input-group">
           <div class="field">
-            <label>File</label>
+            <label data-i18n="dash.file">File</label>
             <input type="file" id="upload-file" style="font-size:11px">
           </div>
           <div class="field">
-            <label>Description</label>
-            <input type="text" id="upload-desc" placeholder="Brief description of the file">
+            <label data-i18n="dash.description">Description</label>
+            <input type="text" id="upload-desc" data-i18n-placeholder="dash.description" placeholder="Brief description of the file">
           </div>
           <div class="field">
-            <label>Sensitivity (0.1 - 1.0)</label>
+            <label data-i18n="dash.sensitivity">Sensitivity (0.1 - 1.0)</label>
             <div style="display:flex;align-items:center;gap:8px">
               <input type="range" id="upload-slevel" min="0.1" max="1.0" step="0.1" value="0.5"
                 oninput="document.getElementById('slevel-val').textContent=parseFloat(this.value).toFixed(1)"
@@ -186,24 +187,24 @@
           </div>
           <!-- Non-context access rules (uploader specifies) -->
           <div class="field">
-            <label>Access rules (optional)</label>
+            <label data-i18n="dash.accessRules">Access rules (optional)</label>
             <div style="display:grid;gap:6px">
               <div style="display:flex;gap:6px;align-items:center">
-                <label style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:120px">Require organization:</label>
-                <input type="text" id="rule-org" placeholder="e.g. NWPU (leave empty = any)" style="flex:1;font-size:11px;padding:4px 8px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;font-family:var(--mono)">
+                <label style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:120px" data-i18n="dash.ruleOrg">Require organization:</label>
+                <input type="text" id="rule-org" data-i18n-placeholder="dash.ruleOrgPlaceholder" placeholder="e.g. NWPU (leave empty = any)" style="flex:1;font-size:11px;padding:4px 8px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;font-family:var(--mono)">
               </div>
               <div style="display:flex;gap:6px;align-items:center">
-                <label style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:120px">Max accesses/day:</label>
+                <label style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:120px" data-i18n="dash.ruleMaxAccess">Max accesses/day:</label>
                 <input type="number" id="rule-maxaccess" placeholder="unlimited" min="1" max="100" style="width:80px;font-size:11px;padding:4px 8px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;font-family:var(--mono)">
               </div>
               <div style="display:flex;gap:6px;align-items:center">
-                <label style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:120px">Min trust (T_sub):</label>
+                <label style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:120px" data-i18n="dash.ruleMinTrust">Min trust (T_sub):</label>
                 <input type="number" id="rule-mintrust" placeholder="none" min="0" max="1" step="0.1" style="width:80px;font-size:11px;padding:4px 8px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;font-family:var(--mono)">
               </div>
             </div>
           </div>
         </div>
-        <button class="btn-primary" id="btnUpload" onclick="uploadFile()" style="background:var(--teal)">
+        <button class="btn-primary" id="btnUpload" onclick="uploadFile()" style="background:var(--teal)" data-i18n="dash.uploadFile">
           Upload to IPFS
         </button>
         <div id="uploadStatus" style="display:none;margin-top:8px;padding:8px 12px;border-radius:6px;font-size:11px;font-family:var(--mono)"></div>
@@ -214,25 +215,25 @@
     <div class="right-col">
       <div class="card risk-inspector" id="riskInspector">
         <div class="card-hdr">
-          <span class="card-title">Risk inspector</span>
-          <span class="badge badge-auto" id="ri-status">selection</span>
+          <span class="card-title" data-i18n="dash.riskInspector">Risk inspector</span>
+          <span class="badge badge-auto" id="ri-status" data-i18n="dash.selection">selection</span>
         </div>
         <div class="risk-grid">
-          <div class="risk-metric"><div class="rk">User</div><div class="rv" id="ri-user">—</div><div class="rh" id="ri-role">role pending</div></div>
-          <div class="risk-metric"><div class="rk">T_sub</div><div class="rv" id="ri-trust">—</div><div class="rh">subject trust</div></div>
-          <div class="risk-metric"><div class="rk">D_sec</div><div class="rv" id="ri-device">—</div><div class="rh">device score</div></div>
-          <div class="risk-metric"><div class="rk">N_status</div><div class="rv" id="ri-network">—</div><div class="rh">network score</div></div>
-          <div class="risk-metric"><div class="rk">S_level</div><div class="rv" id="ri-slevel">—</div><div class="rh">resource class</div></div>
-          <div class="risk-metric"><div class="rk">P_req</div><div class="rv" id="ri-preq">—</div><div class="rh">effective threshold</div></div>
-          <div class="risk-metric"><div class="rk">RGCA</div><div class="rv" id="ri-tier">—</div><div class="rh" id="ri-delay">no session</div></div>
-          <div class="risk-metric"><div class="rk">Margin</div><div class="rv" id="ri-margin">—</div><div class="rh">DT - P_eff</div></div>
+          <div class="risk-metric"><div class="rk" data-i18n="ri.user">User</div><div class="rv" id="ri-user">—</div><div class="rh" id="ri-role" data-i18n="ri.role">role pending</div></div>
+          <div class="risk-metric"><div class="rk" data-i18n="ri.trust">T_sub</div><div class="rv" id="ri-trust">—</div><div class="rh" data-i18n="ri.subjectTrust">subject trust</div></div>
+          <div class="risk-metric"><div class="rk" data-i18n="ri.device">D_sec</div><div class="rv" id="ri-device">—</div><div class="rh" data-i18n="ri.deviceScore">device score</div></div>
+          <div class="risk-metric"><div class="rk" data-i18n="ri.network">N_status</div><div class="rv" id="ri-network">—</div><div class="rh" data-i18n="ri.networkScore">network score</div></div>
+          <div class="risk-metric"><div class="rk" data-i18n="ri.slevel">S_level</div><div class="rv" id="ri-slevel">—</div><div class="rh" data-i18n="ri.resourceClass">resource class</div></div>
+          <div class="risk-metric"><div class="rk" data-i18n="ri.preq">P_req</div><div class="rv" id="ri-preq">—</div><div class="rh" data-i18n="ri.effectiveThreshold">effective threshold</div></div>
+          <div class="risk-metric"><div class="rk" data-i18n="ri.rgca">RGCA</div><div class="rv" id="ri-tier">—</div><div class="rh" id="ri-delay" data-i18n="ri.noSession">no session</div></div>
+          <div class="risk-metric"><div class="rk" data-i18n="ri.margin">Margin</div><div class="rv" id="ri-margin">—</div><div class="rh" data-i18n="ri.marginDesc">DT - P_eff</div></div>
         </div>
         <div class="risk-meter">
-          <div class="risk-meter-label">admission margin</div>
+          <div class="risk-meter-label" data-i18n="ri.admissionMargin">admission margin</div>
           <div class="risk-meter-track"><span class="risk-meter-fill" id="ri-margin-fill"></span></div>
-          <div class="risk-meter-value" id="ri-meter-label">waiting</div>
+          <div class="risk-meter-value" id="ri-meter-label" data-i18n="ri.waiting">waiting</div>
         </div>
-        <div class="risk-explainer" id="ri-explainer">
+        <div class="risk-explainer" id="ri-explainer" data-i18n="ri.selectFile">
           Select a file to see how subject trust, device/network context, resource sensitivity, and policy threshold combine before the gateway opens a stream.
         </div>
         <div class="risk-flow-mini" aria-hidden="true">
@@ -244,8 +245,8 @@
         <div class="card">
           <div class="empty-state">
             <div class="empty-icon">IDLE</div>
-            <strong>No access request yet</strong>
-            <p>Select a file on the left and click "Request access".<br>
+            <strong data-i18n="dash.noRequest">No access request yet</strong>
+            <p data-i18n="dash.noRequestDesc">Select a file on the left and click "Request access".<br>
             Environmental context is collected automatically.</p>
           </div>
         </div>
@@ -253,11 +254,11 @@
 
       <div class="card">
         <div class="card-hdr">
-          <span class="card-title">Request log</span>
-          <button class="btn-secondary" style="width:auto;margin:0;padding:3px 10px" onclick="clearLog()">clear</button>
+          <span class="card-title" data-i18n="dash.requestLog">Request log</span>
+          <button class="btn-secondary" style="width:auto;margin:0;padding:3px 10px" onclick="clearLog()" data-i18n="dash.clear">clear</button>
         </div>
         <div class="log-area" id="logArea">
-          <div><span class="log-time">[--:--:--]</span> System ready. Waiting for requests...</div>
+          <div><span class="log-time">[--:--:--]</span> <span data-i18n="dash.systemReady">System ready. Waiting for requests...</span></div>
         </div>
       </div>
     </div>

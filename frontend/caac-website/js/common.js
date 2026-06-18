@@ -110,7 +110,9 @@ function syncThemeToggleLabels(theme) {
       btn.classList.add('exits-cyber');
       return;
     }
-    btn.textContent = activeTheme === 'light' ? 'Dark' : 'Light';
+    btn.textContent = activeTheme === 'light'
+    ? (typeof t === 'function' ? t('nav.theme') + ': Dark' : 'Dark')
+    : (typeof t === 'function' ? t('nav.theme') + ': Light' : 'Light');
     btn.setAttribute('aria-label', 'Switch to ' + (activeTheme === 'light' ? 'dark' : 'light') + ' theme');
     btn.setAttribute('aria-pressed', activeTheme === 'light' ? 'true' : 'false');
     btn.classList.remove('exits-cyber');
@@ -439,7 +441,7 @@ function installDefensePresenter() {
     <section class="defense-panel" role="dialog" aria-modal="true" aria-label="Defense presentation guide">
       <div class="defense-panel-head">
         <div>
-          <div class="defense-kicker">CAAC defense guide</div>
+          <div class="defense-kicker">Context Aware Access Control — defense guide</div>
           <h2 data-defense-title></h2>
         </div>
         <button type="button" class="defense-close" data-defense-close aria-label="Close defense guide">x</button>
@@ -839,7 +841,7 @@ function installSharedMenuPanel() {
       <div class="panel-user">
         <div class="panel-avatar" id="panelAvatar" style="background:var(--accent2);color:var(--accent)">CA</div>
         <div>
-          <div style="font-size:13px;font-weight:600" id="panelName">CAAC Console</div>
+          <div style="font-size:13px;font-weight:600" id="panelName">CAAC</div>
           <div style="font-size:10px;font-family:var(--mono);color:var(--text3)" id="panelRole">navigation</div>
         </div>
       </div>
@@ -875,7 +877,7 @@ function syncSharedMenu(user, isAdmin) {
     if (role) role.textContent = ROLE_LABELS[cachedUser.rSub] || 'Role ' + cachedUser.rSub;
   } else {
     if (avatar) avatar.textContent = 'CA';
-    if (name) name.textContent = 'CAAC Console';
+    if (name) name.textContent = 'CAAC';
     if (role) role.textContent = 'navigation';
   }
 }

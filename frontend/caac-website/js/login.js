@@ -261,12 +261,12 @@ async function doLogin() {
   if (loginCaptchaAnswer) payload.captchaAnswer = loginCaptchaAnswer;
   if (loginCaptchaRequired && !payload.captchaToken) {
     showError('Please complete the CAPTCHA');
-    btn.disabled = false; btn.textContent = 'Login';
+    btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnLogin') : 'Login';
     return;
   }
   if (loginCaptchaRequired && captchaType === 'math' && !payload.captchaAnswer) {
     showError('Please answer the CAPTCHA');
-    btn.disabled = false; btn.textContent = 'Login';
+    btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnLogin') : 'Login';
     return;
   }
 
@@ -295,32 +295,32 @@ async function doLogin() {
         document.getElementById('errorMsg').style.display = 'none';
         document.getElementById('totp-input').value = '';
         document.getElementById('totp-input').focus();
-        btn.disabled = false; btn.textContent = 'Login';
+        btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnLogin') : 'Login';
         return;
       }
 
       if (data.error === 'Account pending administrator approval') {
         pendingUsername = username;
         showApprovalStep(username, data);
-        btn.disabled = false; btn.textContent = 'Login';
+        btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnLogin') : 'Login';
         return;
       }
 
       if (data.error === 'Account blocked. Contact administrator.') {
         showError('Account blocked. Contact the administrator.');
-        btn.disabled = false; btn.textContent = 'Login';
+        btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnLogin') : 'Login';
         return;
       }
 
       if (data.error === 'Account not verified') {
         pendingUsername = username;
         showVerificationStep(username);
-        btn.disabled = false; btn.textContent = 'Login';
+        btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnLogin') : 'Login';
         return;
       }
 
       showError('Invalid credentials');
-      btn.disabled = false; btn.textContent = 'Login';
+      btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnLogin') : 'Login';
 
       //refresh CAPTCHA if it was required
       if (loginCaptchaRequired) {
@@ -353,7 +353,7 @@ async function doLogin() {
     }
   } catch (err) {
     showError('Service unavailable');
-    btn.disabled = false; btn.textContent = 'Login';
+    btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnLogin') : 'Login';
   }
 }
 
@@ -398,7 +398,7 @@ async function submitTotp() {
       showError('Invalid authenticator code');
       document.getElementById('totp-input').value = '';
       document.getElementById('totp-input').focus();
-      btn.disabled = false; btn.textContent = 'Verify';
+      btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.totpVerify') : 'Verify';
       return;
     }
 
@@ -409,7 +409,7 @@ async function submitTotp() {
 
   } catch (err) {
     showError('Service unavailable');
-    btn.disabled = false; btn.textContent = 'Verify';
+    btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.totpVerify') : 'Verify';
   }
 }
 
@@ -468,7 +468,7 @@ async function doSignup() {
 
     if (!res.ok) {
       showError(safeSignupError(data));
-      btn.disabled = false; btn.textContent = 'Create Account';
+      btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnCreate') : 'Create Account';
       if (captchaType === 'math') {
         loadMathCaptcha('signupCaptchaRow');
       } else if (typeof hcaptcha !== 'undefined') {
@@ -493,7 +493,7 @@ async function doSignup() {
 
   } catch (err) {
     showError('Service unavailable');
-    btn.disabled = false; btn.textContent = 'Create Account';
+    btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.btnCreate') : 'Create Account';
   }
 }
 
@@ -607,10 +607,10 @@ async function submitOtp() {
       showError('Verification failed');
     }
 
-    btn.disabled = false; btn.textContent = 'Verify';
+    btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.totpVerify') : 'Verify';
   } catch (err) {
     showError('Verification failed');
-    btn.disabled = false; btn.textContent = 'Verify';
+    btn.disabled = false; btn.textContent = typeof t === 'function' ? t('login.totpVerify') : 'Verify';
   }
 }
 

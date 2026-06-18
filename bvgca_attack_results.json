@@ -1,0 +1,327 @@
+{
+  "timestamp": "2026-05-27T09:05:11.918029",
+  "summary": {
+    "total": 35,
+    "passed": 27,
+    "failed": 0,
+    "warnings": 3,
+    "info": 5
+  },
+  "results": [
+    {
+      "test": "A1-Replay",
+      "metric": "Replay closed session",
+      "value": "transport-error (ReadTimeout)",
+      "unit": "",
+      "status": "WARN",
+      "detail": "Initial stream did not fully close; replay result inconclusive",
+      "timestamp": "2026-05-27T09:04:36.365723"
+    },
+    {
+      "test": "A1-Replay",
+      "metric": "Degrade fake session",
+      "value": "HTTP 404",
+      "unit": "",
+      "status": "PASS",
+      "detail": "",
+      "timestamp": "2026-05-27T09:04:36.369689"
+    },
+    {
+      "test": "A2-Hijack",
+      "metric": "Random UUID",
+      "value": "HTTP 404",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Correctly rejected",
+      "timestamp": "2026-05-27T09:04:38.379658"
+    },
+    {
+      "test": "A2-Hijack",
+      "metric": "Empty string",
+      "value": "HTTP 404",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Correctly rejected",
+      "timestamp": "2026-05-27T09:04:38.386682"
+    },
+    {
+      "test": "A2-Hijack",
+      "metric": "SQL injection",
+      "value": "HTTP 404",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Correctly rejected",
+      "timestamp": "2026-05-27T09:04:38.390273"
+    },
+    {
+      "test": "A2-Hijack",
+      "metric": "Path traversal",
+      "value": "HTTP 404",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Correctly rejected",
+      "timestamp": "2026-05-27T09:04:38.396415"
+    },
+    {
+      "test": "A2-Hijack",
+      "metric": "XSS payload",
+      "value": "HTTP 404",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Correctly rejected",
+      "timestamp": "2026-05-27T09:04:38.402303"
+    },
+    {
+      "test": "A2-Hijack",
+      "metric": "Null bytes",
+      "value": "HTTP 400",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Correctly rejected",
+      "timestamp": "2026-05-27T09:04:38.405000"
+    },
+    {
+      "test": "A2-Hijack",
+      "metric": "Very long ID",
+      "value": "HTTP 404",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Correctly rejected",
+      "timestamp": "2026-05-27T09:04:38.408684"
+    },
+    {
+      "test": "A3-PrivEsc",
+      "metric": "Access high-clearance file",
+      "value": "DENY",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Correctly denied",
+      "timestamp": "2026-05-27T09:04:40.430709"
+    },
+    {
+      "test": "A3-PrivEsc",
+      "metric": "GET /api/auth/admin/users",
+      "value": "HTTP 403",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Denied",
+      "timestamp": "2026-05-27T09:04:40.433302"
+    },
+    {
+      "test": "A3-PrivEsc",
+      "metric": "GET /api/auth/admin/audit",
+      "value": "HTTP 403",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Denied",
+      "timestamp": "2026-05-27T09:04:40.435875"
+    },
+    {
+      "test": "A3-PrivEsc",
+      "metric": "POST /api/files/reset-trust",
+      "value": "HTTP 403",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Denied",
+      "timestamp": "2026-05-27T09:04:40.438821"
+    },
+    {
+      "test": "A3-PrivEsc",
+      "metric": "GET /api/files/admin/all",
+      "value": "HTTP 403",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Denied",
+      "timestamp": "2026-05-27T09:04:40.441415"
+    },
+    {
+      "test": "A4-HMAC",
+      "metric": "No HMAC headers",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Oracle requires HMAC",
+      "timestamp": "2026-05-27T09:04:42.452747"
+    },
+    {
+      "test": "A4-HMAC",
+      "metric": "Forged signature",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "",
+      "timestamp": "2026-05-27T09:04:42.456926"
+    },
+    {
+      "test": "A4-HMAC",
+      "metric": "Forge CAAR receipt",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Receipt endpoint HMAC-protected",
+      "timestamp": "2026-05-27T09:04:42.459688"
+    },
+    {
+      "test": "A6-TokenManip",
+      "metric": "Bit-flip (char swap)",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Rejected",
+      "timestamp": "2026-05-27T09:04:44.469632"
+    },
+    {
+      "test": "A6-TokenManip",
+      "metric": "Truncated (half)",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Rejected",
+      "timestamp": "2026-05-27T09:04:44.473042"
+    },
+    {
+      "test": "A6-TokenManip",
+      "metric": "Appended garbage",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Rejected",
+      "timestamp": "2026-05-27T09:04:44.476236"
+    },
+    {
+      "test": "A6-TokenManip",
+      "metric": "Reversed",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Rejected",
+      "timestamp": "2026-05-27T09:04:44.479056"
+    },
+    {
+      "test": "A6-TokenManip",
+      "metric": "All uppercase",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Rejected",
+      "timestamp": "2026-05-27T09:04:44.482315"
+    },
+    {
+      "test": "A6-TokenManip",
+      "metric": "Empty bearer",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Rejected",
+      "timestamp": "2026-05-27T09:04:44.485279"
+    },
+    {
+      "test": "A6-TokenManip",
+      "metric": "Null token",
+      "value": "HTTP 401",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Rejected",
+      "timestamp": "2026-05-27T09:04:44.489289"
+    },
+    {
+      "test": "A8-BudgetBypass",
+      "metric": "Total bytes across sessions",
+      "value": 0,
+      "unit": "bytes",
+      "status": "INFO",
+      "detail": "",
+      "timestamp": "2026-05-27T09:04:56.583085"
+    },
+    {
+      "test": "A8-BudgetBypass",
+      "metric": "Bypass prevention",
+      "value": "INCONCLUSIVE",
+      "unit": "",
+      "status": "WARN",
+      "detail": "No deny observed within configured cycles; increase --attempts or use stricter file",
+      "timestamp": "2026-05-27T09:04:56.583147"
+    },
+    {
+      "test": "A9-Spoofing",
+      "metric": "Normal DT_score",
+      "value": 0.906,
+      "unit": "",
+      "status": "INFO",
+      "detail": "",
+      "timestamp": "2026-05-27T09:04:58.616153"
+    },
+    {
+      "test": "A9-Spoofing",
+      "metric": "Spoofed DT_score",
+      "value": 0.787,
+      "unit": "",
+      "status": "INFO",
+      "detail": "",
+      "timestamp": "2026-05-27T09:04:58.616202"
+    },
+    {
+      "test": "A9-Spoofing",
+      "metric": "DT difference",
+      "value": -0.119,
+      "unit": "",
+      "status": "PASS",
+      "detail": "Spoofing did not increase trust",
+      "timestamp": "2026-05-27T09:04:58.616211"
+    },
+    {
+      "test": "A5-Flood",
+      "metric": "Sessions opened",
+      "value": 10,
+      "unit": "/10",
+      "status": "PASS",
+      "detail": "",
+      "timestamp": "2026-05-27T09:05:02.785617"
+    },
+    {
+      "test": "A5-Flood",
+      "metric": "Sessions denied",
+      "value": 0,
+      "unit": "/10",
+      "status": "WARN",
+      "detail": "All sessions granted",
+      "timestamp": "2026-05-27T09:05:02.785676"
+    },
+    {
+      "test": "A5-Flood",
+      "metric": "Streams active simultaneously",
+      "value": 0,
+      "unit": "",
+      "status": "INFO",
+      "detail": "",
+      "timestamp": "2026-05-27T09:05:06.800133"
+    },
+    {
+      "test": "A5-Flood",
+      "metric": "Anomaly detector triggered",
+      "value": "NO",
+      "unit": "",
+      "status": "INFO",
+      "detail": "No rate limiting on session creation",
+      "timestamp": "2026-05-27T09:05:07.815342"
+    },
+    {
+      "test": "A7-CrossUser",
+      "metric": "Other user stream admin session",
+      "value": "HTTP 403",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Cross-user access denied",
+      "timestamp": "2026-05-27T09:05:09.906190"
+    },
+    {
+      "test": "A7-CrossUser",
+      "metric": "Other user degrade admin session",
+      "value": "HTTP 403",
+      "unit": "",
+      "status": "PASS",
+      "detail": "Degrade denied",
+      "timestamp": "2026-05-27T09:05:09.908828"
+    }
+  ]
+}

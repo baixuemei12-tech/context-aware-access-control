@@ -85,17 +85,66 @@ public class LiveEventService {
         publishToUser(username, "USER_DELETED", data);
     }
 
-    private void publishToAll(String type, Map<String, Object> data) {
+    /**
+     * Emitted from FileAccessController on every PERMIT / DENY / ERROR
+     * decision (the 5 audit-log sites). Operators see this as a 3-hop
+     * cascade on the topology and the user sees their own decision in
+     * their dashboard.
+     */
+    public void publishFileAccess(String username, Map<String, Object> data) {
+        if (data == null) return;
+        publishToAdmins("FILE_ACCESS", data);
+        if (username != null) {
+            publishToUser(username, "FILE_ACCESS", data);
+        }
+    }
+
+    /**
+     * Emitted from RevocationScheduler on every Algorithm 2 tick that
+     * did NOT revoke. Operators see the user's risk badges refresh at
+     * the per-tier 2/3/4s cadence Algorithm 2 already enforces.
+     */
+    public void publishSessionScoreUpdated(String username, Map<String, Object> data) {
+        if (data == null) return;
+        publishToAdmins("SESSION_SCORE_UPDATED", data);
+        if (username != null) {
+            publishToUser(username, "SESSION_SCORE_UPDATED", data);
+        }
+    }
+
+    /**
+     * Emitted whenever an active session is terminated mid-stream by
+     * Algorithm 2, by a policy hit, or by an admin action. Drives the
+     * terminal red cascade on the runtime topology.
+     */
+    public void publishSessionRevoked(String username, Map<String, Object> data) {
+        if (data == null) return;
+        publishToAdmins("SESSION_REVOKED", data);
+        if (username != null) {
+            publishToUser(username, "SESSION_REVOKED", data);
+        }
+    }
+
+    /**
+     * Cluster-level risk update from RevocationScheduler.recordNetworkRevocation.
+     * No per-user fan-out — subnets aren't owned by a single user.
+     */
+    public void publishClusterRiskUpdated(Map<String, Object> data) {
+        if (data == null) return;
+        publishToAdmins("CLUSTER_RISK_UPDATED", data);
+    }
+
+    protected void publishToAll(String type, Map<String, Object> data) {
         clients.values().forEach(client -> send(client, type, data));
     }
 
-    private void publishToAdmins(String type, Map<String, Object> data) {
+    protected void publishToAdmins(String type, Map<String, Object> data) {
         clients.values().stream()
                 .filter(client -> client.admin)
                 .forEach(client -> send(client, type, data));
     }
 
-    private void publishToUser(String username, String type, Map<String, Object> data) {
+    protected void publishToUser(String username, String type, Map<String, Object> data) {
         if (username == null) return;
         String normalized = username.toLowerCase();
         clients.values().stream()

@@ -494,6 +494,71 @@ header {
   border-color: var(--accent);
 }
 
+/* ===== I18N Language Toggle ===== */
+.i18n-toggle {
+  position: fixed;
+  left: 18px;
+  bottom: calc(36px + env(safe-area-inset-bottom));
+  z-index: 1200;
+  min-width: 62px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border-hi);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg2) 88%, transparent);
+  color: var(--text2);
+  box-shadow: var(--panel-shadow);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11px;
+  backdrop-filter: blur(12px);
+  transition: transform .18s, border-color .18s, color .18s, background-color .18s;
+}
+.i18n-toggle:hover {
+  transform: translateY(-2px);
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+/* Cyberpunk mode override for i18n toggle */
+html[data-visual-mode="cyber"] .i18n-toggle {
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  border-color: var(--cb-cyan);
+  background: rgba(0,240,255,.10);
+  color: var(--cb-cyan);
+  box-shadow: 0 0 0 1px rgba(0,240,255,.24), 0 0 18px rgba(0,240,255,.20);
+  pointer-events: auto;
+}
+html[data-visual-mode="cyber"] .i18n-toggle:hover {
+  color: var(--cb-void);
+  background: var(--cb-cyan);
+  border-color: var(--cb-cyan);
+  box-shadow: 0 0 0 2px rgba(0,240,255,.40), 0 0 26px rgba(0,240,255,.38);
+}
+
+/* Light theme override */
+html[data-theme="light"] .i18n-toggle {
+  background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  border-color: var(--border);
+}
+html[data-theme="light"] .i18n-toggle:hover {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+@media (max-width: 520px) {
+  .i18n-toggle {
+    left: 12px;
+  }
+}
+
+/* Performance guard */
+html:not([data-perf-mode="full"]) .i18n-toggle {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 .space-page {
   overflow-x: hidden;
 }

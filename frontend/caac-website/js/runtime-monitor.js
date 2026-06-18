@@ -1249,6 +1249,20 @@
   connect();
 
   // ============================================================
+  // 真实后端模式：admin 进入页面即把 mock 调度循环静音，
+  // 仅保留 /bench/stream 通道供 bvgca_attack_sim.py 推送实际攻击事件。
+  // 真实的 PERMIT/DENY/REVOKE 通过 /api/events/stream 进来后由
+  // translateGatewayEvent 翻译成 bench-bus 事件，再喂给画布。
+  // ============================================================
+  try {
+    fetch('/bench/mode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'live' })
+    }).catch(function () { /* dev only — silent fail in prod */ });
+  } catch (_) { /* nop */ }
+
+  // ============================================================
   // 真实文件清单：拉取 FileRegistry，注入到 STORAGE 行
   // ============================================================
   //   - 启动时一次性拉取 /api/files/admin/all，过滤 APPROVED
@@ -1339,6 +1353,11 @@
   // 只在 cookie/session 已有 JWT 的部署形态下生效——dev 中静默失败。
   var liveEs = null;
   var liveReconnectTimer = null;
+  // Translator state — per-listener delta cache so SESSION_SCORE_UPDATED
+  // only emits ctx-change events for fields that actually changed.
+  var translatorState = (window.CAAC_TRANSLATOR && window.CAAC_TRANSLATOR.createTranslatorState)
+      ? window.CAAC_TRANSLATOR.createTranslatorState()
+      : { lastScores: new Map() };
   function connectLive() {
     var url = gatewayBase() + '/api/events/stream';
     try {
@@ -1366,6 +1385,21 @@
         case 'FILE_REJECTED':
         case 'FILE_DELETED':
           unregisterBackendFile(data);
+          break;
+        case 'FILE_ACCESS':
+        case 'SESSION_SCORE_UPDATED':
+        case 'SESSION_REVOKED':
+        case 'CLUSTER_RISK_UPDATED':
+          // Real backend access-flow events — translate to bench-bus
+          // vocabulary the canvas already renders. Translator is a
+          // pure function exposed on window.CAAC_TRANSLATOR (loaded
+          // by the admin entry before this IIFE).
+          if (window.CAAC_TRANSLATOR && window.CAAC_TRANSLATOR.translateGatewayEvent) {
+            var paced = window.CAAC_TRANSLATOR.translateGatewayEvent(msg, translatorState);
+            for (var i = 0; i < paced.length; i++) {
+              pendingQueue.push(paced[i]);
+            }
+          }
           break;
       }
     });

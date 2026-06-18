@@ -192,6 +192,10 @@ public class FileAccessController {
                     0.0, 0.0, fileEntry.getPReq(), 0,
                     clientIp, rawContext.getNetworkType(), rawContext.getPlatform(),
                     null, authUser.getRSub(), fileEntry.getSLevel());
+            liveEventService.publishFileAccess(username, buildAccessEventPayload(
+                    username, fileId, "DENY", (String) result.get("reason"),
+                    0.0, 0.0, fileEntry.getSLevel(), null, null,
+                    null, null, clientIp, rawContext));
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(result);
         }
 
@@ -265,6 +269,11 @@ public class FileAccessController {
                     oracleResult.getDtScore(), oracleResult.getCeScore(), fileEntry.getPReq(), 0,
                     clientIp, rawContext.getNetworkType(), rawContext.getPlatform(),
                     null, authUser.getRSub(), fileEntry.getSLevel());
+            liveEventService.publishFileAccess(username, buildAccessEventPayload(
+                    username, fileId, "DENY", (String) result.get("reason"),
+                    oracleResult.getDtScore(), oracleResult.getCeScore(),
+                    fileEntry.getSLevel(), null, null,
+                    resolvedScores, rawContextEcho, clientIp, rawContext));
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(result);
         }
 
@@ -277,6 +286,11 @@ public class FileAccessController {
                     null, authUser.getRSub(), fileEntry.getSLevel());
             result.put("status", "ERROR");
             result.put("reason", "CAAC Oracle unreachable. Zero-Trust default: DENY.");
+            liveEventService.publishFileAccess(username, buildAccessEventPayload(
+                    username, fileId, "ERROR", (String) result.get("reason"),
+                    oracleResult.getDtScore(), oracleResult.getCeScore(),
+                    fileEntry.getSLevel(), null, null,
+                    resolvedScores, rawContextEcho, clientIp, rawContext));
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(result);
         }
 
@@ -292,6 +306,11 @@ public class FileAccessController {
             auditService.log(username, fileId, "DENY", oracleResult.getDtScore(), oracleResult.getCeScore(),
                     pEff, 0, clientIp, rawContext.getNetworkType(), rawContext.getPlatform(), null,
                     authUser.getRSub(), fileEntry.getSLevel());
+            liveEventService.publishFileAccess(username, buildAccessEventPayload(
+                    username, fileId, "DENY", ruleViolation,
+                    oracleResult.getDtScore(), oracleResult.getCeScore(),
+                    fileEntry.getSLevel(), null, null,
+                    resolvedScores, rawContextEcho, clientIp, rawContext));
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(result);
         }
 
@@ -319,6 +338,11 @@ public class FileAccessController {
                 auditService.log(username, fileId, "DENY", oracleResult.getDtScore(), oracleResult.getCeScore(),
                         pEff, 0, clientIp, rawContext.getNetworkType(), rawContext.getPlatform(), null,
                         authUser.getRSub(), fileEntry.getSLevel());
+                liveEventService.publishFileAccess(username, buildAccessEventPayload(
+                        username, fileId, "DENY", "Risk budget exceeded for this file today",
+                        oracleResult.getDtScore(), oracleResult.getCeScore(),
+                        fileEntry.getSLevel(), null, null,
+                        resolvedScores, rawContextEcho, clientIp, rawContext));
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(result);
             }
 
@@ -365,6 +389,11 @@ public class FileAccessController {
                 fileEntry.getPReq(), riskMargin,
                 clientIp, rawContext.getNetworkType(), rawContext.getPlatform(),
                 sessionId, authUser.getRSub(), fileEntry.getSLevel());
+        liveEventService.publishFileAccess(username, buildAccessEventPayload(
+                username, fileId, "PERMIT", null,
+                oracleResult.getDtScore(), oracleResult.getCeScore(),
+                fileEntry.getSLevel(), sessionId, riskMargin,
+                resolvedScores, rawContextEcho, clientIp, rawContext));
 
         List<AnomalyDetector.AnomalyAlert> newAlerts = anomalyDetector.recordAccess(
                 username, fileEntry.getSLevel(), evolvedTSub);
@@ -1110,6 +1139,43 @@ public class FileAccessController {
                 .filter(entry -> fileId.equals(entry.getFileId()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * Build the FILE_ACCESS event payload that drives the admin runtime
+     * topology cascade. Same shape regardless of PERMIT / DENY / ERROR so
+     * the frontend translator (runtime-monitor.js) has stable keys.
+     */
+    private Map<String, Object> buildAccessEventPayload(
+            String username, String fileId, String decision, String reason,
+            double dtScore, double ceScore, int sLevel,
+            String sessionId, Double riskMargin,
+            Map<String, String> resolvedScores, Map<String, String> rawContextEcho,
+            String clientIp, RawContext rawContext) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("username", username);
+        payload.put("fileId", fileId);
+        payload.put("decision", decision);
+        if (reason != null) payload.put("reason", reason);
+        payload.put("dtScore", dtScore);
+        payload.put("ceScore", ceScore);
+        payload.put("sLevel", sLevel);
+        if (sessionId != null) payload.put("sessionId", sessionId);
+        if (riskMargin != null) payload.put("riskMargin", riskMargin);
+        if (resolvedScores != null) payload.put("resolvedScores", resolvedScores);
+        if (rawContextEcho != null) {
+            payload.put("rawContext", rawContextEcho);
+        } else if (rawContext != null) {
+            // subnet-block path runs before resolvedScores / rawContextEcho exist;
+            // emit a slimmer echo so the operator UI still shows the visible
+            // signals that drove the decision.
+            Map<String, String> echo = new LinkedHashMap<>();
+            echo.put("clientIp", clientIp);
+            echo.put("networkType", rawContext.getNetworkType());
+            echo.put("platform", rawContext.getPlatform());
+            payload.put("rawContext", echo);
+        }
+        return payload;
     }
 
     @GetMapping("/by-user/{username}")
